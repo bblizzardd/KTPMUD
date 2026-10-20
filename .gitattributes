@@ -1,0 +1,2 @@
+# Preserve provided artwork and diagram sources byte-for-byte across platforms.
+docs/architecture/** -text -whitespace

@@ -8,7 +8,7 @@
 | Chi tiết Use Case | [USE_CASES.md](USE_CASES.md) | Đủ 13 UC, có luồng chính/ngoại lệ |
 | RTM | [RTM.md](RTM.md) | Liên kết đủ 20 FR và 11 NFR; không phải tất cả đã PASS |
 | Tiêu chí nghiệm thu | [tests/features](../tests/features) | 17 tệp / 34 scenario; parse đạt, BDD chưa chạy |
-| C4, DFD, UML, ERD, Activity | [architecture](architecture/README.md) | 16 sơ đồ, mỗi sơ đồ có `.puml`, `.svg`, `.png` |
+| C4, DFD, UML, ERD, Activity | [architecture](architecture/README.md) | 19 sơ đồ: 8 bộ ảnh/nguồn gốc của nhóm + 11 sơ đồ bổ sung; nguồn `.puml` hoặc `.dot`, kèm SVG và PNG |
 | DDL và dữ liệu mẫu | [schema.sql](../database/schema.sql), [seed.sql](../database/seed.sql) | Thiết kế PostgreSQL 20 bảng; chạy thử đạt trên PGlite |
 | Từ điển dữ liệu, giải thích 3NF | [DATA_DICTIONARY.md](../database/DATA_DICTIONARY.md) | Trường, kiểu, nullable, khóa, CHECK và index |
 | OpenAPI | [docs/api/openapi.yaml](api/openapi.yaml) | 31 operation; bản tương thích ở `api/openapi.yaml` |

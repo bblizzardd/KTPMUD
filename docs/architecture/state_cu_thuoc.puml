@@ -1,0 +1,33 @@
+@startuml State_Cu_Thuoc
+skinparam defaultFontName "DejaVu Sans"
+skinparam shadowing false
+skinparam state {
+  BackgroundColor #EEF3FB
+  BorderColor #2E5395
+}
+title Biểu đồ chuyển trạng thái: Cữ thuốc
+[*] --> DaLenLich : đơn thuốc được xác nhận\n/ sinh cữ thuốc
+state "Đã lên lịch" as DaLenLich
+state "Đang chờ" as DangCho
+state "Đã uống" as DaUong
+state "Đã uống (hộ)" as DaUongHo
+state "Bỏ lỡ" as BoLo #FBE5D6
+state "Xác nhận muộn" as Muon #FFF2CC
+state "Đã hủy" as DaHuy #F2F2F2
+DaLenLich --> DangCho : đến giờ nhắc\n/ gửi nhắc nhở
+DangCho --> DaUong : bệnh nhân xác nhận\n[trong thời hạn]
+DangCho --> DaUongHo : người nhà xác nhận\n[trong thời hạn]\n/ ghi người thực hiện
+DangCho --> BoLo : hết thời hạn\n/ cảnh báo người chăm sóc
+BoLo --> Muon : xác nhận sau thời hạn
+DaLenLich --> DaHuy : đơn bị thay thế
+DaUong --> [*]
+DaUongHo --> [*]
+BoLo --> [*] : kết thúc ngày
+Muon --> [*]
+DaHuy --> [*]
+note right of Muon
+  Chưa chốt: có giữ trạng thái
+  riêng hay gộp vào "Đã uống".
+  Chờ ý kiến bác sĩ (câu hỏi D3, D4)
+end note
+@enduml

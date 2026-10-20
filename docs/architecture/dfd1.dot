@@ -1,0 +1,58 @@
+digraph DFD1 {
+  rankdir=LR; nodesep=0.35; ranksep=1.1; splines=true; newrank=true;
+  fontname="DejaVu Sans"; label="Biểu đồ luồng dữ liệu mức 1 (mức đỉnh)"; labelloc=t; fontsize=16;
+  node [fontname="DejaVu Sans", fontsize=10];
+  edge [fontname="DejaVu Sans", fontsize=8, color="#444444"];
+  node [shape=box, style=filled, fillcolor="#FFF4DB"];
+  CG  [label="Người chăm sóc"];
+  CG2 [label="Người chăm sóc"];
+  PT  [label="Bệnh nhân cao tuổi"];
+  DL  [label="Người nhà sống cùng"];
+  DM  [label="Danh mục thuốc\ncông khai", fillcolor="#F2F2F2"];
+  TM  [label="Đồng hồ hệ thống", fillcolor="#F2F2F2"];
+  node [shape=circle, fillcolor="#D9E2F3", color="#2E5395", width=1.35, fixedsize=true];
+  P1 [label="1\nQuản lý hồ sơ\nvà ủy quyền"];
+  P2 [label="2\nQuản lý\nđơn thuốc"];
+  P3 [label="3\nTheo dõi\ntuân thủ"];
+  P4 [label="4\nChỉ số và\ntái khám"];
+  P5 [label="5\nBáo cáo\nvà ghi vết"];
+  node [shape=record, fillcolor="#FBE5D6", color="#7F6000", width=0, fixedsize=false];
+  D1 [label="{D1 | Hồ sơ, ủy quyền}"];
+  D2 [label="{D2 | Đơn thuốc}"];
+  D3 [label="{D3 | Danh mục thuốc}"];
+  D4 [label="{D4 | Cữ thuốc, xác nhận}"];
+  D5 [label="{D5 | Chỉ số, lịch hẹn}"];
+  D6 [label="{D6 | Nhật ký thao tác}"];
+
+  CG -> P1 [label="hồ sơ, ủy quyền,\nmã ghép nối"];
+  P1 -> D1;
+  CG -> P2 [label="thông tin đơn thuốc"];
+  DM -> P2 [label="danh mục chuẩn"];
+  P2 -> D3 [label="nạp danh mục"];
+  D3 -> P2 [label="gợi ý tên thuốc"];
+  P2 -> D2 [label="đơn đã xác nhận"];
+  P2 -> P3 [label="đơn đã xác nhận"];
+  D1 -> P3 [label="thiết bị, người\nđược ủy quyền"];
+  TM -> P3 [label="tín hiệu thời gian"];
+  P3 -> D4 [label="cữ thuốc,\ntrạng thái"];
+  P3 -> PT [label="nhắc uống thuốc"];
+  PT -> P3 [label="xác nhận đã uống"];
+  DL -> P3 [label="xác nhận hộ"];
+  P3 -> DL [label="cảnh báo cữ bỏ lỡ"];
+  P3 -> CG2 [label="cảnh báo cữ bỏ lỡ"];
+  CG -> P4 [label="chỉ số, lịch hẹn"];
+  TM -> P4 [label="tín hiệu thời gian"];
+  P4 -> D5;
+  P4 -> CG2 [label="nhắc tái khám"];
+  D4 -> P5 [label="dữ liệu tuân thủ"];
+  D5 -> P5 [label="lịch sử chỉ số"];
+  D6 -> P5 [label="nhật ký"];
+  P5 -> CG2 [label="tổng quan, báo cáo PDF"];
+
+  {rank=same; CG; DM; TM}
+  {rank=same; P1; P2; P4}
+  {rank=same; D1; D2; D3; D5}
+  {rank=same; P3; P5}
+  {rank=same; D4; D6}
+  {rank=same; PT; DL; CG2}
+}

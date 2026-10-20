@@ -15,7 +15,7 @@ Windows, Node.js 25.9.0, npm, PostgreSQL nhúng PGlite trong bộ nhớ; API loc
 | Gherkin | Parse 17 tệp / 34 scenario thành công | Test Handoff; đây chỉ là kiểm tra cú pháp |
 | DDL/seed PostgreSQL | PASS trên PGlite; 20 bảng, FK, một đơn hiệu lực, bất biến và rollback | Test Handoff trong log |
 | Coverage server/domain.js | Dòng 100%; nhánh 96,23%; hàm 95,12% | [Log coverage](evidence/coverage-2026-10-20.txt) |
-| Sơ đồ | 16 nguồn PlantUML cùng SVG và PNG đã xuất; kiểm tra ảnh và cú pháp | [Danh mục sơ đồ](architecture/README.md) |
+| Sơ đồ | 19 sơ đồ: 16 nguồn PlantUML + 3 Graphviz, cùng SVG/PNG; 8 ảnh gốc của nhóm được giữ nguyên | [Danh mục sơ đồ](architecture/README.md) |
 
 25 là số đếm gồm 12 test domain, 8 test API con, 1 test API cha và 4 test gói bàn giao. Không được diễn đạt thành 25 yêu cầu đã nghiệm thu. Coverage chỉ đo `server/domain.js`, không đo frontend, Gateway, toàn bộ backend hay 39 TC nguồn.
 
@@ -28,3 +28,7 @@ Windows, Node.js 25.9.0, npm, PostgreSQL nhúng PGlite trong bộ nhớ; API loc
 - CI GitHub phải xem trạng thái lần chạy sau khi push; kết quả Windows local không được gọi là CI GitHub đã xanh.
 
 Một lượt thử đầu bị môi trường hạn chế kết nối loopback nên không dùng làm bằng chứng nghiệm thu. Đã chạy lại với kết nối local được phép và lưu log thành công ở trên. Sửa test API để luôn dọn tiến trình kể cả khởi động thất bại; không thay đổi nghiệp vụ ứng dụng.
+
+## Kiểm tra cập nhật nguồn sơ đồ
+
+Đã chạy lại kiểm tra liên kết, Gherkin và danh mục sơ đồ sau khi nhập nguồn nhóm: PASS ([log](evidence/diagrams-source-2026-10-20.txt)). Danh mục có 19 nguồn sơ đồ; mỗi nguồn có PNG/SVG. Kiểm tra SHA-256 xác nhận 8 PNG gốc, 5 `.puml`, 3 `.dot` và 3 tệp thư viện C4 không thay đổi. PlantUML và Graphviz đã xuất SVG thành công; JavaScript kiểm tra cú pháp đạt. Kiểm tra nghiệp vụ/coverage trước đó không bị sửa; GitHub CI tiếp tục chạy toàn bộ trên commit mới.

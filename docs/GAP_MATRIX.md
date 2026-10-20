@@ -27,3 +27,7 @@ Font giao diện Be Vietnam Pro được tải từ Google Fonts khi có mạng;
 - Audit local chứa tên gọi và chi tiết. Chưa có cơ chế tự kiểm tra người dùng nhập tên thật; NFR-05 cần review thêm.
 - Chưa có triển khai Android/native, push thật, HTTPS production, tải 100 người dùng, AES-256 token theo thiết kế, thử phục hồi queue thật hoặc khảo sát nghiệm thu người dùng.
 - TC-01…39 được giữ làm mã tham chiếu. AC mới chưa chạy BDD tự động. Unit/API local không thay thế nghiệm thu tất cả tiêu chí.
+
+## Đối chiếu sơ đồ gốc mới bổ sung
+
+Sơ đồ cữ thuốc còn ghi chú chưa chốt trạng thái muộn, trong khi FR-14 và mã local đã tách muộn. Sơ đồ đơn thuốc có trạng thái Hết hạn; DDL và mã local chưa có expired riêng. Các ảnh được giữ nguyên theo nguồn nhóm cung cấp; xem [ghi chú đối chiếu](architecture/README.md).

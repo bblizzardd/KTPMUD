@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync, readdirSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 import {PGlite} from '@electric-sql/pglite';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import {generateMessages} from '@cucumber/gherkin';
@@ -35,12 +36,25 @@ test('Handoff: đủ liên kết 20 FR, 11 NFR và 17 story có Gherkin chuẩn/
     assert.equal(envelopes.filter(x => x.pickle).length, 2, name);
     assert.ok(rtm.includes(name), `RTM missing ${name}`);
   }
-  // Images and editable sources must be paired, not just mentioned in a checklist.
-  for (const name of readdirSync(new URL('../docs/architecture', import.meta.url)).filter(x => x.endsWith('.puml'))) {
-    const svg = read('docs/architecture/' + name.replace('.puml', '.svg'));
+  // Source/output names differ for user-provided PlantUML and Graphviz diagrams.
+  const catalog = JSON.parse(read('docs/architecture/catalog.json'));
+  const sourceFiles = readdirSync(new URL('../docs/architecture', import.meta.url))
+    .filter(x => /\.(puml|dot)$/.test(x)).sort();
+  assert.deepEqual(catalog.diagrams.map(x => x.source).sort(), sourceFiles);
+  assert.equal(catalog.diagrams.filter(x => x.origin === 'provided-by-user').length, 8);
+  const verifyHash = (name, expected) => {
+    const bytes = readFileSync(new URL('../docs/architecture/' + name, import.meta.url));
+    assert.equal(createHash('sha256').update(bytes).digest('hex'), expected, `Original asset changed: ${name}`);
+  };
+  for (const item of catalog.diagrams) {
+    const svg = read('docs/architecture/' + item.svg);
     assert.match(svg, /<svg/);
     assert.doesNotMatch(svg, /Syntax Error|An error has occur/i);
+    const png = readFileSync(new URL('../docs/architecture/' + item.png, import.meta.url));
+    assert.equal(png.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', item.png);
+    for (const [name, expected] of Object.entries(item.originalSha256 || {})) verifyHash(name, expected);
   }
+  for (const [name, expected] of Object.entries(catalog.providedLibrariesSha256)) verifyHash(name, expected);
 });
 
 function validateExample(value, schema) {

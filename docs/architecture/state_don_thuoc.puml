@@ -1,0 +1,23 @@
+@startuml State_Don_Thuoc
+skinparam defaultFontName "DejaVu Sans"
+skinparam shadowing false
+skinparam state {
+  BackgroundColor #EEF3FB
+  BorderColor #2E5395
+}
+title Biểu đồ chuyển trạng thái: Đơn thuốc
+state "Nháp" as Nhap #FFF2CC
+state "Hiệu lực" as HieuLuc
+state "Hết hạn" as HetHan #F2F2F2
+state "Bị thay thế" as ThayThe #F2F2F2
+state "Đã hủy" as Huy #F2F2F2
+[*] --> Nhap : người chăm sóc tạo đơn
+Nhap --> Nhap : chỉnh sửa dòng thuốc
+Nhap --> HieuLuc : người chăm sóc xác nhận\n[đủ trường bắt buộc]\n/ sinh lịch cữ thuốc
+Nhap --> Huy : hủy đơn
+HieuLuc --> HetHan : qua ngày hẹn tái khám
+HieuLuc --> ThayThe : đơn mới được xác nhận\n/ hủy các cữ tương lai
+HetHan --> [*]
+ThayThe --> [*]
+Huy --> [*]
+@enduml

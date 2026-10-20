@@ -1,0 +1,44 @@
+@startuml C2_Container
+!include lib/C4_Container.puml
+skinparam defaultFontName "DejaVu Sans"
+LAYOUT_TOP_DOWN()
+title C2 - Container: Hệ thống hỗ trợ theo dõi điều trị ngoại trú ĐTĐ type 2
+
+Person(caregiver, "Người chăm sóc")
+Person(patient, "Bệnh nhân cao tuổi")
+Person(delegate, "Người nhà sống cùng")
+
+System_Boundary(b, "Hệ thống theo dõi điều trị ngoại trú") {
+  Container(web, "Web App", "SPA, framework cần chốt", "Trang tổng quan, nhập đơn thuốc, báo cáo cho người chăm sóc")
+  Container(mobile, "Mobile App", "Framework cần chốt", "Chế độ bệnh nhân: nhắc nhở, xác nhận một chạm. Chế độ người nhà: xác nhận hộ")
+  Container(gw, "API Gateway", "Reverse proxy", "Định tuyến /api/v1, xác thực token, giới hạn tần suất, TLS")
+  Container(api, "Backend API", "Modular monolith, ngôn ngữ cần chốt", "Module Hồ sơ, Đơn thuốc, Tuân thủ, Chỉ số, Báo cáo, Rule Engine, Audit")
+  Container(worker, "Background Worker", "Consumer + Scheduler", "Sinh cữ thuốc, phát nhắc, chuyển trạng thái quá hạn, dựng PDF")
+  Container_Ext(ai, "AI Normalization Service", "Dự kiến Sprint 3", "Chuẩn hóa tên biệt dược về hoạt chất, hàm lượng")
+  ContainerDb(db, "Relational Database", "PostgreSQL", "Hồ sơ, đơn thuốc, cữ thuốc, xác nhận, chỉ số, danh mục thuốc, audit log")
+  ContainerDb(cache, "Cache", "Redis", "Phiên, gợi ý danh mục thuốc, tổng hợp tuân thủ")
+  ContainerQueue(mq, "Message Broker", "RabbitMQ", "Hàng đợi sự kiện: đơn đã xác nhận, cữ đến giờ, cữ quá hạn, yêu cầu báo cáo")
+}
+
+System_Ext(push, "Dịch vụ thông báo đẩy", "FCM / APNs")
+System_Ext(mail, "Dịch vụ Email")
+System_Ext(storage, "Cloud Storage")
+
+Rel(caregiver, web, "Sử dụng", "HTTPS")
+Rel(patient, mobile, "Xác nhận đã uống", "chạm")
+Rel(delegate, mobile, "Xác nhận hộ", "chạm")
+Rel(web, gw, "Gọi API", "HTTPS/REST, JSON")
+Rel(web, gw, "Nhận cảnh báo thời gian thực", "WSS")
+Rel(mobile, gw, "Gọi API", "HTTPS/REST, JSON")
+Rel(gw, api, "Chuyển tiếp", "HTTP/REST")
+Rel(api, db, "Đọc, ghi", "SQL/TCP")
+Rel(api, cache, "Đọc, ghi", "RESP")
+Rel(api, mq, "Phát sự kiện", "AMQP")
+Rel(mq, worker, "Tiêu thụ sự kiện", "AMQP")
+Rel(worker, db, "Đọc, ghi", "SQL/TCP")
+Rel(api, ai, "Chuẩn hóa tên thuốc", "gRPC")
+Rel(worker, push, "Gửi nhắc nhở, cảnh báo", "HTTPS")
+Rel(worker, mail, "Gửi email", "SMTP")
+Rel(worker, storage, "Lưu tệp PDF", "HTTPS")
+Rel_Back(mobile, push, "Nhận thông báo")
+@enduml

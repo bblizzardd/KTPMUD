@@ -1,0 +1,22 @@
+digraph DFD0 {
+  rankdir=LR; nodesep=0.6; ranksep=1.6; splines=true;
+  fontname="DejaVu Sans"; label="Biểu đồ luồng dữ liệu mức 0 (mức khung cảnh)"; labelloc=t; fontsize=16;
+  node [fontname="DejaVu Sans", fontsize=11];
+  edge [fontname="DejaVu Sans", fontsize=9, color="#444444"];
+  CG [shape=box, style=filled, fillcolor="#FFF4DB", label="Người chăm sóc"];
+  DM [shape=box, style=filled, fillcolor="#F2F2F2", label="Danh mục thuốc\ncông khai"];
+  P0 [shape=circle, style=filled, fillcolor="#D9E2F3", color="#2E5395", width=2.2, fixedsize=true, label="0\nHệ thống theo dõi\nđiều trị ngoại trú"];
+  PT [shape=box, style=filled, fillcolor="#FFF4DB", label="Bệnh nhân cao tuổi"];
+  DL [shape=box, style=filled, fillcolor="#FFF4DB", label="Người nhà sống cùng"];
+  TM [shape=box, style=filled, fillcolor="#F2F2F2", label="Đồng hồ hệ thống"];
+  CG -> P0 [label="thông tin hồ sơ, ủy quyền\nthông tin đơn thuốc\nchỉ số xét nghiệm, lịch hẹn"];
+  P0 -> CG [label="gợi ý tên thuốc\ntrạng thái tuân thủ, cảnh báo\nnhắc tái khám, báo cáo PDF"];
+  DM -> P0 [label="danh mục thuốc chuẩn"];
+  P0 -> PT [label="nhắc uống thuốc"];
+  PT -> P0 [label="xác nhận đã uống"];
+  P0 -> DL [label="cảnh báo cữ bỏ lỡ"];
+  DL -> P0 [label="xác nhận hộ"];
+  TM -> P0 [label="tín hiệu thời gian"];
+  {rank=same; CG; DM}
+  {rank=same; PT; DL; TM}
+}

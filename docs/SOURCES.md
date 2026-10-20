@@ -10,3 +10,11 @@ Ngày đóng gói: 20/10/2026.
 - Báo cáo có tên đường dẫn API khác bản local, JWT khác cookie local và PostgreSQL khác SQLite local. Xem [Gap Matrix](GAP_MATRIX.md).
 - BIZ là mục tiêu nghiệp vụ; BR là ràng buộc nghiệp vụ. Không dùng hai mã này thay cho nhau.
 - RTM nguồn dùng TC-01…TC-39 nhưng báo cáo không chứa đủ bước chạy chi tiết. Bộ AC-US mới bổ sung các bước Given/When/Then; giữ mã TC cũ để đối chiếu, không công bố chúng đã chạy.
+
+## Cập nhật nguồn sơ đồ ngày 20/10/2026
+
+Ưu tiên các ảnh và nguồn trong `KTPMUD/docs/architecture` mới được người dùng cung cấp. Thay 5 bộ C4/DFD/Use Case tự biên soạn bằng bản gốc; thêm phân cấp chức năng và hai biểu đồ trạng thái. Ảnh PNG, `.puml`, `.dot` và thư viện C4 được sao chép nguyên vẹn, có SHA-256 trong [catalog](architecture/catalog.json). SVG xuất bổ sung; không thay thế ảnh gốc.
+
+11 sơ đồ bổ sung trước đây tiếp tục được ghi rõ nguồn biên soạn. Các khác biệt về trạng thái muộn/Hết hạn được ghi tại [README sơ đồ](architecture/README.md), không tự sửa sơ đồ của nhóm.
+
+Thư mục mới cũng chứa `docs/api/openapi.yaml`; yêu cầu lần này chỉ chọn ảnh và nguồn sơ đồ nên hợp đồng API đang chạy với Gateway mock được giữ nguyên.

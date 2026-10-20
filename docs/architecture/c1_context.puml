@@ -1,0 +1,30 @@
+@startuml C1_System_Context
+!include lib/C4_Context.puml
+skinparam defaultFontName "DejaVu Sans"
+LAYOUT_TOP_DOWN()
+title C1 - System Context: Hệ thống hỗ trợ theo dõi điều trị ngoại trú ĐTĐ type 2
+
+Person(caregiver, "Người chăm sóc", "Con cái của bệnh nhân. Nhập đơn thuốc, theo dõi tuân thủ, nhận cảnh báo, xuất báo cáo")
+Person(patient, "Bệnh nhân cao tuổi", "Bệnh nhân ngoại trú BV Hữu Nghị. Nhận nhắc nhở, xác nhận đã uống thuốc bằng một chạm")
+Person(delegate, "Người nhà sống cùng", "Được ủy quyền xác nhận hộ, nhận cảnh báo cữ bỏ lỡ")
+Person_Ext(doctor, "Bác sĩ điều trị", "Đọc báo cáo PDF do người chăm sóc mang tới buổi tái khám")
+
+System(sys, "Hệ thống theo dõi điều trị ngoại trú", "Quản lý đơn thuốc, sinh lịch cữ thuốc, nhắc nhở, ghi nhận tuân thủ, cảnh báo và báo cáo")
+
+System_Ext(push, "Dịch vụ thông báo đẩy", "Firebase Cloud Messaging / APNs")
+System_Ext(mail, "Dịch vụ Email", "Gửi email xác thực tài khoản và báo cáo")
+System_Ext(storage, "Cloud Storage", "Lưu tệp báo cáo PDF")
+System_Ext(drugdb, "Danh mục thuốc công khai", "Cục Quản lý Dược, danh mục BHYT. Nạp định kỳ dạng tệp")
+System_Ext(his, "Hệ thống số hóa BV Hữu Nghị", "Nơi người chăm sóc tra cứu đơn thuốc điện tử. KHÔNG tích hợp trực tiếp")
+
+Rel(caregiver, sys, "Nhập đơn, cấu hình, theo dõi, xuất báo cáo", "HTTPS")
+Rel(patient, sys, "Xác nhận đã uống", "HTTPS")
+Rel(delegate, sys, "Xác nhận hộ", "HTTPS")
+Rel(sys, push, "Gửi nhắc nhở, cảnh báo", "HTTPS")
+Rel(sys, mail, "Gửi email", "SMTP/HTTPS")
+Rel(sys, storage, "Lưu, lấy tệp PDF", "HTTPS")
+Rel(drugdb, sys, "Nạp danh mục thuốc", "Tệp CSV/XLSX")
+Rel_Back(patient, push, "Nhận nhắc nhở")
+Rel(caregiver, his, "Tra cứu đơn thuốc điện tử", "thủ công")
+Rel(caregiver, doctor, "Mang báo cáo PDF tới buổi khám", "ngoài hệ thống")
+@enduml
