@@ -1,0 +1,40 @@
+@startuml
+!pragma layout smetana
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam ArrowColor #34596B
+skinparam titleFontSize 20
+title Sequence 1 — Xác nhận / thay đơn (thiết kế mục tiêu)
+actor NCS
+participant Gateway
+participant Backend
+database PostgreSQL as DB
+queue Outbox
+participant Worker
+NCS -> Gateway : POST /prescriptions/{id}/confirm
+Gateway -> Backend : yêu cầu + danh tính
+Backend -> DB : kiểm tra quyền, khóa đơn/hồ sơ
+alt Không có quyền hoặc đơn không còn nháp
+ Backend --> Gateway : 403 / 409
+ Gateway --> NCS : lỗi, không tạo lịch trùng
+else Hợp lệ
+ Backend -> DB : BEGIN; thay đơn cũ; hủy cữ tương lai
+ Backend -> DB : kích hoạt đơn mới; ghi sự kiện outbox
+ alt lỗi giao dịch
+  Backend -> DB : ROLLBACK
+  Backend --> NCS : lỗi
+ else thành công
+  Backend -> DB : COMMIT
+  Backend --> Gateway : 202, jobId
+  Gateway --> NCS : đã tiếp nhận
+  DB -> Outbox : chuyển sự kiện đã commit
+  Outbox -> Worker : lập lịch, có khóa chống trùng
+  Worker -> DB : thêm cữ mới
+ end
+end
+note over Outbox,Worker
+Outbox/worker là phần thiết kế cần triển khai thêm.
+Bản local sinh lịch đồng bộ trong giao dịch SQLite.
+end note
+@enduml

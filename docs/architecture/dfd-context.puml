@@ -1,0 +1,19 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam ArrowColor #34596B
+skinparam titleFontSize 20
+title DFD mức ngữ cảnh
+left to right direction
+rectangle "Người chăm sóc" as c
+rectangle "Bệnh nhân / người nhà" as p
+circle "0\nAn Tâm" as sys
+rectangle "Dịch vụ push (mục tiêu)" as push
+c --> sys : Hồ sơ, đơn, chỉ số, lịch hẹn
+sys --> c : Tổng quan, cảnh báo, báo cáo
+p --> sys : Mã ghép, xác nhận
+sys --> p : Lịch cữ, trạng thái ghi nhận
+sys --> push : Yêu cầu gửi nhắc
+push --> sys : Kết quả giao thông báo
+@enduml

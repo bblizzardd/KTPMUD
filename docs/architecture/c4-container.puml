@@ -1,0 +1,34 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam ArrowColor #34596B
+skinparam titleFontSize 20
+title C4 C2 — Kiến trúc mục tiêu (chưa triển khai đầy đủ)
+top to bottom direction
+actor "Người dùng" as user
+rectangle "Web App\n<<Container>>" as web
+rectangle "Mobile App\n<<Container, dự kiến>>" as mobile
+rectangle "Gateway\n<<Container>>" as gw
+rectangle "Backend modular monolith\nAuth / Hồ sơ / Đơn / Tuân thủ\n<<Container>>" as api
+queue "RabbitMQ\n<<Container>>" as mq
+rectangle "Worker\nScheduler / Notifier / PDF\n<<Container>>" as worker
+database "PostgreSQL\n<<Container>>" as db
+database "Redis cache\n<<Container>>" as cache
+cloud "Push / Storage" as external
+user --> web
+user --> mobile
+web --> gw : HTTPS / REST
+mobile --> gw : HTTPS / REST
+gw --> api : HTTP nội bộ
+api --> db : SQL
+api --> cache : Cache protocol
+api --> mq : AMQP / sự kiện
+mq --> worker : AMQP
+worker --> db : SQL
+worker --> external : HTTPS
+note bottom of api
+Bản local: React + Express + SQLite JSON,
+lịch nền cùng tiến trình, HTTP loopback.
+end note
+@enduml

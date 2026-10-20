@@ -3,3 +3,8 @@ dist/
 data/
 *.log
 test-results/
+
+.env
+.env.*
+*.sqlite
+*.sqlite-*

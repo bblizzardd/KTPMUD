@@ -1,0 +1,44 @@
+@startuml
+!pragma layout smetana
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam ArrowColor #34596B
+skinparam titleFontSize 20
+title Use Case — tổng thể và vai trò
+left to right direction
+actor "Người chăm sóc" as C
+actor "Bệnh nhân" as P
+actor "Người nhà" as F
+actor "Bộ lập lịch" as S
+rectangle "An Tâm" {
+usecase "UC-01\nĐăng ký, đăng nhập" as U1
+usecase "UC-02\nTạo hồ sơ bệnh nhân" as U2
+usecase "UC-03\nGhép nối thiết bị bệnh nhân" as U3
+usecase "UC-04\nỦy quyền người nhà" as U4
+usecase "UC-05\nNhập đơn thuốc" as U5
+usecase "UC-06\nXác nhận đơn thuốc" as U6
+usecase "UC-07\nXác nhận đã uống thuốc" as U7
+usecase "UC-08\nXác nhận hộ" as U8
+usecase "UC-09\nTheo dõi tổng quan tuân thủ" as U9
+usecase "UC-10\nPhát nhắc và phát hiện cữ bỏ lỡ" as U10
+usecase "UC-11\nGhi nhận chỉ số xét nghiệm" as U11
+usecase "UC-12\nNhắc lịch tái khám" as U12
+usecase "UC-13\nXuất báo cáo PDF" as U13
+}
+C --> U1
+C --> U2
+C --> U3
+C --> U4
+C --> U5
+C --> U6
+C --> U9
+C --> U11
+C --> U13
+P --> U3
+P --> U7
+F --> U8
+S --> U10
+S --> U12
+
+@enduml

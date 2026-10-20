@@ -1,0 +1,35 @@
+@startuml
+!pragma layout smetana
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam ArrowColor #34596B
+skinparam titleFontSize 20
+title Sequence 3 — Nhắc, quá hạn và khởi động lại
+participant Scheduler
+database DB
+participant Notifier
+participant "Thiết bị có quyền" as Device
+Scheduler -> DB : đọc các cữ đang chờ từ dữ liệu bền vững
+loop mỗi cữ tới giờ / quá hạn
+ Scheduler -> DB : kiểm tra xác nhận và ngưỡng cấu hình
+ alt tới giờ
+  Scheduler -> DB : tạo sự kiện nhắc với khóa duy nhất
+ else quá hạn chưa xác nhận
+  Scheduler -> DB : đánh dấu bỏ lỡ, tạo cảnh báo duy nhất
+ end
+ DB --> Scheduler : sự kiện mới hoặc đã tồn tại
+ Scheduler -> Notifier : chuyển sự kiện chưa giao (mục tiêu)
+ Notifier -> DB : kiểm tra người nhận còn quyền
+ Notifier -> Device : gửi nhắc / cảnh báo
+ alt gửi lỗi
+  Notifier -> DB : lưu retry + khóa chống gửi trùng
+ else thành công
+  Notifier -> DB : lưu kết quả giao
+ end
+end
+note over Scheduler,Notifier
+Local chỉ tạo cảnh báo bền vững; chưa có push ngoài ứng dụng
+và retry giao thông báo độc lập. Cần kiểm chứng NFR-07.
+end note
+@enduml

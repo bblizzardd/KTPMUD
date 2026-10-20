@@ -2,6 +2,15 @@
 
 Ứng dụng hỗ trợ người chăm sóc theo dõi điều trị ngoại trú cho bệnh nhân đái tháo đường type 2, dựa trên **báo cáo Tuần 5**, cập nhật ngày 13/10/2026 trong thư mục cha.
 
+## Bộ tài liệu bàn giao ngày 20/10/2026
+
+- **[Mở danh mục bàn giao](docs/HANDOFF.md)** — liên kết tới tất cả tệp.
+- [Đặc tả SRS v1.0](docs/SRS_v1.0.md), [RTM](docs/RTM.md), [sơ đồ nguồn và ảnh](docs/architecture/README.md).
+- [DDL PostgreSQL và từ điển dữ liệu](database/DATA_DICTIONARY.md), [OpenAPI và mock](docs/api/README.md).
+- [Kết quả kiểm tra thực tế](docs/TEST_REPORT.md), [cách cài đặt và kiểm tra](docs/DEPLOYMENT.md).
+
+Các tệp thiết kế mục tiêu được đóng gói từ báo cáo tuần 6. Ứng dụng bên dưới vẫn là bản local SQLite; mock/DDL mục tiêu chưa thay thế backend hiện có. Xem [phần khác biệt và việc còn thiếu](docs/GAP_MATRIX.md).
+
 ## Chạy trên máy
 
 Yêu cầu Node.js từ 22.13 (khuyến nghị Node 24 hoặc mới hơn). Đã phát triển và kiểm thử trên Windows với Node 25.9.

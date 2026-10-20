@@ -1,0 +1,29 @@
+@startuml
+!pragma layout smetana
+skinparam defaultFontName Arial
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam ArrowColor #34596B
+skinparam titleFontSize 20
+title Hoạt động — ghi nhận cữ thuốc
+start
+:Đến giờ, hiển thị nhắc;
+if (Có xác nhận?) then (Có)
+ :Kiểm tra quyền, hồ sơ và cữ;
+ if (Hợp lệ?) then (Có)
+  if (Yêu cầu lặp?) then (Có)
+   :Trả bản ghi hiện có;
+  else (Không)
+   :Phân loại tự xác nhận / hộ / muộn;
+   :Thêm bản ghi bất biến và cập nhật cữ;
+  endif
+ else (Không)
+  :Từ chối;
+ endif
+else (Không)
+ if (Quá ngưỡng?) then (Có)
+  :Đánh dấu bỏ lỡ và cảnh báo người có quyền;
+ endif
+endif
+stop
+@enduml
