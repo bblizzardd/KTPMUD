@@ -1,4760 +1,976 @@
-{
-  "openapi": "3.0.3",
-  "info": {
-    "title": "An Tâm — hợp đồng API mục tiêu và mock",
-    "version": "1.0.0",
-    "description": "Thiết kế từ báo cáo tuần 6. Server bên dưới là mock độc lập, không có xác thực thật, không ghi dữ liệu. Bản local dùng cookie và API rút gọn; xem README."
-  },
-  "servers": [
-    {
-      "url": "http://127.0.0.1:5188/api/v1",
-      "description": "MOCK ONLY — dữ liệu giả lập"
-    }
-  ],
-  "paths": {
-    "/auth/register": {
-      "post": {
-        "operationId": "post_auth_register",
-        "tags": [
-          "Auth"
-        ],
-        "summary": "Đăng ký người chăm sóc",
-        "description": "UC-01. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [],
-        "parameters": [],
-        "responses": {
-          "201": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AuthToken"
-                },
-                "example": {
-                  "accessToken": "MOCK_ONLY_NOT_VALID",
-                  "refreshToken": "MOCK_ONLY",
-                  "expiresIn": 900
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 201,
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Register"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/auth/login": {
-      "post": {
-        "operationId": "post_auth_login",
-        "tags": [
-          "Auth"
-        ],
-        "summary": "Đăng nhập",
-        "description": "UC-01. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AuthToken"
-                },
-                "example": {
-                  "accessToken": "MOCK_ONLY_NOT_VALID",
-                  "refreshToken": "MOCK_ONLY",
-                  "expiresIn": 900
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 200,
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Login"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/auth/refresh": {
-      "post": {
-        "operationId": "post_auth_refresh",
-        "tags": [
-          "Auth"
-        ],
-        "summary": "Làm mới token",
-        "description": "UC-01. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AuthToken"
-                },
-                "example": {
-                  "accessToken": "MOCK_ONLY_NOT_VALID",
-                  "refreshToken": "MOCK_ONLY",
-                  "expiresIn": 900
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 200,
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Refresh"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/patients": {
-      "get": {
-        "operationId": "get_patients",
-        "tags": [
-          "Patients"
-        ],
-        "summary": "Danh sách, tạo hồ sơ",
-        "description": "UC-02. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Patient"
-                  }
-                },
-                "example": [
-                  {
-                    "id": "00000000-0000-4000-8000-000000000002",
-                    "nickname": "BN-TEST-001",
-                    "birthYear": 1960
-                  }
-                ]
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 200
-      },
-      "post": {
-        "operationId": "post_patients",
-        "tags": [
-          "Patients"
-        ],
-        "summary": "Danh sách, tạo hồ sơ",
-        "description": "UC-02. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [],
-        "responses": {
-          "201": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Patient"
-                },
-                "example": {
-                  "id": "00000000-0000-4000-8000-000000000002",
-                  "nickname": "BN-TEST-001",
-                  "birthYear": 1960
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 201,
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PatientInput"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/patients/{patientId}": {
-      "get": {
-        "operationId": "get_patients_patientId",
-        "tags": [
-          "Patients"
-        ],
-        "summary": "Xem, cập nhật hồ sơ",
-        "description": "UC-02. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "patientId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Patient"
-                },
-                "example": {
-                  "id": "00000000-0000-4000-8000-000000000002",
-                  "nickname": "BN-TEST-001",
-                  "birthYear": 1960
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 200
-      },
-      "patch": {
-        "operationId": "patch_patients_patientId",
-        "tags": [
-          "Patients"
-        ],
-        "summary": "Xem, cập nhật hồ sơ",
-        "description": "UC-02. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "patientId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Patient"
-                },
-                "example": {
-                  "id": "00000000-0000-4000-8000-000000000002",
-                  "nickname": "BN-TEST-001",
-                  "birthYear": 1960
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 200,
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "nickname": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 50
-                  },
-                  "birthYear": {
-                    "type": "integer",
-                    "minimum": 1900
-                  },
-                  "thresholdMinutes": {
-                    "type": "integer",
-                    "minimum": 5,
-                    "maximum": 1440
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/patients/{patientId}/pairing-codes": {
-      "post": {
-        "operationId": "post_patients_patientId_pairing_codes",
-        "tags": [
-          "Devices"
-        ],
-        "summary": "Sinh mã ghép nối",
-        "description": "UC-03. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "patientId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PairingCode"
-                },
-                "example": {
-                  "code": "123456",
-                  "expiresAt": "2026-10-20T07:05:00+07:00"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 201,
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PairingInput"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/devices/pair": {
-      "post": {
-        "operationId": "post_devices_pair",
-        "tags": [
-          "Devices"
-        ],
-        "summary": "Đổi mã lấy token thiết bị",
-        "description": "UC-03. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeviceToken"
-                },
-                "example": {
-                  "deviceId": "00000000-0000-4000-8000-000000000002",
-                  "token": "MOCK_ONLY_NOT_VALID",
-                  "role": "patient"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 200,
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PairingExchange"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/patients/{patientId}/delegates": {
-      "get": {
-        "operationId": "get_patients_patientId_delegates",
-        "tags": [
-          "Delegates"
-        ],
-        "summary": "Danh sách, ủy quyền",
-        "description": "UC-04. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "patientId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Delegate"
-                  }
-                },
-                "example": [
-                  {
-                    "id": "00000000-0000-4000-8000-000000000002",
-                    "nickname": "BN-TEST-FAMILY",
-                    "active": true
-                  }
-                ]
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 200
-      },
-      "post": {
-        "operationId": "post_patients_patientId_delegates",
-        "tags": [
-          "Delegates"
-        ],
-        "summary": "Danh sách, ủy quyền",
-        "description": "UC-04. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "patientId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Delegate"
-                },
-                "example": {
-                  "id": "00000000-0000-4000-8000-000000000002",
-                  "nickname": "BN-TEST-FAMILY",
-                  "active": true
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 201,
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DelegateInput"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/patients/{patientId}/delegates/{delegateId}": {
-      "delete": {
-        "operationId": "delete_patients_patientId_delegates_delegateId",
-        "tags": [
-          "Delegates"
-        ],
-        "summary": "Thu hồi ủy quyền",
-        "description": "UC-04. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "patientId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "delegateId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Ok"
-                },
-                "example": {
-                  "ok": true
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 200
-      }
-    },
-    "/drugs": {
-      "get": {
-        "operationId": "get_drugs",
-        "tags": [
-          "Drugs"
-        ],
-        "summary": "Gợi ý tên thuốc",
-        "description": "UC-05. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "q",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 2
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Drug"
-                  }
-                },
-                "example": [
-                  {
-                    "id": "00000000-0000-4000-8000-000000000002",
-                    "name": "Thuốc mẫu giả lập",
-                    "ingredients": []
-                  }
-                ]
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 200
-      }
-    },
-    "/patients/{patientId}/prescriptions": {
-      "get": {
-        "operationId": "get_patients_patientId_prescriptions",
-        "tags": [
-          "Đơn thuốc"
-        ],
-        "summary": "Danh sách, tạo đơn nháp",
-        "description": "UC-05. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "patientId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Prescription"
-                  }
-                },
-                "example": [
-                  {
-                    "id": "00000000-0000-4000-8000-000000000002",
-                    "status": "draft",
-                    "items": [
-                      {
-                        "originalName": "Thuốc mẫu giả lập",
-                        "quantity": 1,
-                        "unit": "đơn vị thử",
-                        "slots": [
-                          "morning"
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 200
-      },
-      "post": {
-        "operationId": "post_patients_patientId_prescriptions",
-        "tags": [
-          "Đơn thuốc"
-        ],
-        "summary": "Danh sách, tạo đơn nháp",
-        "description": "UC-05. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "patientId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Prescription"
-                },
-                "example": {
-                  "id": "00000000-0000-4000-8000-000000000002",
-                  "status": "draft",
-                  "items": [
-                    {
-                      "originalName": "Thuốc mẫu giả lập",
-                      "quantity": 1,
-                      "unit": "đơn vị thử",
-                      "slots": [
-                        "morning"
-                      ]
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 201,
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PrescriptionInput"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/prescriptions/{prescriptionId}": {
-      "get": {
-        "operationId": "get_prescriptions_prescriptionId",
-        "tags": [
-          "Đơn thuốc"
-        ],
-        "summary": "Xem, sửa đơn nháp",
-        "description": "UC-05. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "prescriptionId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Prescription"
-                },
-                "example": {
-                  "id": "00000000-0000-4000-8000-000000000002",
-                  "status": "draft",
-                  "items": [
-                    {
-                      "originalName": "Thuốc mẫu giả lập",
-                      "quantity": 1,
-                      "unit": "đơn vị thử",
-                      "slots": [
-                        "morning"
-                      ]
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 200
-      },
-      "put": {
-        "operationId": "put_prescriptions_prescriptionId",
-        "tags": [
-          "Đơn thuốc"
-        ],
-        "summary": "Xem, sửa đơn nháp",
-        "description": "UC-05. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "prescriptionId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Prescription"
-                },
-                "example": {
-                  "id": "00000000-0000-4000-8000-000000000002",
-                  "status": "draft",
-                  "items": [
-                    {
-                      "originalName": "Thuốc mẫu giả lập",
-                      "quantity": 1,
-                      "unit": "đơn vị thử",
-                      "slots": [
-                        "morning"
-                      ]
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 200,
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PrescriptionInput"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/prescriptions/{prescriptionId}/confirm": {
-      "post": {
-        "operationId": "post_prescriptions_prescriptionId_confirm",
-        "tags": [
-          "Đơn thuốc"
-        ],
-        "summary": "Xác nhận đơn, sinh cữ",
-        "description": "UC-06. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "prescriptionId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "202": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Job"
-                },
-                "example": {
-                  "jobId": "00000000-0000-4000-8000-000000000002",
-                  "status": "queued"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 202
-      }
-    },
-    "/prescriptions/{prescriptionId}/cancel": {
-      "post": {
-        "operationId": "post_prescriptions_prescriptionId_cancel",
-        "tags": [
-          "Đơn thuốc"
-        ],
-        "summary": "Hủy đơn nháp",
-        "description": "UC-06. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "prescriptionId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Ok"
-                },
-                "example": {
-                  "ok": true
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 200
-      }
-    },
-    "/patients/{patientId}/doses": {
-      "get": {
-        "operationId": "get_patients_patientId_doses",
-        "tags": [
-          "Doses"
-        ],
-        "summary": "Tra cứu cữ thuốc",
-        "description": "UC-09. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "patientId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Dose"
-                  }
-                },
-                "example": [
-                  {
-                    "id": "00000000-0000-4000-8000-000000000002",
-                    "scheduledAt": "2026-10-20T07:00:00+07:00",
-                    "deadline": "2026-10-20T09:00:00+07:00",
-                    "status": "pending"
-                  }
-                ]
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 200
-      }
-    },
-    "/device/doses/today": {
-      "get": {
-        "operationId": "get_device_doses_today",
-        "tags": [
-          "Doses"
-        ],
-        "summary": "Cữ hôm nay trên thiết bị",
-        "description": "UC-07. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "deviceAuth": []
-          }
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Dose"
-                  }
-                },
-                "example": [
-                  {
-                    "id": "00000000-0000-4000-8000-000000000002",
-                    "scheduledAt": "2026-10-20T07:00:00+07:00",
-                    "deadline": "2026-10-20T09:00:00+07:00",
-                    "status": "pending"
-                  }
-                ]
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 200
-      }
-    },
-    "/doses/{doseId}/confirmations": {
-      "post": {
-        "operationId": "post_doses_doseId_confirmations",
-        "tags": [
-          "Doses"
-        ],
-        "summary": "Xác nhận đã uống, xác nhận hộ",
-        "description": "UC-07, UC-08. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ. Gửi lại cùng xác nhận trả bản ghi hiện có (duplicate=true); không thêm bản ghi. Đính chính cần correctsId và reason.",
-        "security": [
-          {
-            "deviceAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "doseId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Confirmation"
-                },
-                "example": {
-                  "id": "00000000-0000-4000-8000-000000000002",
-                  "doseId": "00000000-0000-4000-8000-000000000002",
-                  "role": "patient",
-                  "tookAt": "2026-10-20T07:00:00+07:00",
-                  "status": "taken",
-                  "duplicate": false
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 200,
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ConfirmationInput"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/patients/{patientId}/adherence/summary": {
-      "get": {
-        "operationId": "get_patients_patientId_adherence_summary",
-        "tags": [
-          "Adherence"
-        ],
-        "summary": "Tổng hợp tuân thủ",
-        "description": "UC-09. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "patientId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "days",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "enum": [
-                7,
-                30,
-                90
-              ],
-              "default": 30
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Summary"
-                },
-                "example": {
-                  "days": 30,
-                  "total": 0,
-                  "taken": 0,
-                  "proxy": 0,
-                  "late": 0,
-                  "rate": null
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 200
-      }
-    },
-    "/patients/{patientId}/alerts": {
-      "get": {
-        "operationId": "get_patients_patientId_alerts",
-        "tags": [
-          "Adherence"
-        ],
-        "summary": "Danh sách cảnh báo",
-        "description": "UC-10. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "patientId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Alert"
-                  }
-                },
-                "example": [
-                  {
-                    "id": "00000000-0000-4000-8000-000000000002",
-                    "type": "due",
-                    "message": "Thông báo giả lập",
-                    "read": false
-                  }
-                ]
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 200
-      }
-    },
-    "/patients/{patientId}/lab-results": {
-      "get": {
-        "operationId": "get_patients_patientId_lab_results",
-        "tags": [
-          "Clinical"
-        ],
-        "summary": "Chỉ số xét nghiệm",
-        "description": "UC-11. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "patientId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/LabResult"
-                  }
-                },
-                "example": [
-                  {
-                    "id": "00000000-0000-4000-8000-000000000002",
-                    "type": "hba1c",
-                    "value": 7,
-                    "unit": "%",
-                    "date": "2026-10-20"
-                  }
-                ]
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 200
-      },
-      "post": {
-        "operationId": "post_patients_patientId_lab_results",
-        "tags": [
-          "Clinical"
-        ],
-        "summary": "Chỉ số xét nghiệm",
-        "description": "UC-11. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "patientId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LabResult"
-                },
-                "example": {
-                  "id": "00000000-0000-4000-8000-000000000002",
-                  "type": "hba1c",
-                  "value": 7,
-                  "unit": "%",
-                  "date": "2026-10-20"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 201,
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LabInput"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/patients/{patientId}/appointments": {
-      "get": {
-        "operationId": "get_patients_patientId_appointments",
-        "tags": [
-          "Clinical"
-        ],
-        "summary": "Lịch tái khám",
-        "description": "UC-12. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "patientId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Appointment"
-                  }
-                },
-                "example": [
-                  {
-                    "id": "00000000-0000-4000-8000-000000000002",
-                    "date": "2026-10-27",
-                    "remindDays": 3
-                  }
-                ]
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 200
-      },
-      "post": {
-        "operationId": "post_patients_patientId_appointments",
-        "tags": [
-          "Clinical"
-        ],
-        "summary": "Lịch tái khám",
-        "description": "UC-12. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "patientId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Appointment"
-                },
-                "example": {
-                  "id": "00000000-0000-4000-8000-000000000002",
-                  "date": "2026-10-27",
-                  "remindDays": 3
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 201,
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AppointmentInput"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/patients/{patientId}/reports": {
-      "post": {
-        "operationId": "post_patients_patientId_reports",
-        "tags": [
-          "Reports"
-        ],
-        "summary": "Yêu cầu dựng PDF",
-        "description": "UC-13. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "patientId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "202": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Report"
-                },
-                "example": {
-                  "id": "00000000-0000-4000-8000-000000000002",
-                  "status": "queued",
-                  "downloadUrl": null
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 202,
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ReportInput"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/reports/{reportId}": {
-      "get": {
-        "operationId": "get_reports_reportId",
-        "tags": [
-          "Reports"
-        ],
-        "summary": "Trạng thái, tải báo cáo",
-        "description": "UC-13. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "reportId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Report"
-                },
-                "example": {
-                  "id": "00000000-0000-4000-8000-000000000002",
-                  "status": "queued",
-                  "downloadUrl": null
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 200
-      }
-    },
-    "/patients/{patientId}/audit-logs": {
-      "get": {
-        "operationId": "get_patients_patientId_audit_logs",
-        "tags": [
-          "Audit"
-        ],
-        "summary": "Tra cứu nhật ký",
-        "description": "UC-09. Hợp đồng mục tiêu, chưa phải API đầy đủ của bản local. Mock không thực thi nghiệp vụ.",
-        "security": [
-          {
-            "caregiverAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "patientId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Phản hồi theo thiết kế mục tiêu; mock chỉ trả mẫu",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Audit"
-                  }
-                },
-                "example": [
-                  {
-                    "id": "00000000-0000-4000-8000-000000000002",
-                    "timestamp": "2026-10-20T07:00:00+07:00",
-                    "actorId": "demo-seed",
-                    "actionType": "DEMO",
-                    "status": "success"
-                  }
-                ]
-              }
-            }
-          },
-          "400": {
-            "description": "Dữ liệu sai",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Chưa xác thực",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Không có quyền",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Không tìm thấy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Xung đột trạng thái",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "410": {
-            "description": "Mã hết hạn",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Vi phạm nghiệp vụ",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Lỗi hệ thống",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "x-mock-status": 200
-      }
-    }
-  },
-  "components": {
-    "securitySchemes": {
-      "caregiverAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT"
-      },
-      "deviceAuth": {
-        "type": "http",
-        "scheme": "bearer"
-      }
-    },
-    "schemas": {
-      "Error": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "integer"
-          },
-          "message": {
-            "type": "string"
-          },
-          "details": {
-            "type": "object",
-            "additionalProperties": true
-          }
-        },
-        "required": [
-          "code",
-          "message"
-        ]
-      },
-      "Register": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "password": {
-            "type": "string",
-            "minLength": 8
-          },
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "email",
-          "password",
-          "name"
-        ]
-      },
-      "Login": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "password": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "email",
-          "password"
-        ]
-      },
-      "Refresh": {
-        "type": "object",
-        "properties": {
-          "refreshToken": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "refreshToken"
-        ]
-      },
-      "AuthToken": {
-        "type": "object",
-        "properties": {
-          "accessToken": {
-            "type": "string"
-          },
-          "refreshToken": {
-            "type": "string"
-          },
-          "expiresIn": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "accessToken",
-          "expiresIn"
-        ]
-      },
-      "PatientInput": {
-        "type": "object",
-        "properties": {
-          "nickname": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 50
-          },
-          "birthYear": {
-            "type": "integer",
-            "minimum": 1900
-          },
-          "thresholdMinutes": {
-            "type": "integer",
-            "minimum": 5,
-            "maximum": 1440
-          }
-        },
-        "required": [
-          "nickname",
-          "birthYear"
-        ]
-      },
-      "Patient": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "nickname": {
-            "type": "string"
-          },
-          "birthYear": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "id",
-          "nickname",
-          "birthYear"
-        ]
-      },
-      "PairingInput": {
-        "type": "object",
-        "properties": {
-          "role": {
-            "type": "string",
-            "enum": [
-              "patient",
-              "delegate"
-            ]
-          }
-        },
-        "required": [
-          "role"
-        ]
-      },
-      "PairingCode": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string"
-          },
-          "expiresAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "code",
-          "expiresAt"
-        ]
-      },
-      "PairingExchange": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string",
-            "pattern": "^[0-9]{6}$"
-          }
-        },
-        "required": [
-          "code"
-        ]
-      },
-      "DeviceToken": {
-        "type": "object",
-        "properties": {
-          "deviceId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "token": {
-            "type": "string"
-          },
-          "role": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "deviceId",
-          "token",
-          "role"
-        ]
-      },
-      "DelegateInput": {
-        "type": "object",
-        "properties": {
-          "nickname": {
-            "type": "string"
-          },
-          "relationship": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "nickname"
-        ]
-      },
-      "Delegate": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "nickname": {
-            "type": "string"
-          },
-          "active": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "nickname",
-          "active"
-        ]
-      },
-      "Drug": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string"
-          },
-          "ingredients": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "name"
-        ]
-      },
-      "PrescriptionItem": {
-        "type": "object",
-        "properties": {
-          "originalName": {
-            "type": "string",
-            "minLength": 1
-          },
-          "drugId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "quantity": {
-            "type": "number",
-            "exclusiveMinimum": true,
-            "minimum": 0
-          },
-          "unit": {
-            "type": "string"
-          },
-          "slots": {
-            "type": "array",
-            "minItems": 1,
-            "uniqueItems": true,
-            "items": {
-              "type": "string",
-              "enum": [
-                "morning",
-                "noon",
-                "evening"
-              ]
-            }
-          },
-          "note": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "originalName",
-          "quantity",
-          "unit",
-          "slots"
-        ]
-      },
-      "PrescriptionInput": {
-        "type": "object",
-        "properties": {
-          "issuedOn": {
-            "type": "string",
-            "format": "date"
-          },
-          "startsOn": {
-            "type": "string",
-            "format": "date"
-          },
-          "endsOn": {
-            "type": "string",
-            "format": "date"
-          },
-          "items": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "$ref": "#/components/schemas/PrescriptionItem"
-            }
-          }
-        },
-        "required": [
-          "issuedOn",
-          "startsOn",
-          "endsOn",
-          "items"
-        ]
-      },
-      "Prescription": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "draft",
-              "active",
-              "replaced",
-              "cancelled"
-            ]
-          },
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PrescriptionItem"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "status",
-          "items"
-        ]
-      },
-      "Job": {
-        "type": "object",
-        "properties": {
-          "jobId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "queued",
-              "ready",
-              "failed"
-            ]
-          }
-        },
-        "required": [
-          "jobId",
-          "status"
-        ]
-      },
-      "Ok": {
-        "type": "object",
-        "properties": {
-          "ok": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "ok"
-        ]
-      },
-      "Dose": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "scheduledAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "deadline": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "scheduled",
-              "pending",
-              "taken",
-              "proxy",
-              "late",
-              "missed",
-              "cancelled"
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "scheduledAt",
-          "deadline",
-          "status"
-        ]
-      },
-      "ConfirmationInput": {
-        "type": "object",
-        "properties": {
-          "tookAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "correctsId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "reason": {
-            "type": "string"
-          }
-        }
-      },
-      "Confirmation": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "doseId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "role": {
-            "type": "string",
-            "enum": [
-              "patient",
-              "delegate"
-            ]
-          },
-          "tookAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "taken",
-              "proxy",
-              "late"
-            ]
-          },
-          "duplicate": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "doseId",
-          "role",
-          "tookAt",
-          "status"
-        ]
-      },
-      "Summary": {
-        "type": "object",
-        "properties": {
-          "days": {
-            "type": "integer",
-            "enum": [
-              7,
-              30,
-              90
-            ]
-          },
-          "total": {
-            "type": "integer"
-          },
-          "taken": {
-            "type": "integer"
-          },
-          "proxy": {
-            "type": "integer"
-          },
-          "late": {
-            "type": "integer"
-          },
-          "rate": {
-            "type": "number",
-            "nullable": true
-          }
-        },
-        "required": [
-          "days",
-          "total",
-          "taken",
-          "proxy",
-          "late",
-          "rate"
-        ]
-      },
-      "Alert": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "type": {
-            "type": "string"
-          },
-          "message": {
-            "type": "string"
-          },
-          "read": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "type",
-          "message",
-          "read"
-        ]
-      },
-      "LabInput": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "enum": [
-              "hba1c",
-              "fasting",
-              "postmeal"
-            ]
-          },
-          "value": {
-            "type": "number",
-            "minimum": 0,
-            "exclusiveMinimum": true
-          },
-          "unit": {
-            "type": "string"
-          },
-          "date": {
-            "type": "string",
-            "format": "date"
-          }
-        },
-        "required": [
-          "type",
-          "value",
-          "unit",
-          "date"
-        ]
-      },
-      "LabResult": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "type": {
-            "type": "string"
-          },
-          "value": {
-            "type": "number"
-          },
-          "unit": {
-            "type": "string"
-          },
-          "date": {
-            "type": "string",
-            "format": "date"
-          }
-        },
-        "required": [
-          "id",
-          "type",
-          "value",
-          "unit",
-          "date"
-        ]
-      },
-      "AppointmentInput": {
-        "type": "object",
-        "properties": {
-          "date": {
-            "type": "string",
-            "format": "date"
-          },
-          "remindDays": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 30
-          },
-          "note": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "date",
-          "remindDays"
-        ]
-      },
-      "Appointment": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "date": {
-            "type": "string",
-            "format": "date"
-          },
-          "remindDays": {
-            "type": "integer"
-          },
-          "note": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "date",
-          "remindDays"
-        ]
-      },
-      "ReportInput": {
-        "type": "object",
-        "properties": {
-          "periodStart": {
-            "type": "string",
-            "format": "date"
-          },
-          "periodEnd": {
-            "type": "string",
-            "format": "date"
-          }
-        },
-        "required": [
-          "periodStart",
-          "periodEnd"
-        ]
-      },
-      "Report": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "queued",
-              "ready",
-              "failed"
-            ]
-          },
-          "downloadUrl": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "status"
-        ]
-      },
-      "Audit": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "timestamp": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "actorId": {
-            "type": "string"
-          },
-          "actionType": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "timestamp",
-          "actorId",
-          "actionType",
-          "status"
-        ]
-      }
-    }
-  }
-}
+openapi: 3.0.3
+info:
+  title: API Hệ thống hỗ trợ theo dõi điều trị ngoại trú ĐTĐ type 2
+  version: 1.0.0-sprint1
+  description: |
+    Đặc tả giao diện lập trình phiên bản 1 cho hệ thống hỗ trợ người chăm sóc theo dõi
+    điều trị ngoại trú bệnh nhân cao tuổi mắc đái tháo đường type 2 (Nhóm N01-01).
+
+    Hai cơ chế xác thực:
+    - `caregiverAuth`: JWT cấp cho người chăm sóc sau khi đăng nhập (Web App).
+    - `deviceAuth`: token thiết bị cấp sau khi ghép nối bằng mã một lần (Mobile App,
+      chế độ bệnh nhân hoặc người nhà). Phía bệnh nhân không đăng nhập bằng mật khẩu.
+
+    Mọi lỗi trả về theo schema `Error`. Mọi thao tác ghi đều sinh bản ghi nhật ký (FR-18).
+  contact:
+    name: Nhóm N01-01, Kỹ thuật phần mềm ứng dụng, ĐHBK Hà Nội
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Máy chủ mock phục vụ Frontend lập trình song song
+tags:
+  - name: Auth
+    description: Tài khoản người chăm sóc
+  - name: Patients
+    description: Hồ sơ bệnh nhân
+  - name: Devices
+    description: Ghép nối thiết bị bệnh nhân và người nhà
+  - name: Delegates
+    description: Ủy quyền người nhà
+  - name: Drugs
+    description: Danh mục thuốc chuẩn
+  - name: Prescriptions
+    description: Đơn thuốc
+  - name: Doses
+    description: Cữ thuốc và xác nhận
+  - name: Adherence
+    description: Tổng hợp tuân thủ và cảnh báo
+  - name: Clinical
+    description: Chỉ số xét nghiệm và lịch tái khám
+  - name: Reports
+    description: Báo cáo PDF
+  - name: Audit
+    description: Nhật ký thao tác
+
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Đăng ký tài khoản người chăm sóc
+      operationId: register
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '201':
+          description: Tạo tài khoản thành công
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Caregiver' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Đăng nhập người chăm sóc
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200':
+          description: Đăng nhập thành công
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TokenPair' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Làm mới access token
+      operationId: refreshToken
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        '200':
+          description: Token mới
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TokenPair' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /patients:
+    get:
+      tags: [Patients]
+      summary: Danh sách bệnh nhân người chăm sóc đang theo dõi
+      operationId: listPatients
+      responses:
+        '200':
+          description: Danh sách hồ sơ
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Patient' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Patients]
+      summary: Tạo hồ sơ bệnh nhân
+      operationId: createPatient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PatientCreate' }
+      responses:
+        '201':
+          description: Tạo hồ sơ thành công
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Patient' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /patients/{patientId}:
+    parameters:
+      - $ref: '#/components/parameters/PatientId'
+    get:
+      tags: [Patients]
+      summary: Xem hồ sơ bệnh nhân
+      operationId: getPatient
+      responses:
+        '200':
+          description: Hồ sơ bệnh nhân
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Patient' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Patients]
+      summary: Cập nhật hồ sơ và mốc giờ nhắc mặc định
+      operationId: updatePatient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PatientUpdate' }
+      responses:
+        '200':
+          description: Hồ sơ sau cập nhật
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Patient' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /patients/{patientId}/pairing-codes:
+    parameters:
+      - $ref: '#/components/parameters/PatientId'
+    post:
+      tags: [Devices]
+      summary: Sinh mã ghép nối một lần cho thiết bị bệnh nhân hoặc người nhà
+      operationId: createPairingCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role: { $ref: '#/components/schemas/DeviceRole' }
+                delegateId:
+                  type: string
+                  format: uuid
+                  description: Bắt buộc khi role = DELEGATE
+      responses:
+        '201':
+          description: Mã ghép nối, hiệu lực ngắn
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PairingCode' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /devices/pair:
+    post:
+      tags: [Devices]
+      summary: Thiết bị đổi mã ghép nối lấy token thiết bị
+      operationId: pairDevice
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DevicePairRequest' }
+      responses:
+        '200':
+          description: Ghép nối thành công
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DeviceToken' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '410':
+          description: Mã ghép nối đã hết hạn hoặc đã dùng
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /patients/{patientId}/delegates:
+    parameters:
+      - $ref: '#/components/parameters/PatientId'
+    get:
+      tags: [Delegates]
+      summary: Danh sách người nhà được ủy quyền
+      operationId: listDelegates
+      responses:
+        '200':
+          description: Danh sách ủy quyền
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Delegate' }
+    post:
+      tags: [Delegates]
+      summary: Ủy quyền người nhà xác nhận hộ
+      operationId: createDelegate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DelegateCreate' }
+      responses:
+        '201':
+          description: Ủy quyền thành công
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Delegate' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /patients/{patientId}/delegates/{delegateId}:
+    parameters:
+      - $ref: '#/components/parameters/PatientId'
+      - name: delegateId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    delete:
+      tags: [Delegates]
+      summary: Thu hồi ủy quyền và vô hiệu token thiết bị liên quan
+      operationId: revokeDelegate
+      responses:
+        '204': { description: Đã thu hồi }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /drugs:
+    get:
+      tags: [Drugs]
+      summary: Gợi ý tên thuốc từ danh mục chuẩn
+      operationId: searchDrugs
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Chuỗi người dùng đang gõ, tối thiểu 2 ký tự
+          schema: { type: string, minLength: 2 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 20, default: 10 }
+      responses:
+        '200':
+          description: Danh sách gợi ý, sắp theo độ khớp
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Drug' }
+
+  /patients/{patientId}/prescriptions:
+    parameters:
+      - $ref: '#/components/parameters/PatientId'
+    get:
+      tags: [Prescriptions]
+      summary: Danh sách đơn thuốc của bệnh nhân
+      operationId: listPrescriptions
+      parameters:
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/PrescriptionStatus' }
+      responses:
+        '200':
+          description: Danh sách đơn
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Prescription' }
+    post:
+      tags: [Prescriptions]
+      summary: Tạo đơn thuốc ở trạng thái Nháp
+      operationId: createPrescription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PrescriptionInput' }
+      responses:
+        '201':
+          description: Đơn nháp đã tạo, chưa sinh cữ thuốc
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Prescription' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /prescriptions/{prescriptionId}:
+    parameters:
+      - $ref: '#/components/parameters/PrescriptionId'
+    get:
+      tags: [Prescriptions]
+      summary: Xem chi tiết đơn thuốc
+      operationId: getPrescription
+      responses:
+        '200':
+          description: Chi tiết đơn
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Prescription' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Prescriptions]
+      summary: Sửa đơn thuốc, chỉ cho phép khi đơn ở trạng thái Nháp
+      operationId: updatePrescription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PrescriptionInput' }
+      responses:
+        '200':
+          description: Đơn sau cập nhật
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Prescription' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /prescriptions/{prescriptionId}/confirm:
+    parameters:
+      - $ref: '#/components/parameters/PrescriptionId'
+    post:
+      tags: [Prescriptions]
+      summary: Xác nhận đơn, chuyển sang Hiệu lực và sinh lịch cữ thuốc
+      description: |
+        Đơn Hiệu lực trước đó của cùng bệnh nhân chuyển sang Bị thay thế; các cữ thuốc
+        tương lai của đơn cũ chuyển sang Đã hủy (FR-04). Việc sinh cữ chạy bất đồng bộ.
+      operationId: confirmPrescription
+      responses:
+        '202':
+          description: Đã xác nhận, đang sinh lịch cữ thuốc
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Prescription' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /prescriptions/{prescriptionId}/cancel:
+    parameters:
+      - $ref: '#/components/parameters/PrescriptionId'
+    post:
+      tags: [Prescriptions]
+      summary: Hủy đơn nháp
+      operationId: cancelPrescription
+      responses:
+        '200':
+          description: Đơn đã hủy
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Prescription' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /patients/{patientId}/doses:
+    parameters:
+      - $ref: '#/components/parameters/PatientId'
+    get:
+      tags: [Doses]
+      summary: Tra cứu cữ thuốc theo khoảng ngày và trạng thái
+      operationId: listDoses
+      parameters:
+        - { name: from, in: query, required: true, schema: { type: string, format: date } }
+        - { name: to, in: query, required: true, schema: { type: string, format: date } }
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/DoseStatus' }
+      responses:
+        '200':
+          description: Danh sách cữ thuốc
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Dose' }
+  /device/doses/today:
+    get:
+      tags: [Doses]
+      summary: Cữ thuốc hôm nay cho màn hình chế độ đơn giản
+      operationId: listTodayDosesForDevice
+      security:
+        - deviceAuth: []
+      responses:
+        '200':
+          description: Cữ thuốc trong ngày của bệnh nhân gắn với thiết bị
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Dose' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /doses/{doseId}/confirmations:
+    parameters:
+      - name: doseId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      tags: [Doses]
+      summary: Xác nhận đã uống thuốc bằng một chạm
+      description: |
+        Người thực hiện được suy ra từ token thiết bị: PATIENT cho ra trạng thái Đã uống,
+        DELEGATE cho ra Đã uống (hộ). Xác nhận sau thời hạn cho ra Xác nhận muộn.
+        Bản ghi xác nhận không sửa được; đính chính bằng bản ghi mới (FR-15).
+      operationId: confirmDose
+      security:
+        - deviceAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConfirmationCreate' }
+      responses:
+        '201':
+          description: Đã ghi nhận xác nhận
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Confirmation' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+
+  /patients/{patientId}/adherence/summary:
+    parameters:
+      - $ref: '#/components/parameters/PatientId'
+    get:
+      tags: [Adherence]
+      summary: Tổng hợp tỷ lệ tuân thủ theo kỳ
+      operationId: getAdherenceSummary
+      parameters:
+        - name: days
+          in: query
+          schema: { type: integer, enum: [7, 30, 90], default: 30 }
+      responses:
+        '200':
+          description: Số liệu tuân thủ
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdherenceSummary' }
+  /patients/{patientId}/alerts:
+    parameters:
+      - $ref: '#/components/parameters/PatientId'
+    get:
+      tags: [Adherence]
+      summary: Danh sách cảnh báo; bản thời gian thực đẩy qua WSS /ws/alerts
+      operationId: listAlerts
+      parameters:
+        - name: unreadOnly
+          in: query
+          schema: { type: boolean, default: false }
+      responses:
+        '200':
+          description: Danh sách cảnh báo
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Alert' }
+
+  /patients/{patientId}/lab-results:
+    parameters:
+      - $ref: '#/components/parameters/PatientId'
+    get:
+      tags: [Clinical]
+      summary: Lịch sử chỉ số xét nghiệm
+      operationId: listLabResults
+      responses:
+        '200':
+          description: Danh sách chỉ số
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/LabResult' }
+    post:
+      tags: [Clinical]
+      summary: Ghi nhận chỉ số xét nghiệm sau đợt khám
+      operationId: createLabResult
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LabResultCreate' }
+      responses:
+        '201':
+          description: Đã ghi nhận
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LabResult' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /patients/{patientId}/appointments:
+    parameters:
+      - $ref: '#/components/parameters/PatientId'
+    get:
+      tags: [Clinical]
+      summary: Danh sách lịch tái khám
+      operationId: listAppointments
+      responses:
+        '200':
+          description: Danh sách lịch hẹn
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Appointment' }
+    post:
+      tags: [Clinical]
+      summary: Thêm lịch hẹn tái khám
+      operationId: createAppointment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AppointmentCreate' }
+      responses:
+        '201':
+          description: Đã thêm lịch hẹn
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Appointment' }
+
+  /patients/{patientId}/reports:
+    parameters:
+      - $ref: '#/components/parameters/PatientId'
+    post:
+      tags: [Reports]
+      summary: Yêu cầu dựng báo cáo PDF, xử lý bất đồng bộ
+      operationId: requestReport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [periodDays]
+              properties:
+                periodDays: { type: integer, enum: [30, 60, 90], default: 30 }
+      responses:
+        '202':
+          description: Đã nhận yêu cầu
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReportJob' }
+  /reports/{reportId}:
+    get:
+      tags: [Reports]
+      summary: Trạng thái và đường dẫn tải báo cáo
+      operationId: getReport
+      parameters:
+        - name: reportId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Thông tin báo cáo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReportJob' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /patients/{patientId}/audit-logs:
+    parameters:
+      - $ref: '#/components/parameters/PatientId'
+    get:
+      tags: [Audit]
+      summary: Tra cứu nhật ký thao tác trên hồ sơ
+      operationId: listAuditLogs
+      parameters:
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: size, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+      responses:
+        '200':
+          description: Trang nhật ký
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/AuditLog' }
+                  page: { type: integer }
+                  size: { type: integer }
+                  total: { type: integer }
+
+security:
+  - caregiverAuth: []
+
+components:
+  securitySchemes:
+    caregiverAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    deviceAuth:
+      type: http
+      scheme: bearer
+      description: Token thiết bị cấp qua /devices/pair
+  parameters:
+    PatientId:
+      name: patientId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    PrescriptionId:
+      name: prescriptionId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  responses:
+    BadRequest:
+      description: Dữ liệu đầu vào không hợp lệ
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Thiếu hoặc sai token
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Không có quyền trên hồ sơ này
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Không tìm thấy tài nguyên
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: Xung đột trạng thái
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unprocessable:
+      description: Vi phạm luật nghiệp vụ
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string, example: DOSE_ALREADY_CONFIRMED }
+        message: { type: string, example: Cữ thuốc này đã được xác nhận }
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              issue: { type: string }
+    RegisterRequest:
+      type: object
+      required: [email, password, displayName]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, format: password, minLength: 8 }
+        displayName: { type: string, maxLength: 100 }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, format: password }
+    TokenPair:
+      type: object
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        expiresIn: { type: integer, example: 900 }
+    Caregiver:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        displayName: { type: string }
+        createdAt: { type: string, format: date-time }
+    PatientCreate:
+      type: object
+      required: [alias, birthYear]
+      properties:
+        alias:
+          type: string
+          maxLength: 50
+          description: Tên gọi trong gia đình, không dùng họ tên thật (Zero PII)
+          example: Bố
+        birthYear: { type: integer, minimum: 1920, maximum: 2010 }
+        reminderTimes:
+          type: array
+          description: Mốc giờ nhắc mặc định theo buổi
+          items: { $ref: '#/components/schemas/ReminderTime' }
+    PatientUpdate:
+      type: object
+      properties:
+        alias: { type: string, maxLength: 50 }
+        reminderTimes:
+          type: array
+          items: { $ref: '#/components/schemas/ReminderTime' }
+        missedThresholdMinutes:
+          type: integer
+          minimum: 15
+          maximum: 360
+          description: Ngưỡng chuyển sang Bỏ lỡ, chờ kiểm chứng với bác sĩ
+    Patient:
+      allOf:
+        - $ref: '#/components/schemas/PatientCreate'
+        - type: object
+          properties:
+            id: { type: string, format: uuid }
+            missedThresholdMinutes: { type: integer, example: 120 }
+            pairedDevice: { type: boolean }
+            createdAt: { type: string, format: date-time }
+    ReminderTime:
+      type: object
+      required: [slot, time]
+      properties:
+        slot: { $ref: '#/components/schemas/TimeSlot' }
+        time: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$', example: '07:00' }
+    TimeSlot:
+      type: string
+      enum: [MORNING, NOON, AFTERNOON, EVENING]
+    DeviceRole:
+      type: string
+      enum: [PATIENT, DELEGATE]
+    PairingCode:
+      type: object
+      properties:
+        code: { type: string, example: '482913' }
+        role: { $ref: '#/components/schemas/DeviceRole' }
+        expiresAt: { type: string, format: date-time }
+    DevicePairRequest:
+      type: object
+      required: [code, pushToken, platform]
+      properties:
+        code: { type: string, pattern: '^\d{6}$' }
+        pushToken: { type: string, description: Token FCM hoặc APNs }
+        platform: { type: string, enum: [ANDROID, IOS] }
+    DeviceToken:
+      type: object
+      properties:
+        deviceToken: { type: string }
+        role: { $ref: '#/components/schemas/DeviceRole' }
+        patientAlias: { type: string, example: Bố }
+    DelegateCreate:
+      type: object
+      required: [alias, relation]
+      properties:
+        alias: { type: string, maxLength: 50, example: Mẹ }
+        relation: { type: string, maxLength: 50, example: Vợ bệnh nhân }
+    Delegate:
+      allOf:
+        - $ref: '#/components/schemas/DelegateCreate'
+        - type: object
+          properties:
+            id: { type: string, format: uuid }
+            active: { type: boolean }
+            createdAt: { type: string, format: date-time }
+    Drug:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        brandName: { type: string, example: Glucophage 500mg }
+        activeIngredients:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string, example: metformin }
+              strength: { type: string, example: 500 mg }
+        dosageForm: { type: string, example: Viên nén bao phim }
+        registrationNo: { type: string, description: Số đăng ký lưu hành }
+    PrescriptionStatus:
+      type: string
+      enum: [DRAFT, ACTIVE, EXPIRED, SUPERSEDED, CANCELLED]
+    PrescriptionItemInput:
+      type: object
+      required: [drugNameRaw, unitsPerDose, slots]
+      properties:
+        drugId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Có giá trị khi người dùng chọn từ gợi ý danh mục
+        drugNameRaw:
+          type: string
+          maxLength: 200
+          description: Tên thuốc đúng như ghi trên đơn
+        unitsPerDose: { type: number, minimum: 0.25, example: 1 }
+        unit: { type: string, example: viên }
+        slots:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/TimeSlot' }
+        instruction: { type: string, maxLength: 200, example: Uống sau ăn }
+    PrescriptionInput:
+      type: object
+      required: [issuedDate, startDate, nextVisitDate, items]
+      properties:
+        issuedDate: { type: string, format: date }
+        startDate: { type: string, format: date }
+        nextVisitDate: { type: string, format: date }
+        sourceNote:
+          type: string
+          maxLength: 200
+          description: Nguồn tra cứu đơn, ví dụ hệ thống số hóa của bệnh viện
+        items:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/PrescriptionItemInput' }
+    Prescription:
+      allOf:
+        - $ref: '#/components/schemas/PrescriptionInput'
+        - type: object
+          properties:
+            id: { type: string, format: uuid }
+            patientId: { type: string, format: uuid }
+            status: { $ref: '#/components/schemas/PrescriptionStatus' }
+            confirmedAt: { type: string, format: date-time, nullable: true }
+            warnings:
+              type: array
+              description: Cảnh báo từ Rule Engine, ví dụ trùng hoạt chất
+              items: { type: string }
+    DoseStatus:
+      type: string
+      enum: [SCHEDULED, PENDING, TAKEN, TAKEN_BY_DELEGATE, MISSED, LATE_CONFIRMED, CANCELLED]
+    Dose:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        prescriptionItemId: { type: string, format: uuid }
+        drugDisplayName: { type: string, example: Glucophage 500mg }
+        unitsPerDose: { type: number }
+        scheduledAt: { type: string, format: date-time }
+        deadlineAt: { type: string, format: date-time }
+        status: { $ref: '#/components/schemas/DoseStatus' }
+        lastConfirmation:
+          allOf:
+            - $ref: '#/components/schemas/Confirmation'
+          nullable: true
+    ConfirmationCreate:
+      type: object
+      properties:
+        takenAt:
+          type: string
+          format: date-time
+          description: Mặc định là thời điểm máy chủ nhận yêu cầu
+        correctsConfirmationId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Dùng khi đính chính một xác nhận bấm nhầm
+    Confirmation:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        doseId: { type: string, format: uuid }
+        actorRole: { $ref: '#/components/schemas/DeviceRole' }
+        actorId: { type: string, format: uuid }
+        takenAt: { type: string, format: date-time }
+        recordedAt: { type: string, format: date-time }
+        resultingStatus: { $ref: '#/components/schemas/DoseStatus' }
+    AdherenceSummary:
+      type: object
+      properties:
+        fromDate: { type: string, format: date }
+        toDate: { type: string, format: date }
+        totalDoses: { type: integer }
+        taken: { type: integer }
+        takenByDelegate: { type: integer }
+        lateConfirmed: { type: integer }
+        missed: { type: integer }
+        adherenceRate:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Công thức tính chờ chốt cách xử lý Xác nhận muộn
+    Alert:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        type: { type: string, enum: [DOSE_MISSED, VISIT_UPCOMING, DUPLICATE_INGREDIENT] }
+        message: { type: string }
+        relatedDoseId: { type: string, format: uuid, nullable: true }
+        createdAt: { type: string, format: date-time }
+        read: { type: boolean }
+    LabTestType:
+      type: string
+      enum: [FASTING_GLUCOSE, HBA1C, POSTPRANDIAL_GLUCOSE, OTHER]
+    LabResultCreate:
+      type: object
+      required: [testType, value, unit, testedDate]
+      properties:
+        testType: { $ref: '#/components/schemas/LabTestType' }
+        value: { type: number, minimum: 0 }
+        unit: { type: string, example: mmol/L }
+        testedDate: { type: string, format: date }
+        note: { type: string, maxLength: 200 }
+    LabResult:
+      allOf:
+        - $ref: '#/components/schemas/LabResultCreate'
+        - type: object
+          properties:
+            id: { type: string, format: uuid }
+            createdAt: { type: string, format: date-time }
+    AppointmentCreate:
+      type: object
+      required: [visitDate]
+      properties:
+        visitDate: { type: string, format: date }
+        remindDaysBefore: { type: integer, minimum: 0, maximum: 14, default: 2 }
+        note: { type: string, maxLength: 200 }
+    Appointment:
+      allOf:
+        - $ref: '#/components/schemas/AppointmentCreate'
+        - type: object
+          properties:
+            id: { type: string, format: uuid }
+            status: { type: string, enum: [UPCOMING, DONE, MISSED] }
+    ReportJob:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        status: { type: string, enum: [QUEUED, PROCESSING, READY, FAILED] }
+        periodDays: { type: integer }
+        downloadUrl: { type: string, format: uri, nullable: true }
+        createdAt: { type: string, format: date-time }
+    AuditLog:
+      type: object
+      description: Cấu trúc bắt buộc theo FR-18
+      properties:
+        timestamp: { type: string, format: date-time }
+        userId: { type: string, format: uuid }
+        actionType: { type: string, example: DOSE_CONFIRMED }
+        status: { type: string, enum: [SUCCESS, FAILURE] }
+        targetType: { type: string, example: Dose }
+        targetId: { type: string, format: uuid }

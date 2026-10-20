@@ -1,2 +1,3 @@
-# Preserve provided artwork and diagram sources byte-for-byte across platforms.
+# Keep supplied document assets byte-for-byte, including original line endings.
 docs/architecture/** -text -whitespace
+docs/api/openapi.yaml -text -whitespace

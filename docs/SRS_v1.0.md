@@ -1,52 +1,13 @@
-# SRS v1.0 — An Tâm
+# SRS v1.0 — Nội dung trích từ báo cáo tuần 6
 
-Ngày đóng gói: 20/10/2026 · Trạng thái: đặc tả mục tiêu và đối chiếu bản local; chờ nhóm review.
+Nguồn: `KTPMUD/output/N01-01_Phùng Tuấn Tài_20_Trần Đức Trí_65_Trần Nguyễn Phúc Bình_Tuần 6.docx`. Ngày chuyển định dạng: 20/10/2026.
 
-## 1. Giới thiệu
+**Đây là bản chuyển các bảng đặc tả và ràng buộc có sẵn sang Markdown, không bổ sung yêu cầu hoặc tự hoàn thiện phần còn thiếu.** Nội dung là đặc tả trong báo cáo, chưa đồng nghĩa với chức năng đã triển khai. Hiện trạng ứng dụng xem [README](../README.md); nguồn từng tệp xem [SOURCES.md](SOURCES.md).
 
-### 1.1 Mục đích
-Đặc tả hệ thống hỗ trợ người chăm sóc theo dõi điều trị ngoại trú cho bệnh nhân đái tháo đường type 2. Tài liệu dùng làm cơ sở thiết kế, triển khai và kiểm thử; không phải xác nhận mọi yêu cầu đã đạt.
+Báo cáo có 4 mục tiêu BIZ, 17 US, danh sách 13 UC, 20 FR, 11 NFR và 7 BR. Các mục chi tiết UC dưới đây chỉ gồm những bảng đã có trong báo cáo, không tự soạn thêm bảng cho các UC còn lại.
 
-### 1.2 Phạm vi
-Người chăm sóc nhập và xác nhận đơn, quản lý hồ sơ, ghép thiết bị, theo dõi ghi nhận, chỉ số và lịch tái khám. Bệnh nhân tự xác nhận; người nhà được ủy quyền xác nhận hộ. Hệ thống nhắc và cảnh báo, xuất lịch sử 30 ngày. Không OCR, không tích hợp dữ liệu bệnh viện, không tự sửa đơn hoặc đưa ra quyết định điều trị. AI chỉ là hướng nghiên cứu dự kiến; bản local chưa dùng AI.
+## Ràng buộc nghiệp vụ
 
-### 1.3 Thuật ngữ
-BIZ: mục tiêu nghiệp vụ; US: câu chuyện người dùng; UC: ca sử dụng; FR: yêu cầu chức năng; NFR: yêu cầu chất lượng; BR: ràng buộc nghiệp vụ; RTM: ma trận truy vết; NCS: người chăm sóc. M/S/C là Must/Should/Could.
-
-### 1.4 Nguồn
-[SOURCES.md](SOURCES.md) ghi tên báo cáo, dấu kiểm tra tệp và nguồn bổ sung. [README](../README.md) mô tả bản chạy thực tế.
-
-## 2. Mô tả tổng quan
-
-Bản local: React + Express + SQLite, cookie phiên, lịch nền cùng tiến trình; chỉ chạy loopback. Thiết kế mục tiêu: web/mobile, Gateway, backend, PostgreSQL, hàng đợi và worker. Không đồng nhất hai trạng thái này. [Gap Matrix](GAP_MATRIX.md) mô tả các phần chưa đạt.
-
-### 2.1 Các bên liên quan
-| Nhóm | Đối tượng | Vai trò với hệ thống | Nỗi đau chính |
-| --- | --- | --- | --- |
-| Customer | Người con (người chăm sóc chính) | Quyết định sử dụng, thiết lập và quản trị hồ sơ | Không biết bố mẹ đã uống thuốc chưa; phải gọi hỏi lặp lại |
-| End-user trực tiếp | Người con | Nhập đơn, giám sát, nhận cảnh báo, xuất báo cáo | Mất thời gian, thông tin thiếu chính xác |
-| End-user trực tiếp | Bệnh nhân cao tuổi | Nhận nhắc, xác nhận một chạm | Hay quên liều, ngại công nghệ, sợ làm phiền con |
-| End-user trực tiếp | Người nhà sống cùng | Xác nhận hộ, nhận cảnh báo tại chỗ | Nhắc trùng với người khác, không rõ trách nhiệm |
-| Hưởng lợi gián tiếp | Bác sĩ điều trị | Đọc báo cáo do người chăm sóc mang tới | Thiếu số liệu tuân thủ khách quan |
-
-### 2.2 Vai trò
-| Người dùng thật | Vai trò trong hệ thống | Use case |
-| --- | --- | --- |
-| Người con (người chăm sóc chính) | Quản trị hồ sơ; nhập và xác nhận đơn thuốc; giám sát; nhận cảnh báo; xuất báo cáo | UC-01 đến UC-06, UC-09, UC-11, UC-13 |
-| Bệnh nhân cao tuổi | Nhận nhắc nhở; xác nhận đã uống | UC-07 |
-| Người nhà sống cùng | Xác nhận hộ; nhận cảnh báo tại chỗ | UC-08 |
-| Bác sĩ điều trị | Đọc báo cáo do người chăm sóc mang tới; nằm ngoài hệ thống | Không có |
-| Bộ lập lịch (tác nhân thời gian) | Kích hoạt nhắc nhở, chuyển trạng thái quá hạn, nhắc tái khám | UC-10, UC-12 |
-
-### 2.3 Mục tiêu nghiệp vụ
-| Mã | Mục tiêu nghiệp vụ đo được |
-| --- | --- |
-| BIZ-01 | Hỗ trợ cải thiện việc ghi nhận và theo dõi cữ thuốc trong chu kỳ 30 ngày. Chỉ tiêu mục tiêu X% và cách tính cần chốt; dữ liệu tự xác nhận không tự chứng minh bệnh nhân đã uống thuốc hoặc hiệu quả điều trị. |
-| BIZ-02 | Rút ngắn thời gian người chăm sóc cần để nắm tình hình điều trị, từ gọi điện hỏi nhiều lần mỗi tuần xuống một lần mở ứng dụng. |
-| BIZ-03 | Cung cấp lịch sử ghi nhận 30 ngày, phân biệt bệnh nhân tự xác nhận, xác nhận hộ và xác nhận muộn để bác sĩ tham khảo tại tái khám. |
-| BIZ-04 | Giảm rào cản công nghệ cho bệnh nhân cao tuổi: không đăng nhập, không nhập liệu, tối đa một thao tác cho mỗi cữ thuốc. |
-
-### 2.4 Ràng buộc nghiệp vụ
 - BR-01. Mỗi người chăm sóc quản lý một hoặc nhiều bệnh nhân; ở phiên bản 1, mỗi bệnh nhân có đúng một người chăm sóc chính.
 - BR-02. Tại mỗi thời điểm, một bệnh nhân có tối đa một đơn thuốc ở trạng thái Hiệu lực.
 - BR-03. Chỉ đơn ở trạng thái Hiệu lực mới sinh cữ thuốc; khi đơn mới được xác nhận, đơn cũ chuyển sang Bị thay thế và các cữ tương lai của đơn cũ chuyển sang Đã hủy.
@@ -55,11 +16,135 @@ Bản local: React + Express + SQLite, cookie phiên, lịch nền cùng tiến 
 - BR-06. Mỗi xác nhận ghi rõ vai trò và định danh người thực hiện.
 - BR-07. Hệ thống không lưu định danh thật: bệnh nhân chỉ có tên gọi trong gia đình và năm sinh.
 
-### 2.5 Giả định và giới hạn
-Ngưỡng 120 phút là dữ liệu thử; mục tiêu X% chưa được chốt. Khảo sát nhỏ mang tính định hướng, chưa có ý kiến bác sĩ/dược sĩ. Không suy diễn tự xác nhận thành bằng chứng đã uống thuốc. Token, push, Android, hiệu năng và độ phủ cần kết quả đo. Lịch Sprint cần nhóm thống nhất với giảng viên.
+## Các bên liên quan
 
-## 3. Yêu cầu cụ thể
-### 3.1 User story
+*Nguồn: Bảng 9 trong báo cáo tuần 6.*
+
+| Nhóm | Đối tượng | Vai trò với hệ thống | Nỗi đau chính |
+| --- | --- | --- | --- |
+| Customer | Người con (người chăm sóc chính) | Quyết định sử dụng, thiết lập và quản trị hồ sơ | Không biết bố mẹ đã uống thuốc chưa; phải gọi hỏi lặp lại |
+| End-user trực tiếp | Người con | Nhập đơn, giám sát, nhận cảnh báo, xuất báo cáo | Mất thời gian, thông tin thiếu chính xác |
+| End-user trực tiếp | Bệnh nhân cao tuổi | Nhận nhắc, xác nhận một chạm | Hay quên liều, ngại công nghệ, sợ làm phiền con |
+| End-user trực tiếp | Người nhà sống cùng | Xác nhận hộ, nhận cảnh báo tại chỗ | Nhắc trùng với người khác, không rõ trách nhiệm |
+| Hưởng lợi gián tiếp | Bác sĩ điều trị | Đọc báo cáo do người chăm sóc mang tới | Thiếu số liệu tuân thủ khách quan |
+
+## Vai trò trong hệ thống
+
+*Nguồn: Bảng 5 trong báo cáo tuần 6.*
+
+| Người dùng thật | Vai trò trong hệ thống | Use case |
+| --- | --- | --- |
+| Người con (người chăm sóc chính) | Quản trị hồ sơ; nhập và xác nhận đơn thuốc; giám sát; nhận cảnh báo; xuất báo cáo | UC-01 đến UC-06, UC-09, UC-11, UC-13 |
+| Bệnh nhân cao tuổi | Nhận nhắc nhở; xác nhận đã uống | UC-07 |
+| Người nhà sống cùng | Xác nhận hộ; nhận cảnh báo tại chỗ | UC-08 |
+| Bác sĩ điều trị | Đọc báo cáo do người chăm sóc mang tới; nằm ngoài hệ thống | Không có |
+| Bộ lập lịch (tác nhân thời gian) | Kích hoạt nhắc nhở, chuyển trạng thái quá hạn, nhắc tái khám | UC-10, UC-12 |
+
+## Mục tiêu nghiệp vụ
+
+*Nguồn: Bảng 10 trong báo cáo tuần 6.*
+
+| Mã | Mục tiêu nghiệp vụ đo được |
+| --- | --- |
+| BIZ-01 | Hỗ trợ cải thiện việc ghi nhận và theo dõi cữ thuốc trong chu kỳ 30 ngày. Chỉ tiêu mục tiêu X% và cách tính cần chốt; dữ liệu tự xác nhận không tự chứng minh bệnh nhân đã uống thuốc hoặc hiệu quả điều trị. |
+| BIZ-02 | Rút ngắn thời gian người chăm sóc cần để nắm tình hình điều trị, từ gọi điện hỏi nhiều lần mỗi tuần xuống một lần mở ứng dụng. |
+| BIZ-03 | Cung cấp lịch sử ghi nhận 30 ngày, phân biệt bệnh nhân tự xác nhận, xác nhận hộ và xác nhận muộn để bác sĩ tham khảo tại tái khám. |
+| BIZ-04 | Giảm rào cản công nghệ cho bệnh nhân cao tuổi: không đăng nhập, không nhập liệu, tối đa một thao tác cho mỗi cữ thuốc. |
+
+## Các thực thể dữ liệu
+
+*Nguồn: Bảng 7 trong báo cáo tuần 6.*
+
+| Thực thể | Ý nghĩa | Thuộc tính chính |
+| --- | --- | --- |
+| Người chăm sóc | Tài khoản người con | email, tên hiển thị, mật khẩu băm |
+| Bệnh nhân | Hồ sơ được theo dõi | tên gọi trong gia đình, năm sinh, mốc giờ nhắc, ngưỡng bỏ lỡ |
+| Thiết bị | Điện thoại đã ghép nối | vai trò, push token, nền tảng, trạng thái |
+| Người nhà ủy quyền | Người được xác nhận hộ | tên gọi, quan hệ, trạng thái hiệu lực |
+| Thuốc, Hoạt chất | Danh mục chuẩn | tên biệt dược, số đăng ký; tên hoạt chất, hàm lượng |
+| Đơn thuốc | Một lần kê đơn | ngày kê, ngày bắt đầu, ngày tái khám, trạng thái |
+| Dòng thuốc | Một thuốc trong đơn | tên gốc trên đơn, liên kết danh mục, số đơn vị mỗi lần, buổi uống |
+| Cữ thuốc | Một lần uống dự kiến | thời điểm dự kiến, hạn xác nhận, trạng thái |
+| Xác nhận | Một lần bấm xác nhận | vai trò, người thực hiện, thời điểm uống, thời điểm ghi, bản ghi được đính chính |
+| Cảnh báo | Thông báo cho người chăm sóc | loại, nội dung, đã đọc |
+| Chỉ số, Lịch hẹn | Kết quả xét nghiệm, ngày tái khám | loại xét nghiệm, giá trị, đơn vị, ngày |
+| Nhật ký thao tác | Ghi vết | thời điểm, người dùng, loại thao tác, trạng thái, đối tượng |
+
+## Danh sách Use Case
+
+*Nguồn: Bảng 11 trong báo cáo tuần 6.*
+
+| Mã | Tên use case | Tác nhân chính | FR |
+| --- | --- | --- | --- |
+| UC-01 | Đăng ký, đăng nhập | Người chăm sóc | FR-01 |
+| UC-02 | Tạo hồ sơ bệnh nhân | Người chăm sóc | FR-01 |
+| UC-03 | Ghép nối thiết bị bệnh nhân | Người chăm sóc, Bệnh nhân | FR-02 |
+| UC-04 | Ủy quyền người nhà | Người chăm sóc | FR-03 |
+| UC-05 | Nhập đơn thuốc | Người chăm sóc | FR-04, FR-05 |
+| UC-06 | Xác nhận đơn thuốc | Người chăm sóc | FR-06, FR-07, FR-08 |
+| UC-07 | Xác nhận đã uống thuốc | Bệnh nhân | FR-11, FR-13, FR-14, FR-15 |
+| UC-08 | Xác nhận hộ | Người nhà sống cùng | FR-13, FR-15 |
+| UC-09 | Theo dõi tổng quan tuân thủ | Người chăm sóc | FR-19 |
+| UC-10 | Phát nhắc và phát hiện cữ bỏ lỡ | Bộ lập lịch | FR-09, FR-10, FR-12 |
+| UC-11 | Ghi nhận chỉ số xét nghiệm | Người chăm sóc | FR-16 |
+| UC-12 | Nhắc lịch tái khám | Bộ lập lịch | FR-17 |
+| UC-13 | Xuất báo cáo PDF | Người chăm sóc | FR-20 |
+
+## Đặc tả UC-05 và UC-06
+
+*Nguồn: Bảng 12 trong báo cáo tuần 6.*
+
+| Mục | UC-05 và UC-06: Nhập và xác nhận đơn thuốc |
+| --- | --- |
+| Tác nhân | Người chăm sóc |
+| Tiền điều kiện | Đã đăng nhập; đã có hồ sơ bệnh nhân; người chăm sóc đã tra cứu được đơn thuốc trên hệ thống số hóa của bệnh viện |
+| Luồng chính | 1. Người chăm sóc chọn "Thêm đơn thuốc", nhập ngày kê, ngày bắt đầu, ngày tái khám.<br>2. Với mỗi thuốc, người chăm sóc gõ tên; hệ thống gợi ý từ danh mục chuẩn sau hai ký tự.<br>3. Người chăm sóc chọn gợi ý, nhập số đơn vị mỗi lần và các buổi uống.<br>4. Hệ thống lưu đơn ở trạng thái Nháp.<br>5. Người chăm sóc xem lại toàn bộ đơn và chọn "Xác nhận".<br>6. Hệ thống chuyển đơn sang Hiệu lực, chuyển đơn cũ sang Bị thay thế, hủy các cữ tương lai của đơn cũ, và sinh lịch cữ thuốc tới ngày tái khám. |
+| Luồng thay thế | 2a. Không có gợi ý phù hợp: người chăm sóc giữ tên tự do; dòng thuốc không liên kết danh mục.<br>5a. Thiếu trường bắt buộc: hệ thống từ chối xác nhận và chỉ rõ trường thiếu.<br>5b. Người chăm sóc hủy đơn nháp: đơn chuyển sang Đã hủy, không sinh cữ. |
+| Ngoại lệ | E1. Mất kết nối khi đang nhập: dữ liệu đã nhập được giữ ở trạng thái Nháp, người chăm sóc tiếp tục sau.<br>E2. Đơn đã được xác nhận ở một phiên khác: hệ thống trả mã 409 và hiển thị trạng thái hiện tại của đơn.<br>E3. Danh mục thuốc không phản hồi: hệ thống cho nhập tên tự do và đánh dấu để liên kết danh mục sau. |
+| Hậu điều kiện | Có đúng một đơn Hiệu lực; lịch cữ thuốc đã sinh; thao tác được ghi nhật ký |
+
+## Đặc tả UC-07
+
+*Nguồn: Bảng 13 trong báo cáo tuần 6.*
+
+| Mục | UC-07: Xác nhận đã uống thuốc |
+| --- | --- |
+| Tác nhân | Bệnh nhân cao tuổi |
+| Tiền điều kiện | Thiết bị đã ghép nối với hồ sơ ở vai trò Bệnh nhân; có cữ thuốc ở trạng thái Đang chờ |
+| Luồng chính | 1. Đến giờ, thiết bị phát nhắc nhở bằng âm thanh và màn hình chữ lớn.<br>2. Bệnh nhân mở thông báo, màn hình hiển thị tên thuốc, số viên và một nút "Đã uống".<br>3. Bệnh nhân bấm nút.<br>4. Hệ thống ghi xác nhận, chuyển cữ sang Đã uống, hiển thị "Đã uống lúc hh:mm". |
+| Luồng thay thế | 3a. Bệnh nhân bấm sau thời hạn: cữ chuyển sang Xác nhận muộn.<br>3b. Cữ đã được xác nhận trước đó: hệ thống hiển thị thời điểm đã uống, không ghi thêm.<br>3c. Không có kết nối mạng: ứng dụng lưu tạm và gửi lại khi có mạng, giữ nguyên thời điểm bấm. |
+| Ngoại lệ | E1. Token thiết bị đã bị thu hồi: hệ thống trả mã 401; ứng dụng hướng dẫn liên hệ người chăm sóc để ghép nối lại.<br>E2. Cữ đã bị hủy do đơn bị thay thế: hệ thống trả mã 422; màn hình chuyển sang cữ kế tiếp. |
+| Hậu điều kiện | Trạng thái cữ được cập nhật; người chăm sóc thấy kết quả trên trang tổng quan |
+
+## Đặc tả UC-10
+
+*Nguồn: Bảng 14 trong báo cáo tuần 6.*
+
+| Mục | UC-10: Phát nhắc và phát hiện cữ bỏ lỡ |
+| --- | --- |
+| Tác nhân | Bộ lập lịch (tác nhân thời gian); người nhận: bệnh nhân, người chăm sóc, người nhà |
+| Tiền điều kiện | Có đơn ở trạng thái Hiệu lực; cữ thuốc ở trạng thái Đã lên lịch; thiết bị bệnh nhân đã ghép nối |
+| Luồng chính | 1. Đến mốc giờ, bộ lập lịch phát sự kiện "cữ đến giờ".<br>2. Hệ thống chuyển cữ sang Đang chờ và gửi nhắc nhở tới thiết bị bệnh nhân.<br>3. Hết thời hạn mà chưa có xác nhận: hệ thống chuyển cữ sang Bỏ lỡ.<br>4. Hệ thống gửi cảnh báo tới người chăm sóc và người nhà được ủy quyền.<br>5. Hệ thống ghi nhật ký và cập nhật số liệu tuân thủ. |
+| Luồng thay thế | 3a. Có xác nhận trong thời hạn: kết thúc use case tại bước 2, chuyển sang UC-07 hoặc UC-08.<br>4a. Không có người nhà được ủy quyền: chỉ gửi cảnh báo tới người chăm sóc. |
+| Ngoại lệ | E1. Worker khởi động lại giữa chừng: sự kiện chưa xử lý được xử lý lại, không gửi trùng cảnh báo (NFR-07). |
+| Hậu điều kiện | Cữ ở một trong các trạng thái Đã uống, Đã uống (hộ), Bỏ lỡ; mọi cảnh báo đã gửi được ghi nhật ký |
+
+## Các Epic
+
+*Nguồn: Bảng 15 trong báo cáo tuần 6.*
+
+| Epic | Tên | User story |
+| --- | --- | --- |
+| E1 | Quản lý đơn thuốc | US-01, US-02, US-07 |
+| E2 | Nhắc và xác nhận | US-08, US-09, US-10, US-11 |
+| E3 | Giám sát và cảnh báo | US-03, US-04, US-12, US-16 |
+| E4 | Báo cáo và ghi vết | US-05, US-15, US-17 |
+| E5 | Tài khoản và ủy quyền | US-06, US-13, US-14 |
+
+## User Story
+
+*Nguồn: Bảng 16 trong báo cáo tuần 6.*
+
 | Mã | Là | Tôi muốn | Để | Ưu tiên | FR |
 | --- | --- | --- | --- | --- | --- |
 | US-01 | người con | nhập đơn thuốc có gợi ý tên từ danh mục | không gõ sai tên thuốc | M | FR-04, FR-05 |
@@ -80,26 +165,22 @@ Ngưỡng 120 phút là dữ liệu thử; mục tiêu X% chưa được chốt.
 | US-16 | người con | được nhắc trước ngày tái khám | kịp sắp xếp đưa bố đi khám | S | FR-17 |
 | US-17 | người con | xem lại nhật ký ai đã làm gì trên hồ sơ | tin tưởng dữ liệu tuân thủ | M | FR-18 |
 
-### 3.2 Use case
-| Mã | Tên use case | Tác nhân chính | FR |
-| --- | --- | --- | --- |
-| UC-01 | Đăng ký, đăng nhập | Người chăm sóc | FR-01 |
-| UC-02 | Tạo hồ sơ bệnh nhân | Người chăm sóc | FR-01 |
-| UC-03 | Ghép nối thiết bị bệnh nhân | Người chăm sóc, Bệnh nhân | FR-02 |
-| UC-04 | Ủy quyền người nhà | Người chăm sóc | FR-03 |
-| UC-05 | Nhập đơn thuốc | Người chăm sóc | FR-04, FR-05 |
-| UC-06 | Xác nhận đơn thuốc | Người chăm sóc | FR-06, FR-07, FR-08 |
-| UC-07 | Xác nhận đã uống thuốc | Bệnh nhân | FR-11, FR-13, FR-14, FR-15 |
-| UC-08 | Xác nhận hộ | Người nhà sống cùng | FR-13, FR-15 |
-| UC-09 | Theo dõi tổng quan tuân thủ | Người chăm sóc | FR-19 |
-| UC-10 | Phát nhắc và phát hiện cữ bỏ lỡ | Bộ lập lịch | FR-09, FR-10, FR-12 |
-| UC-11 | Ghi nhận chỉ số xét nghiệm | Người chăm sóc | FR-16 |
-| UC-12 | Nhắc lịch tái khám | Bộ lập lịch | FR-17 |
-| UC-13 | Xuất báo cáo PDF | Người chăm sóc | FR-20 |
+## Đối chiếu INVEST
 
-Chi tiết tiền/hậu điều kiện, luồng chính và ngoại lệ: [USE_CASES.md](USE_CASES.md).
+*Nguồn: Bảng 17 trong báo cáo tuần 6.*
 
-### 3.3 Yêu cầu chức năng
+| Story | I | N | V | E | S | T | Hướng xử lý |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| US-02 | ✓ | ✓ | ✓ | ✓ | △ | ✓ | Gồm cả thay thế đơn cũ và sinh cữ; ứng viên tách thành 2 story nếu ước lượng vượt 5 điểm |
+| US-05 | ✓ | ✓ | ✓ | ✓ | △ | ✓ | Ứng viên tách: tổng hợp số liệu 30 ngày và dựng tệp PDF |
+| US-07 | ✗ | ✓ | ✓ | △ | ✓ | ✓ | Phụ thuộc module AI chuẩn hóa tên thuốc; cần spike ước lượng; để Sprint 3 |
+| US-11 | △ | ✓ | ✓ | ✓ | ✓ | ✓ | Phụ thuộc US-06 (phải có ủy quyền trước) |
+| US-12 | △ | ✓ | ✓ | ✓ | ✓ | ✓ | Phụ thuộc US-06 và US-03. Phải có ủy quyền trước khi thử cảnh báo người nhà; điều chỉnh thứ tự backlog Sprint 2. |
+
+## Yêu cầu chức năng
+
+*Nguồn: Bảng 18 trong báo cáo tuần 6.*
+
 | Mã | Mô tả | Ưu tiên | Vấn đề |
 | --- | --- | --- | --- |
 | FR-01 | Hệ thống phải cho phép người chăm sóc tạo tài khoản và tạo hồ sơ bệnh nhân chỉ gồm tên gọi trong gia đình và năm sinh. | M | P4 |
@@ -123,8 +204,9 @@ Chi tiết tiền/hậu điều kiện, luồng chính và ngoại lệ: [USE_CA
 | FR-19 | Hệ thống phải hiển thị tổng quan tuân thủ theo kỳ 7, 30, 90 ngày. | M | P4 |
 | FR-20 | Hệ thống nên xuất báo cáo PDF 30 ngày gồm tỷ lệ tuân thủ, người xác nhận và lịch sử chỉ số. | S | P6 |
 
-### 3.4 Yêu cầu phi chức năng
-Các giá trị dưới đây là mục tiêu, không phải số liệu đã đạt.
+## Yêu cầu phi chức năng
+
+*Nguồn: Bảng 19 trong báo cáo tuần 6.*
 
 | Mã | Đặc tính ISO/IEC 25010 | Yêu cầu định lượng | Cơ sở của chỉ số | Kiểm chứng |
 | --- | --- | --- | --- | --- |
@@ -140,36 +222,153 @@ Các giá trị dưới đây là mục tiêu, không phải số liệu đã đ
 | NFR-10 | Bảo mật: mã hóa dữ liệu nhạy cảm | Token thiết bị và push token được mã hóa AES-256 khi lưu | Mục tiêu bảo vệ token theo bản đặc tả cập nhật; cần chốt quản lý khóa và cách lưu trên thiết bị. | Rà soát schema, kiểm thử |
 | NFR-11 | Hiệu năng: độ trễ Rule Engine | Rule Engine đánh giá một sự kiện cữ thuốc dưới 100 ms trên server | Ngưỡng kỹ thuật của bản đặc tả cập nhật, cần chốt môi trường benchmark. | Benchmark trong CI |
 
-### 3.5 Mô hình dữ liệu
-| Thực thể | Ý nghĩa | Thuộc tính chính |
+## RTM yêu cầu chức năng
+
+*Nguồn: Bảng 20 trong báo cáo tuần 6.*
+
+| FR | BIZ | User story | Use case | Module | Kịch bản |
+| --- | --- | --- | --- | --- | --- |
+| FR-01 | BIZ-02 | US-13 | UC-01, UC-02 | Backend: Auth, Hồ sơ | TC-30, 31 |
+| FR-02 | BIZ-04 | US-14 | UC-03 | Backend: Thiết bị | TC-32, 33 |
+| FR-03 | BIZ-01 | US-06 | UC-04 | Backend: Thiết bị | TC-13, 14, 15 |
+| FR-04 | BIZ-01 | US-01 | UC-05 | Backend: Đơn thuốc | TC-01, 02 |
+| FR-05 | BIZ-01 | US-01 | UC-05 | Backend: Đơn thuốc; Cache | TC-01, 03 |
+| FR-06 | BIZ-01 | US-02 | UC-06 | Backend: Đơn thuốc | TC-05, 06 |
+| FR-07 | BIZ-01 | US-02 | UC-06 | Backend: Đơn thuốc; Worker | TC-04 |
+| FR-08 | BIZ-01 | US-07 | UC-06 | Rule Engine; AI service | TC-16, 17 |
+| FR-09 | BIZ-01 | US-02 | UC-10 | Worker: Scheduler | TC-04 |
+| FR-10 | BIZ-01 | US-08 | UC-10 | Worker: Notifier; Mobile App | TC-18, 19 |
+| FR-11 | BIZ-04 | US-09, US-10 | UC-07 | Backend: Tuân thủ; Mobile App | TC-20, 23, 24 |
+| FR-12 | BIZ-02 | US-03, US-12 | UC-10 | Worker; Rule Engine | TC-07, 08, 28, 29 |
+| FR-13 | BIZ-03 | US-10, US-11 | UC-07, UC-08 | Backend: Tuân thủ | TC-25, 26 |
+| FR-14 | BIZ-03 | US-09 | UC-07 | Rule Engine | TC-22 |
+| FR-15 | BIZ-03 | US-09, US-11 | UC-07, UC-08 | Backend: Tuân thủ | TC-21, TC-27 (bấm lặp);  |
+| FR-16 | BIZ-03 | US-15 | UC-11 | Backend: Chỉ số | TC-34, 35 |
+| FR-17 | BIZ-02 | US-16 | UC-12 | Worker: Scheduler | TC-36, 37 |
+| FR-18 | BIZ-03 | US-17 | Mọi UC ghi dữ liệu | Backend: Audit | TC-38, 39 |
+| FR-19 | BIZ-02 | US-04 | UC-09 | Backend: Tuân thủ; Cache | TC-09, 10 |
+| FR-20 | BIZ-03 | US-05 | UC-13 | Worker: PDF; Cloud Storage | TC-11, 12 |
+
+## Ánh xạ FR tới API và dữ liệu
+
+*Nguồn: Bảng 21 trong báo cáo tuần 6.*
+
+| FR | API hoặc sự kiện | Bảng dữ liệu |
 | --- | --- | --- |
-| Người chăm sóc | Tài khoản người con | email, tên hiển thị, mật khẩu băm |
-| Bệnh nhân | Hồ sơ được theo dõi | tên gọi trong gia đình, năm sinh, mốc giờ nhắc, ngưỡng bỏ lỡ |
-| Thiết bị | Điện thoại đã ghép nối | vai trò, push token, nền tảng, trạng thái |
-| Người nhà ủy quyền | Người được xác nhận hộ | tên gọi, quan hệ, trạng thái hiệu lực |
-| Thuốc, Hoạt chất | Danh mục chuẩn | tên biệt dược, số đăng ký; tên hoạt chất, hàm lượng |
-| Đơn thuốc | Một lần kê đơn | ngày kê, ngày bắt đầu, ngày tái khám, trạng thái |
-| Dòng thuốc | Một thuốc trong đơn | tên gốc trên đơn, liên kết danh mục, số đơn vị mỗi lần, buổi uống |
-| Cữ thuốc | Một lần uống dự kiến | thời điểm dự kiến, hạn xác nhận, trạng thái |
-| Xác nhận | Một lần bấm xác nhận | vai trò, người thực hiện, thời điểm uống, thời điểm ghi, bản ghi được đính chính |
-| Cảnh báo | Thông báo cho người chăm sóc | loại, nội dung, đã đọc |
-| Chỉ số, Lịch hẹn | Kết quả xét nghiệm, ngày tái khám | loại xét nghiệm, giá trị, đơn vị, ngày |
-| Nhật ký thao tác | Ghi vết | thời điểm, người dùng, loại thao tác, trạng thái, đối tượng |
+| FR-01 | POST /auth/register<br>POST /patients | caregivers, patients |
+| FR-02 | POST /patients/{patientId}/pairing-codes<br>POST /devices/pair | devices, pairing_codes |
+| FR-03 | POST, DELETE /patients/{patientId}/delegates | delegates |
+| FR-04 | POST /patients/{patientId}/prescriptions | prescriptions, prescription_items |
+| FR-05 | GET /drugs | drugs |
+| FR-06 | PUT /prescriptions/{prescriptionId}<br>POST /prescriptions/{prescriptionId}/confirm | prescriptions |
+| FR-07 | POST /prescriptions/{prescriptionId}/confirm | prescriptions, doses |
+| FR-08 | GET /prescriptions/{prescriptionId} | drug_ingredients |
+| FR-09 | Sự kiện nội bộ | doses |
+| FR-10 | GET /device/doses/today | doses, devices |
+| FR-11 | POST /doses/{doseId}/confirmations | dose_confirmations |
+| FR-12 | GET /patients/{patientId}/alerts | doses, alerts |
+| FR-13 | POST /doses/{doseId}/confirmations | dose_confirmations |
+| FR-14 | POST /doses/{doseId}/confirmations | dose_confirmations |
+| FR-15 | POST /doses/{doseId}/confirmations | dose_confirmations |
+| FR-16 | POST /patients/{patientId}/lab-results | lab_results |
+| FR-17 | POST /patients/{patientId}/appointments | appointments |
+| FR-18 | GET /patients/{patientId}/audit-logs | audit_logs |
+| FR-19 | GET /patients/{patientId}/adherence/summary | doses |
+| FR-20 | POST /patients/{patientId}/reports<br>GET /reports/{reportId} | reports |
 
-DDL PostgreSQL chuẩn hóa: [schema.sql](../database/schema.sql); [từ điển dữ liệu](../database/DATA_DICTIONARY.md). Đây là thiết kế mục tiêu độc lập, chưa thay thế SQLite dạng JSON của ứng dụng local.
+## RTM yêu cầu phi chức năng
 
-### 3.6 Giao diện bên ngoài
-Giao diện người chăm sóc: đăng nhập, chọn hồ sơ, nhập đơn, theo dõi, báo cáo. Giao diện bệnh nhân/người nhà: ghép mã, nhận nhắc, xác nhận. [UI flow](architecture/ui-flow.svg).
+*Nguồn: Bảng 22 trong báo cáo tuần 6.*
 
-[OpenAPI mục tiêu](api/openapi.yaml) là hợp đồng chính; mock tại cổng 5188 chỉ trả dữ liệu giả lập, không thực thi nghiệp vụ. Các API đang chạy local ở cổng 5173 được mô tả trong [đối chiếu API](api/README.md).
+| NFR | User story | Use case | Module thiết kế | Ca kiểm thử |
+| --- | --- | --- | --- | --- |
+| NFR-01 | US-08, US-09 | UC-07 | Mobile App | TC-18, 20 |
+| NFR-02 | US-08 | UC-10 | Worker: Notifier | TC-07, 18 |
+| NFR-05 | US-13 | UC-02 | Schema CSDL | TC-30 |
+| NFR-06 | US-09, US-17 | Mọi UC ghi dữ liệu | Backend: Audit; CSDL | TC-21, 39 |
+| NFR-11 | US-03 | UC-10 | Rule Engine | Benchmark CI |
+| NFR-03 | US-01, US-04 | UC-05, UC-09 | Backend, Cache | Kiểm thử tải theo p95 và độ trễ gợi ý |
+| NFR-04 | US-13, US-14 | UC-01, UC-03 | Gateway, Auth, Thiết bị | Rà soát HTTPS, mật khẩu băm, hạn và thu hồi token |
+| NFR-07 | US-03, US-08 | UC-10 | Worker, RabbitMQ | Khởi động lại Worker và kiểm tra xử lý lũy đẳng |
+| NFR-08 | Mọi story có Rule Engine | UC-06, UC-10 | Rule Engine, CI | Báo cáo coverage và pipeline |
+| NFR-09 | US-08, US-09 | UC-07 | Mobile App | Thử trên phiên bản Android nhóm chọn |
+| NFR-10 | US-14 | UC-03 | Backend, lưu trữ token | Kiểm tra mã hóa và quản lý khóa |
 
-### 3.7 Tiêu chí nghiệm thu
-Mỗi US có kịch bản chuẩn và ngoại lệ trong [tests/features](../tests/features). Đây là đặc tả Gherkin, chưa gắn step definitions để chạy BDD tự động. Kiểm thử mã local được chạy riêng. [RTM](RTM.md) liên kết mục tiêu, yêu cầu, UC, module, dữ liệu và ca kiểm thử.
+## Các hệ thống bên ngoài
 
-## 4. Kiến trúc và thiết kế
-[Sơ đồ nguồn và ảnh](architecture/README.md): C4 C1/C2, DFD, use case theo vai trò, activity, class, 3 sequence và ERD.
+*Nguồn: Bảng 24 trong báo cáo tuần 6.*
 
-## 5. Kiểm chứng và bàn giao
-[Test Plan](TEST_PLAN.md), [Test Report](TEST_REPORT.md), [hướng dẫn triển khai](DEPLOYMENT.md), [hướng dẫn sử dụng](USER_MANUAL.md), [kế hoạch](PROJECT_PLAN.md), [danh mục bàn giao](HANDOFF.md).
+| Hệ thống ngoài | Vai trò | Ghi chú |
+| --- | --- | --- |
+| Dịch vụ thông báo đẩy | Chuyển nhắc nhở và cảnh báo tới thiết bị | Bắt buộc; FCM cho Android, APNs cho iOS |
+| Dịch vụ Email | Xác thực tài khoản, gửi báo cáo | Chỉ phục vụ người chăm sóc |
+| Cloud Storage | Lưu tệp báo cáo PDF | Có thể thay bằng lưu trữ nội bộ ở môi trường demo |
+| Danh mục thuốc công khai | Nguồn dữ liệu chuẩn cho gợi ý và chuẩn hóa tên thuốc | Nạp định kỳ từ tệp, không gọi trực tuyến |
+| Hệ thống số hóa BV Hữu Nghị | Nơi người chăm sóc tra cứu đơn thuốc | Không tích hợp; nằm ngoài ranh giới hệ thống |
 
-Không công nhận NFR đã đạt từ việc có tài liệu hoặc mock. Người review chéo, tỷ lệ đóng góp và nghiệm thu cuối kỳ do nhóm thực hiện và ghi nhận sau.
+## Các container
+
+*Nguồn: Bảng 25 trong báo cáo tuần 6.*
+
+| Container | Công nghệ | Trách nhiệm | Giao tiếp |
+| --- | --- | --- | --- |
+| Web App | SPA; framework cần chốt | Trang tổng quan, nhập đơn, báo cáo cho người chăm sóc | HTTPS/REST, WSS |
+| Mobile App | Framework cần chốt | Chế độ bệnh nhân và chế độ người nhà | HTTPS/REST; nhận push |
+| API Gateway | Reverse proxy | Định tuyến /api/v1, kiểm tra token, giới hạn tần suất, TLS | HTTPS vào, HTTP ra |
+| Backend API | Modular monolith; | Nghiệp vụ hồ sơ, đơn thuốc, tuân thủ, chỉ số, báo cáo; Rule Engine; ghi nhật ký | SQL, RESP, AMQP, gRPC |
+| Background Worker | Consumer và scheduler | Sinh cữ thuốc, phát nhắc, chuyển trạng thái quá hạn, dựng PDF | AMQP, SQL, HTTPS |
+| AI Normalization Service | Dự kiến Sprint 3 | Chuẩn hóa tên biệt dược về hoạt chất và hàm lượng | gRPC |
+| Relational Database | PostgreSQL | Lưu toàn bộ dữ liệu nghiệp vụ và nhật ký | SQL/TCP |
+| Cache | Redis | Phiên, gợi ý danh mục thuốc, số liệu tổng hợp | RESP |
+| Message Broker | RabbitMQ | Hàng đợi sự kiện giữa Backend API và Worker | AMQP |
+
+## Các quyết định kiến trúc
+
+*Nguồn: Bảng 26 trong báo cáo tuần 6.*
+
+| Quyết định | Phương án chọn | Lý do | Đánh đổi |
+| --- | --- | --- | --- |
+| Kiểu kiến trúc backend | Modular monolith | Nhóm 3 người; một đơn vị triển khai giảm chi phí vận hành | Khó mở rộng độc lập từng module |
+| Tác vụ theo thời gian | Worker riêng qua RabbitMQ | Nhắc và quá hạn không phụ thuộc request; hàng đợi bền vững và xử lý lũy đẳng hỗ trợ phục hồi, cần kiểm thử khởi động lại. | Thêm một thành phần cần vận hành |
+| Xác thực phía bệnh nhân | Ghép nối thiết bị bằng mã một lần | Đáp ứng ràng buộc không đăng nhập (FR-02, NFR-01) | Mất thiết bị phải ghép nối lại |
+| Module AI | Service tách riêng, gọi qua gRPC | Thay đổi mô hình không ảnh hưởng Backend; phát triển song song | Cần xử lý khi service không phản hồi |
+| Nguồn dữ liệu đơn thuốc | Nhập tay có gợi ý, không tích hợp bệnh viện | Không có quyền truy cập hệ thống bệnh viện; giữ ranh giới rõ ràng | Người chăm sóc tốn công nhập |
+
+## Danh sách endpoint
+
+*Nguồn: Bảng 27 trong báo cáo tuần 6.*
+
+| Nhóm | Phương thức | Đường dẫn | Mô tả | Xác thực | UC |
+| --- | --- | --- | --- | --- | --- |
+| Auth | POST | /auth/register | Đăng ký người chăm sóc | Không | UC-01 |
+| Auth | POST | /auth/login | Đăng nhập | Không | UC-01 |
+| Auth | POST | /auth/refresh | Làm mới token | Không | UC-01 |
+| Patients | GET, POST | /patients | Danh sách, tạo hồ sơ | NCS | UC-02 |
+| Patients | GET, PATCH | /patients/{patientId} | Xem, cập nhật hồ sơ | NCS | UC-02 |
+| Devices | POST | /patients/{patientId}/pairing-codes | Sinh mã ghép nối | NCS | UC-03 |
+| Devices | POST | /devices/pair | Đổi mã lấy token thiết bị | Không | UC-03 |
+| Delegates | GET, POST | /patients/{patientId}/delegates | Danh sách, ủy quyền | NCS | UC-04 |
+| Delegates | DELETE | /patients/{patientId}/delegates/{delegateId} | Thu hồi ủy quyền | NCS | UC-04 |
+| Drugs | GET | /drugs?q= | Gợi ý tên thuốc | NCS | UC-05 |
+| Đơn thuốc | GET, POST | /patients/{patientId}/prescriptions | Danh sách, tạo đơn nháp | NCS | UC-05 |
+| Đơn thuốc | GET, PUT | /prescriptions/{prescriptionId} | Xem, sửa đơn nháp | NCS | UC-05 |
+| Đơn thuốc | POST | /prescriptions/{prescriptionId}/confirm | Xác nhận đơn, sinh cữ | NCS | UC-06 |
+| Đơn thuốc | POST | /prescriptions/{prescriptionId}/cancel | Hủy đơn nháp | NCS | UC-06 |
+| Doses | GET | /patients/{patientId}/doses | Tra cứu cữ thuốc | NCS | UC-09 |
+| Doses | GET | /device/doses/today | Cữ hôm nay trên thiết bị | Device | UC-07 |
+| Doses | POST | /doses/{doseId}/confirmations | Xác nhận đã uống, xác nhận hộ | Device | UC-07, UC-08 |
+| Adherence | GET | /patients/{patientId}/adherence/summary | Tổng hợp tuân thủ | NCS | UC-09 |
+| Adherence | GET | /patients/{patientId}/alerts | Danh sách cảnh báo | NCS | UC-10 |
+| Clinical | GET, POST | /patients/{patientId}/lab-results | Chỉ số xét nghiệm | NCS | UC-11 |
+| Clinical | GET, POST | /patients/{patientId}/appointments | Lịch tái khám | NCS | UC-12 |
+| Reports | POST | /patients/{patientId}/reports | Yêu cầu dựng PDF | NCS | UC-13 |
+| Reports | GET | /reports/{reportId} | Trạng thái, tải báo cáo | NCS | UC-13 |
+| Audit | GET | /patients/{patientId}/audit-logs | Tra cứu nhật ký | NCS | UC-09 |
+
+## Tệp thiết kế gốc
+
+- [Ảnh và nguồn sơ đồ của nhóm](architecture/README.md).
+- [OpenAPI gốc](api/openapi.yaml), sao chép nguyên tệp từ `KTPMUD/docs/api/openapi.yaml`.
+- [RTM trích từ báo cáo](RTM.md).
+
+Các mã TC trong bảng RTM là mã tham chiếu của báo cáo. Bản chuyển định dạng này không tạo thêm kịch bản Given/When/Then, kết quả kiểm thử hoặc bằng chứng nghiệm thu.

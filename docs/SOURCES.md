@@ -1,20 +1,19 @@
-# Nguồn và cách đóng gói
+# Nguồn tài liệu của bản hiện tại
 
-Ngày đóng gói: 20/10/2026.
+Ngày đối chiếu: 20/10/2026. Chỉ dùng tài liệu và mã có sẵn trong thư mục `KTPMUD` làm nội dung nguồn.
 
-- Báo cáo nguồn: `N01-01_Phùng Tuấn Tài_20_Trần Đức Trí_65_Trần Nguyễn Phúc Bình_Tuần 6.docx`; SHA-256 `f4227f7c4387fce7161273ee1004ab09023ced3ff492f0bc88cc53d6090fe6f0`. Giữ nguyên mã của 4 BIZ, 17 US, 13 UC, 20 FR, 11 NFR và 7 BR.
-- Tài liệu yêu cầu do người dùng cung cấp: `01 Review và các yêu cầu cụ thể c....docx`, các mục Công việc 2.4, tuần 4–5 và Checklist nghiệm thu.
-- Hiện trạng: mã ứng dụng tại commit `bde568e`, README.md và VERIFICATION.md. Các bảng yêu cầu lấy từ báo cáo tuần 6, không suy ra rằng đã nghiệm thu.
-- Các tệp mới (DDL chuẩn hóa, sơ đồ nguồn, OpenAPI, mock, Gherkin, chi tiết UC bổ sung) được xây dựng từ các nguồn trên; cần review chéo của nhóm. Không giả lập chữ ký, điểm đóng góp hay kết quả kiểm thử người dùng.
-- Không đưa danh sách phỏng vấn, thông tin sức khỏe cá nhân hay cơ sở dữ liệu đang sử dụng lên kho mã. Chỉ dữ liệu BN-TEST giả lập được đóng gói.
-- Báo cáo có tên đường dẫn API khác bản local, JWT khác cookie local và PostgreSQL khác SQLite local. Xem [Gap Matrix](GAP_MATRIX.md).
-- BIZ là mục tiêu nghiệp vụ; BR là ràng buộc nghiệp vụ. Không dùng hai mã này thay cho nhau.
-- RTM nguồn dùng TC-01…TC-39 nhưng báo cáo không chứa đủ bước chạy chi tiết. Bộ AC-US mới bổ sung các bước Given/When/Then; giữ mã TC cũ để đối chiếu, không công bố chúng đã chạy.
+| Nội dung trên GitHub | Nguồn trong KTPMUD | Cách xử lý |
+| --- | --- | --- |
+| `docs/architecture/` (ảnh, `.puml`, `.dot`, `lib/`) | `KTPMUD/docs/architecture/` | Sao chép nguyên byte |
+| `docs/api/openapi.yaml` | `KTPMUD/docs/api/openapi.yaml` | Sao chép nguyên byte, không dùng bản API tự tạo |
+| `docs/SRS_v1.0.md` | `KTPMUD/output/N01-01_Phùng Tuấn Tài_20_Trần Đức Trí_65_Trần Nguyễn Phúc Bình_Tuần 6.docx` | Chuyển các bảng đặc tả và 7 BR sang Markdown, không thêm yêu cầu |
+| `docs/RTM.md` | Bảng 20–22 trong cùng báo cáo tuần 6 | Chuyển nguyên bảng sang Markdown |
+| Mã ứng dụng, package và test ban đầu | `KTPMUD/antam-v1`, commit `bde568e` | Giữ nguyên bản V1.0 trước đợt đóng gói |
 
-## Cập nhật nguồn sơ đồ ngày 20/10/2026
+[Manifest nguồn](source-manifest.json) ghi đường dẫn và SHA-256 để kiểm tra. Các README/mục lục và ghi chú nguồn là phần trình bày của gói tài liệu; không phải nội dung đặc tả mới.
 
-Ưu tiên các ảnh và nguồn trong `KTPMUD/docs/architecture` mới được người dùng cung cấp. Thay 5 bộ C4/DFD/Use Case tự biên soạn bằng bản gốc; thêm phân cấp chức năng và hai biểu đồ trạng thái. Ảnh PNG, `.puml`, `.dot` và thư viện C4 được sao chép nguyên vẹn, có SHA-256 trong [catalog](architecture/catalog.json). SVG xuất bổ sung; không thay thế ảnh gốc.
+## Những phần đã gỡ khỏi bản hiện tại
 
-11 sơ đồ bổ sung trước đây tiếp tục được ghi rõ nguồn biên soạn. Các khác biệt về trạng thái muộn/Hết hạn được ghi tại [README sơ đồ](architecture/README.md), không tự sửa sơ đồ của nhóm.
+Các sơ đồ bổ sung tự biên soạn, DDL/seed/từ điển dữ liệu tự tạo, Gateway mock, OpenAPI tự tạo, kịch bản Gherkin mới, chi tiết UC bổ sung, pipeline CI và báo cáo/log kiểm chứng gói tự tạo đã được gỡ. Các tệp package và test API được trả về bản V1.0. Không còn dùng các phần đó làm bằng chứng hoàn thành đồ án.
 
-Thư mục mới cũng chứa `docs/api/openapi.yaml`; yêu cầu lần này chỉ chọn ảnh và nguồn sơ đồ nên hợp đồng API đang chạy với Gateway mock được giữ nguyên.
+Lịch sử commit vẫn được giữ; nội dung ở nhánh hiện tại mới là bộ đã hiệu chỉnh. Không suy ra yêu cầu trong báo cáo đã đạt chỉ vì đã được chuyển sang Markdown.
