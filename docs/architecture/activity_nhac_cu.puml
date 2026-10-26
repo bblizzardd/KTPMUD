@@ -1,0 +1,56 @@
+@startuml Activity_Nhac_Cu_Thuoc
+!include lib/ktpmud_theme.puml
+title Biểu đồ hoạt động: Nhắc, xác nhận và cảnh báo một cữ thuốc
+' Ký hiệu theo UML 2.5 (mục 15 - Activities):
+'  - Nút quyết định (decision): 1 luồng vào, nhiều luồng ra, mỗi luồng ra có guard [ ... ]
+'  - Nút hợp nhất (merge): nhiều luồng vào, 1 luồng ra (gộp các nhánh thay thế)
+'  - Nút kết thúc luồng (flow final, ⊗): chỉ kết thúc nhánh đó
+' Mỗi làn bơi ứng với một vai trò hoặc một container trong C4 mức 2
+
+|WK| Background Worker
+|BN| Bệnh nhân\n(Mobile App)
+|BE| Backend API
+|NCS| Người chăm sóc\n(Web App)
+|NN| Người nhà\n(Mobile App)
+
+|WK|
+start
+:Đến mốc giờ của cữ thuốc;
+:Chuyển cữ sang **Đang chờ**;
+:Gửi nhắc nhở qua dịch vụ\nthông báo đẩy;
+|BN|
+:Nhận nhắc nhở\n(âm thanh, chữ lớn);
+|BE|
+switch (Kết quả trong thời hạn?)
+case ([bệnh nhân bấm\n"Đã uống"])
+  :Ghi xác nhận vai trò PATIENT,\nchuyển cữ sang **Đã uống**;
+case ([người nhà bấm\n"Xác nhận hộ"])
+  :Ghi xác nhận vai trò DELEGATE,\nchuyển cữ sang **Đã uống (hộ)**;
+case ([hết thời hạn,\nchưa ai bấm])
+  :Chuyển cữ sang **Bỏ lỡ**\n(Worker kích hoạt khi quá hạn);
+  |WK|
+  :Gửi cảnh báo cữ bỏ lỡ qua\ndịch vụ thông báo đẩy;
+  fork
+    |NCS|
+    :Nhận cảnh báo cữ bỏ lỡ;
+    :Gọi nhắc bệnh nhân;
+  fork again
+    |NN|
+    if (Có người nhà\nđược ủy quyền?) then ([có])
+      :Nhận cảnh báo cữ bỏ lỡ;
+      :Nhắc bệnh nhân tại nhà;
+    else ([không])
+    endif
+  end fork
+  |BE|
+  if (Bệnh nhân bấm muộn\ntrước cuối ngày?) then ([có])
+    :Ghi xác nhận,\nchuyển cữ sang **Xác nhận muộn**;
+  else ([không])
+    :Giữ cữ ở **Bỏ lỡ**,\nghi nhật ký, cập nhật số liệu;
+    end
+  endif
+endswitch
+:Ghi nhật ký thao tác;
+:Cập nhật số liệu tuân thủ;
+stop
+@enduml

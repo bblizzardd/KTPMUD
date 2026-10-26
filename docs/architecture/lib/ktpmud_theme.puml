@@ -1,0 +1,106 @@
+' =====================================================================
+'  KTPMUD - Template chung cho các biểu đồ UML (Activity, State, Use Case)
+'  Dùng: !include lib/ktpmud_theme.puml  (đặt ngay sau @startuml)
+'
+'  Bảng màu thống nhất:
+'    #2E5395  viền / nhấn chính          #EEF3FB  nền phần tử thường
+'    #FFF2CC  trạng thái nháp / chú ý    #FBE5D6  trạng thái lỗi / bỏ lỡ
+'    #F2F2F2  trạng thái kết thúc phụ    #E2EFDA  trạng thái thành công
+'    #444444  mũi tên                    #FFFBE6  ghi chú
+' =====================================================================
+
+!$C_MAIN    = "#2E5395"
+!$C_FILL    = "#EEF3FB"
+!$C_DRAFT   = "#FFF2CC"
+!$C_BAD     = "#FBE5D6"
+!$C_DONE    = "#E2EFDA"
+!$C_OFF     = "#F2F2F2"
+!$C_ARROW   = "#444444"
+!$C_NOTE    = "#FFFBE6"
+
+<style>
+root {
+  FontName DejaVu Sans
+}
+title {
+  FontName DejaVu Sans
+  FontSize 16
+  FontStyle bold
+  FontColor #2E5395
+}
+</style>
+skinparam dpi 150
+skinparam shadowing false
+skinparam roundCorner 14
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 12
+skinparam defaultTextAlignment center
+skinparam backgroundColor white
+skinparam padding 2
+hide empty description
+
+skinparam titleFontName DejaVu Sans
+skinparam titleFontSize 16
+skinparam titleFontStyle bold
+skinparam titleFontColor $C_MAIN
+
+skinparam ArrowColor $C_ARROW
+skinparam ArrowFontSize 11
+skinparam ArrowFontColor #222222
+skinparam ArrowThickness 1.1
+
+skinparam note {
+  BackgroundColor $C_NOTE
+  BorderColor #BF9000
+  FontSize 11
+}
+
+' ---- Activity ----
+skinparam activity {
+  BackgroundColor $C_FILL
+  BorderColor $C_MAIN
+  FontSize 12
+  DiamondBackgroundColor white
+  DiamondBorderColor $C_MAIN
+  DiamondFontSize 11
+  StartColor #222222
+  EndColor #222222
+  BarColor #333333
+}
+skinparam swimlane {
+  BorderColor $C_MAIN
+  BorderThickness 1.4
+  TitleFontSize 14
+  TitleFontStyle bold
+  TitleFontColor $C_MAIN
+  Width same
+}
+
+' ---- State ----
+skinparam state {
+  BackgroundColor $C_FILL
+  BorderColor $C_MAIN
+  FontSize 13
+  AttributeFontSize 11
+  StartColor #222222
+  EndColor #222222
+}
+
+' ---- Use case ----
+skinparam usecase {
+  BackgroundColor $C_FILL
+  BorderColor $C_MAIN
+  FontSize 12
+}
+skinparam actor {
+  BackgroundColor white
+  BorderColor $C_MAIN
+  FontSize 12
+  FontStyle bold
+}
+skinparam rectangle {
+  BorderColor $C_MAIN
+  FontSize 13
+  FontStyle bold
+  FontColor $C_MAIN
+}

@@ -1,0 +1,48 @@
+@startuml Use_Case
+!include lib/ktpmud_theme.puml
+left to right direction
+skinparam nodesep 18
+skinparam ranksep 110
+title Biểu đồ Use Case tổng quát
+
+actor "Người chăm sóc" as CG
+actor "Bệnh nhân cao tuổi" as PT
+actor "Người nhà sống cùng" as DL
+
+rectangle "Hệ thống theo dõi điều trị ngoại trú" {
+  usecase "UC-01 Đăng ký, đăng nhập" as UC01
+  usecase "UC-02 Tạo hồ sơ bệnh nhân" as UC02
+  usecase "UC-04 Ủy quyền người nhà" as UC04
+  usecase "UC-05 Nhập đơn thuốc" as UC05
+  usecase "Gợi ý tên thuốc\ntừ danh mục" as UCX
+  usecase "UC-06 Xác nhận đơn thuốc" as UC06
+  usecase "UC-09 Theo dõi tổng quan\ntuân thủ" as UC09
+  usecase "UC-11 Ghi nhận chỉ số\nxét nghiệm" as UC11
+  usecase "UC-12 Nhận nhắc lịch\ntái khám" as UC12
+  usecase "UC-13 Xuất báo cáo PDF" as UC13
+  usecase "UC-03 Ghép nối thiết bị\nbệnh nhân" as UC03
+  usecase "UC-07 Xác nhận đã uống thuốc" as UC07
+  usecase "UC-10 Nhận nhắc nhở và\ncảnh báo cữ bỏ lỡ" as UC10
+  usecase "UC-08 Xác nhận hộ" as UC08
+}
+
+CG -- UC01
+CG -- UC02
+CG -- UC04
+CG -- UC05
+CG -- UC06
+CG -- UC09
+CG -- UC11
+CG -- UC12
+CG -- UC13
+CG -- UC03
+CG -- UC10
+
+UC05 .> UCX : <<include>>
+
+UC03 -- PT
+UC07 -- PT
+UC10 -- PT
+UC10 -- DL
+UC08 -- DL
+@enduml

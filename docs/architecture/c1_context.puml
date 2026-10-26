@@ -1,8 +1,8 @@
 @startuml C1_System_Context
-!include lib/C4_Context.puml
-skinparam defaultFontName "DejaVu Sans"
+!include lib/ktpmud_theme_c4.puml
+!include <C4/C4_Context>
 LAYOUT_TOP_DOWN()
-title C1 - System Context: Hệ thống hỗ trợ theo dõi điều trị ngoại trú ĐTĐ type 2
+title C4 mức 1 - System Context: Hệ thống hỗ trợ theo dõi điều trị ngoại trú ĐTĐ type 2
 
 Person(caregiver, "Người chăm sóc", "Con cái của bệnh nhân. Nhập đơn thuốc, theo dõi tuân thủ, nhận cảnh báo, xuất báo cáo")
 Person(patient, "Bệnh nhân cao tuổi", "Bệnh nhân ngoại trú BV Hữu Nghị. Nhận nhắc nhở, xác nhận đã uống thuốc bằng một chạm")
@@ -27,4 +27,5 @@ Rel(drugdb, sys, "Nạp danh mục thuốc", "Tệp CSV/XLSX")
 Rel_Back(patient, push, "Nhận nhắc nhở")
 Rel(caregiver, his, "Tra cứu đơn thuốc điện tử", "thủ công")
 Rel(caregiver, doctor, "Mang báo cáo PDF tới buổi khám", "ngoài hệ thống")
+SHOW_LEGEND()
 @enduml

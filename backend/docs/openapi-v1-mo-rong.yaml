@@ -1,0 +1,377 @@
+openapi: 3.0.3
+info:
+  title: An Tâm v1.0 — phần mở rộng ngoài đặc tả gốc
+  version: 1.0.0
+  description: |
+    Các endpoint Backend An Tâm v1.0 đã cài đặt nhưng chưa có trong `docs/api/openapi.yaml`
+    (đặc tả gốc 24 đường dẫn, khớp báo cáo Tuần 6). Web App dùng các endpoint này.
+    Nhóm thống nhất xong thì gộp vào đặc tả gốc và cập nhật số đường dẫn trong báo cáo.
+
+    Schema dùng chung được tham chiếu từ đặc tả gốc. `x-ly-do` ghi yêu cầu cần tới endpoint.
+servers:
+  - url: http://127.0.0.1:8080/api/v1
+
+paths:
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Người chăm sóc đang đăng nhập
+      operationId: getMe
+      x-ly-do: Web App kiểm tra phiên khi tải lại trang
+      responses:
+        '200':
+          description: Thông tin công khai của tài khoản
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Caregiver' }
+        '401': { $ref: '../../docs/api/openapi.yaml#/components/responses/Unauthorized' }
+
+  /drugs/{drugId}:
+    parameters:
+      - name: drugId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Drugs]
+      summary: Một thuốc trong danh mục
+      operationId: getDrug
+      x-ly-do: Hiện hoạt chất của dòng thuốc đã liên kết khi mở lại đơn (FR-05, FR-08)
+      responses:
+        '200':
+          description: Thuốc
+          content:
+            application/json:
+              schema: { $ref: '../../docs/api/openapi.yaml#/components/schemas/Drug' }
+        '404': { $ref: '../../docs/api/openapi.yaml#/components/responses/NotFound' }
+
+  /patients/{patientId}/devices:
+    parameters:
+      - $ref: '../../docs/api/openapi.yaml#/components/parameters/PatientId'
+    get:
+      tags: [Devices]
+      summary: Thiết bị đã ghép nối của hồ sơ (không trả token)
+      operationId: listDevices
+      x-ly-do: UC-03 — xem và thu hồi thiết bị; Tổng quan biết bệnh nhân đã ghép máy chưa
+      responses:
+        '200':
+          description: Danh sách thiết bị
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Device' }
+        '403': { $ref: '../../docs/api/openapi.yaml#/components/responses/Forbidden' }
+
+  /patients/{patientId}/devices/{deviceId}:
+    parameters:
+      - $ref: '../../docs/api/openapi.yaml#/components/parameters/PatientId'
+      - name: deviceId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    delete:
+      tags: [Devices]
+      summary: Thu hồi token thiết bị (mất máy, đổi máy)
+      operationId: revokeDevice
+      x-ly-do: NFR-04, UC-07 E1 — sau khi thu hồi, mọi yêu cầu deviceAuth của máy đó nhận 401
+      responses:
+        '204': { description: Đã thu hồi }
+        '404': { $ref: '../../docs/api/openapi.yaml#/components/responses/NotFound' }
+
+  /device/me:
+    get:
+      tags: [Devices]
+      summary: Thông tin của chính thiết bị đang gọi
+      operationId: getDeviceProfile
+      x-ly-do: Màn hình điện thoại chào đúng người và phát hiện máy đã bị thu hồi (401)
+      security:
+        - deviceAuth: []
+      responses:
+        '200':
+          description: Hồ sơ thiết bị
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DeviceProfile' }
+        '401': { $ref: '../../docs/api/openapi.yaml#/components/responses/Unauthorized' }
+
+  /device/doses/last-confirmed:
+    get:
+      tags: [Doses]
+      summary: Lần uống gần nhất đã được xác nhận (chống uống trùng liều)
+      operationId: getLastConfirmedForDevice
+      x-ly-do: US-10 — lần gần nhất có thể là hôm qua, ngoài phạm vi /device/doses/today
+      security:
+        - deviceAuth: []
+      responses:
+        '200':
+          description: Lần uống gần nhất; null khi chưa có
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/LastConfirmed'
+                nullable: true
+        '401': { $ref: '../../docs/api/openapi.yaml#/components/responses/Unauthorized' }
+
+  /doses/{doseId}/confirmations:
+    parameters:
+      - name: doseId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Doses]
+      summary: Chuỗi bản ghi xác nhận của một cữ (bản gốc rồi các bản đính chính)
+      description: Thêm phương thức GET (caregiverAuth) vào đường dẫn sẵn có; POST giữ nguyên như đặc tả gốc.
+      operationId: listDoseConfirmations
+      x-ly-do: BR-05, FR-15 — người chăm sóc xem ai đã sửa giờ uống
+      responses:
+        '200':
+          description: Theo thứ tự liên kết đính chính
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/LabelledConfirmation' }
+        '403': { $ref: '../../docs/api/openapi.yaml#/components/responses/Forbidden' }
+        '404': { $ref: '../../docs/api/openapi.yaml#/components/responses/NotFound' }
+
+  /alerts/{alertId}/read:
+    parameters:
+      - name: alertId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    patch:
+      tags: [Adherence]
+      summary: Đánh dấu một cảnh báo đã đọc
+      operationId: markAlertRead
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: false }
+      responses:
+        '200':
+          description: Cảnh báo sau khi cập nhật
+          content:
+            application/json:
+              schema: { $ref: '../../docs/api/openapi.yaml#/components/schemas/Alert' }
+        '404': { $ref: '../../docs/api/openapi.yaml#/components/responses/NotFound' }
+
+  /patients/{patientId}/alerts/read:
+    parameters:
+      - $ref: '../../docs/api/openapi.yaml#/components/parameters/PatientId'
+    post:
+      tags: [Adherence]
+      summary: Đánh dấu đã đọc nhiều cảnh báo (bỏ alertIds = tất cả)
+      operationId: markAlertsRead
+      x-ly-do: Alert có trường read nhưng đặc tả gốc không có thao tác đổi; nút "Đánh dấu đã đọc hết"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                alertIds:
+                  type: array
+                  maxItems: 500
+                  items: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Số cảnh báo vừa chuyển sang đã đọc (lũy đẳng)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updated: { type: integer, minimum: 0 }
+
+  /appointments/{appointmentId}:
+    parameters:
+      - name: appointmentId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    patch:
+      tags: [Clinical]
+      summary: Cập nhật trạng thái lịch hẹn (đã đi khám)
+      operationId: updateAppointmentStatus
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [UPCOMING, DONE, MISSED] }
+      responses:
+        '200':
+          description: Lịch hẹn sau khi cập nhật
+          content:
+            application/json:
+              schema: { $ref: '../../docs/api/openapi.yaml#/components/schemas/Appointment' }
+
+  /patients/{patientId}/reports:
+    parameters:
+      - $ref: '../../docs/api/openapi.yaml#/components/parameters/PatientId'
+    get:
+      tags: [Reports]
+      summary: Các báo cáo đã yêu cầu của hồ sơ (mới nhất trước)
+      description: Thêm GET vào đường dẫn sẵn có; POST giữ nguyên như đặc tả gốc.
+      operationId: listReports
+      x-ly-do: UC-13 — tải lại trang vẫn thấy báo cáo đã dựng
+      responses:
+        '200':
+          description: Danh sách báo cáo
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ReportJobV1' }
+
+  /reports/{reportId}/download:
+    parameters:
+      - name: reportId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Reports]
+      summary: Tải tệp PDF (vẫn yêu cầu JWT người chăm sóc)
+      operationId: downloadReport
+      responses:
+        '200':
+          description: Tệp PDF
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+        '409': { $ref: '../../docs/api/openapi.yaml#/components/responses/Conflict' }
+
+  /dev/clock:
+    get:
+      tags: [Dev]
+      summary: Giờ máy chủ và độ lệch (chỉ khi ENABLE_DEV_TOOLS=true, không bao giờ ở production)
+      operationId: getDevClock
+      responses:
+        '200':
+          description: Trạng thái đồng hồ
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DevClock' }
+    post:
+      tags: [Dev]
+      summary: Tua đồng hồ máy chủ về phía trước rồi chạy bộ lập lịch (công cụ kiểm thử)
+      operationId: advanceDevClock
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Truyền đúng một trong hai trường; tối đa 14 ngày mỗi lần
+              properties:
+                advanceMinutes: { type: integer, minimum: 1, maximum: 20160 }
+                to: { type: string, format: date-time }
+      responses:
+        '200':
+          description: Trạng thái đồng hồ sau khi tua
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DevClock' }
+        '422':
+          description: Tua lùi (CLOCK_BACKWARDS) hoặc quá 14 ngày (CLOCK_JUMP_TOO_LARGE)
+          content:
+            application/json:
+              schema: { $ref: '../../docs/api/openapi.yaml#/components/schemas/Error' }
+
+components:
+  securitySchemes:
+    deviceAuth:
+      type: http
+      scheme: bearer
+      description: Như trong đặc tả gốc
+
+  schemas:
+    Caregiver:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        displayName: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    Device:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        patientId: { type: string, format: uuid }
+        role: { $ref: '../../docs/api/openapi.yaml#/components/schemas/DeviceRole' }
+        delegateId: { type: string, format: uuid, nullable: true }
+        ownerAlias: { type: string, example: Bố }
+        deviceName: { type: string, example: Điện thoại Android }
+        platform: { type: string, enum: [ANDROID, IOS] }
+        active: { type: boolean }
+        pairedAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
+        revokedAt: { type: string, format: date-time, nullable: true }
+
+    DeviceProfile:
+      type: object
+      properties:
+        deviceId: { type: string, format: uuid }
+        role: { $ref: '../../docs/api/openapi.yaml#/components/schemas/DeviceRole' }
+        patientId: { type: string, format: uuid }
+        patientAlias: { type: string }
+        ownerAlias: { type: string }
+        deviceName: { type: string }
+        pairedAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
+
+    LastConfirmed:
+      type: object
+      properties:
+        date: { type: string, format: date }
+        slot: { $ref: '../../docs/api/openapi.yaml#/components/schemas/TimeSlot' }
+        takenAt: { type: string, format: date-time }
+        actorRole: { $ref: '../../docs/api/openapi.yaml#/components/schemas/DeviceRole' }
+        actorLabel: { type: string }
+        drugs:
+          type: array
+          items: { type: string }
+
+    LabelledConfirmation:
+      description: Confirmation của đặc tả gốc kèm người xác nhận để hiển thị
+      allOf:
+        - $ref: '../../docs/api/openapi.yaml#/components/schemas/Confirmation'
+        - type: object
+          properties:
+            patientId: { type: string, format: uuid }
+            correctsConfirmationId: { type: string, format: uuid, nullable: true }
+            actorLabel: { type: string, example: Mẹ }
+
+    ReportJobV1:
+      allOf:
+        - $ref: '../../docs/api/openapi.yaml#/components/schemas/ReportJob'
+        - type: object
+          properties:
+            patientId: { type: string, format: uuid }
+            fromDate: { type: string, format: date }
+            toDate: { type: string, format: date }
+            completedAt: { type: string, format: date-time }
+            errorCode: { type: string }
+
+    DevClock:
+      type: object
+      properties:
+        now: { type: string, format: date-time }
+        offsetMs: { type: integer, minimum: 0 }
+
+# Trường bổ sung trong response của endpoint sẵn có (đề xuất ghi vào schema gốc):
+#   Dose: patientId, prescriptionId, unit, instruction, date, slot; lastConfirmation có actorLabel.
+#   Prescription: supersededBy, createdAt, updatedAt.
+#   DeviceToken (POST /devices/pair): deviceId, patientId, ownerAlias, expiresAt; request nhận deviceName.
+#   AuditLog list: query actionType, actorRole, status, q; mỗi dòng có actorRole, actorLabel.
+#   ReportJob: periodDays nhận 30/60/90 (FR-20).
+#   /health trả thêm devTools (boolean).
