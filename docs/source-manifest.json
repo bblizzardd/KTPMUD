@@ -1,0 +1,138 @@
+{
+  "updated": "2026-10-20",
+  "copiedFiles": [
+    {
+      "repositoryFile": "docs/architecture/BPC.png",
+      "localSource": "KTPMUD/docs/architecture/BPC.png",
+      "sha256": "22ef249697fe5eba09df0133d8ff378ae8b16fd3be29deae7deb2189f5563e98"
+    },
+    {
+      "repositoryFile": "docs/architecture/bpc.puml",
+      "localSource": "KTPMUD/docs/architecture/bpc.puml",
+      "sha256": "57c506d1e3e8ac0f21dcaec2aaa4f5abbf5260b724cc064272cc59063f016c18"
+    },
+    {
+      "repositoryFile": "docs/architecture/c1_context.puml",
+      "localSource": "KTPMUD/docs/architecture/c1_context.puml",
+      "sha256": "ab2d3a4659415f4ced66dab95edcd742a769d89ce2198a4d82e8bc7c4dd9f9f8"
+    },
+    {
+      "repositoryFile": "docs/architecture/C1_System_Context.png",
+      "localSource": "KTPMUD/docs/architecture/C1_System_Context.png",
+      "sha256": "bb818565e17f7c83bc426c171e2081f6045400d84633548f4a2611bea093a503"
+    },
+    {
+      "repositoryFile": "docs/architecture/C2_Container.png",
+      "localSource": "KTPMUD/docs/architecture/C2_Container.png",
+      "sha256": "abdf43696617773874c87a5297e95cdf9ebdcb92ccf84074c9cf2c0b2152b8bc"
+    },
+    {
+      "repositoryFile": "docs/architecture/c2_container.puml",
+      "localSource": "KTPMUD/docs/architecture/c2_container.puml",
+      "sha256": "e7977c628af02ab72b33e22e1d9bf0cbce15234a4653d42b5baf5d26bb37e05d"
+    },
+    {
+      "repositoryFile": "docs/architecture/dfd0.dot",
+      "localSource": "KTPMUD/docs/architecture/dfd0.dot",
+      "sha256": "be3d2112ac5ea12028610e2c7a5ccf40bab1c5f2da2e79e78d8505ab92f45e7d"
+    },
+    {
+      "repositoryFile": "docs/architecture/dfd1.dot",
+      "localSource": "KTPMUD/docs/architecture/dfd1.dot",
+      "sha256": "ab0a53423cd47aff7781ea9ffa25da9ff6ae49f461b838a8e943d0ee0aa727ec"
+    },
+    {
+      "repositoryFile": "docs/architecture/DFD_Muc0.png",
+      "localSource": "KTPMUD/docs/architecture/DFD_Muc0.png",
+      "sha256": "848062025ac8fa7358222814ca87116aabadfd32d412e47a171454b566db66da"
+    },
+    {
+      "repositoryFile": "docs/architecture/DFD_Muc1.png",
+      "localSource": "KTPMUD/docs/architecture/DFD_Muc1.png",
+      "sha256": "7e538c3aa90d23251fdc11dbc284bac592677729c0f9dd4e48f62aa76c2bb4f9"
+    },
+    {
+      "repositoryFile": "docs/architecture/lib/C4.puml",
+      "localSource": "KTPMUD/docs/architecture/lib/C4.puml",
+      "sha256": "ab12c815f4a7d12e90e3583a0967ffb88c3617803810d5569b06e136d701afc6"
+    },
+    {
+      "repositoryFile": "docs/architecture/lib/C4_Container.puml",
+      "localSource": "KTPMUD/docs/architecture/lib/C4_Container.puml",
+      "sha256": "219f235cd59307763aa00dfb8667d9c719c1fa1ab3f5e7b36cdc33ae3f363b84"
+    },
+    {
+      "repositoryFile": "docs/architecture/lib/C4_Context.puml",
+      "localSource": "KTPMUD/docs/architecture/lib/C4_Context.puml",
+      "sha256": "7e0b039f1a669d7fc3d9f26e806e2387327781c92718764902ac30efe479ae47"
+    },
+    {
+      "repositoryFile": "docs/architecture/State_Cu_Thuoc.png",
+      "localSource": "KTPMUD/docs/architecture/State_Cu_Thuoc.png",
+      "sha256": "3839467baa35fec782b595bf8da3e7dbd535dfd41ff27c4b9b5f7b5d83ccb464"
+    },
+    {
+      "repositoryFile": "docs/architecture/state_cu_thuoc.puml",
+      "localSource": "KTPMUD/docs/architecture/state_cu_thuoc.puml",
+      "sha256": "cb32bfbd8e3c2bf0155522c8d75a2867730d09085354a0908202743f80f8f30c"
+    },
+    {
+      "repositoryFile": "docs/architecture/State_Don_Thuoc.png",
+      "localSource": "KTPMUD/docs/architecture/State_Don_Thuoc.png",
+      "sha256": "4b037cdeff864149cd91075f001af519782a6fbb4e2919089d1ea6150f4735ea"
+    },
+    {
+      "repositoryFile": "docs/architecture/state_don_thuoc.puml",
+      "localSource": "KTPMUD/docs/architecture/state_don_thuoc.puml",
+      "sha256": "08a23d9c637201e91ac309e2270de605a9c8f652e404f134cd04f9b07c307be6"
+    },
+    {
+      "repositoryFile": "docs/architecture/Use_Case.png",
+      "localSource": "KTPMUD/docs/architecture/Use_Case.png",
+      "sha256": "2afb398cacd6b0ef9b4ce0a8c29e739ea14695a6828837bd32911e9b175fce92"
+    },
+    {
+      "repositoryFile": "docs/architecture/usecase.dot",
+      "localSource": "KTPMUD/docs/architecture/usecase.dot",
+      "sha256": "b8372c4d29e27b32b7d6dd753afd6bac31a7def0a430b091d660c65b64301a8b"
+    },
+    {
+      "repositoryFile": "docs/api/openapi.yaml",
+      "localSource": "KTPMUD/docs/api/openapi.yaml",
+      "sha256": "c5b99ace6c1d456232d73172ca052a37768c915fde136815b6f4bb12fb29ff17"
+    }
+  ],
+  "report": {
+    "localSource": "KTPMUD/output/N01-01_Phùng Tuấn Tài_20_Trần Đức Trí_65_Trần Nguyễn Phúc Bình_Tuần 6.docx",
+    "sha256": "f4227f7c4387fce7161273ee1004ab09023ced3ff492f0bc88cc53d6090fe6f0"
+  },
+  "extractedTables": {
+    "docs/SRS_v1.0.md": [
+      9,
+      5,
+      10,
+      7,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      24,
+      25,
+      26,
+      27
+    ],
+    "docs/RTM.md": [
+      20,
+      21,
+      22
+    ]
+  }
+}
