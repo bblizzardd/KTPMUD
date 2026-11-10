@@ -1,0 +1,40 @@
+@startuml State_Cu_Thuoc
+!include lib/ktpmud_theme.puml
+title Biểu đồ chuyển trạng thái: Cữ thuốc
+' Ký hiệu theo UML 2.5 (mục 14 - State Machines):
+'  - Nhãn chuyển trạng thái: sự kiện [điều kiện] / hành động
+'  - Sự kiện thời gian: at(thời điểm) - tuyệt đối; after(khoảng) - tương đối
+'  - Chuyển trạng thái từ nút khởi đầu không có sự kiện, không có điều kiện
+
+state "Đã lên lịch" as DaLenLich
+state "Đang chờ" as DangCho
+state "Đã uống" as DaUong $C_DONE
+state "Đã uống (hộ)" as DaUongHo $C_DONE
+state "Bỏ lỡ" as BoLo $C_BAD
+state "Xác nhận muộn" as Muon $C_DRAFT
+state "Đã hủy" as DaHuy $C_OFF
+
+[*] --> DaLenLich
+DaLenLich --> DangCho : at(giờ nhắc)\n/ gửi nhắc nhở
+DaLenLich --> DaHuy : đơn bị thay thế
+DangCho --> DaUong : bệnh nhân xác nhận\n/ ghi vai trò PATIENT
+DangCho --> DaUongHo : người nhà xác nhận\n[có ủy quyền]\n/ ghi vai trò DELEGATE
+DangCho --> BoLo : after(ngưỡng bỏ lỡ)\n/ cảnh báo người chăm sóc,\nngười nhà
+BoLo --> Muon : xác nhận sau thời hạn\n/ ghi xác nhận muộn
+DaUong --> [*]
+DaUongHo --> [*]
+BoLo --> [*] : at(cuối ngày)
+Muon --> [*]
+DaHuy --> [*]
+
+note left of DaLenLich
+  Cữ được Worker tạo khi
+  đơn thuốc được xác nhận
+  (xem sơ đồ trạng thái đơn thuốc)
+end note
+note right of Muon
+  Chưa chốt: có giữ trạng thái
+  riêng hay gộp vào "Đã uống".
+  Chờ ý kiến bác sĩ (câu hỏi D3, D4)
+end note
+@enduml

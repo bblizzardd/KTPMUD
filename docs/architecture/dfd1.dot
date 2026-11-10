@@ -1,0 +1,108 @@
+// DFD mức 1 (mức đỉnh) - ký hiệu Gane-Sarson/DeMarco
+// Luồng dữ liệu: nét liền; luồng điều khiển (tín hiệu kích hoạt): nét đứt
+// (*) = tác nhân ngoài hoặc kho dữ liệu được vẽ lặp lại cho đỡ chéo đường
+// Màu và font theo template chung lib/ktpmud_theme.puml
+digraph DFD1 {
+  graph [rankdir=LR, nodesep=0.35, ranksep=1.0, splines=true, newrank=true, dpi=150, pad=0.3,
+         fontname="DejaVu Sans Bold", fontsize=16, fontcolor="#2E5395",
+         label="Biểu đồ luồng dữ liệu mức 1 (mức đỉnh)", labelloc=t];
+  node  [fontname="DejaVu Sans", fontsize=11, color="#2E5395", penwidth=1.2];
+  edge  [fontname="DejaVu Sans", fontsize=10, color="#444444", fontcolor="#222222", arrowsize=0.8];
+
+  // ---------- Tác nhân ngoài: hình chữ nhật ----------
+  node [shape=box, style=filled, fillcolor="#FFFFFF", width=1.7, height=0.55];
+  CG  [label="Người chăm sóc"];
+  DM  [label="Danh mục thuốc\ncông khai"];
+  PT2 [label="Bệnh nhân\ncao tuổi (*)"];
+  CG2 [label="Người chăm sóc (*)"];
+  PT  [label="Bệnh nhân cao tuổi"];
+  DL  [label="Người nhà sống cùng"];
+
+  // ---------- Tiến trình: hình tròn, đánh số 1.0 - 5.0 ----------
+  node [shape=circle, style=filled, fillcolor="#EEF3FB", width=1.4, fixedsize=true];
+  P1 [label="1.0\nQuản lý hồ sơ\nvà ủy quyền"];
+  P2 [label="2.0\nQuản lý\nđơn thuốc"];
+  P3 [label="3.0\nTheo dõi\ntuân thủ"];
+  P4 [label="4.0\nTheo dõi chỉ số\nvà tái khám"];
+  P5 [label="5.0\nLập báo cáo\nvà ghi vết"];
+
+  // Biến đổi điều khiển: nằm TRONG hệ thống, không phải tác nhân ngoài
+  SC [shape=circle, style="dashed,filled", fillcolor="#FFFFFF", width=1.25, fixedsize=true,
+      label="Bộ lập lịch\n(điều khiển)"];
+
+  // ---------- Kho dữ liệu: hình chữ nhật hở một đầu ----------
+  node [shape=plain, style="", fixedsize=false, width=0];
+  D1  [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="5" BGCOLOR="#F2F2F2" COLOR="#2E5395"><TR><TD SIDES="LTBR"><B>D1</B></TD><TD SIDES="TB">Hồ sơ, ủy quyền</TD></TR></TABLE>>];
+  D2  [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="5" BGCOLOR="#F2F2F2" COLOR="#2E5395"><TR><TD SIDES="LTBR"><B>D2</B></TD><TD SIDES="TB">Đơn thuốc</TD></TR></TABLE>>];
+  D3  [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="5" BGCOLOR="#F2F2F2" COLOR="#2E5395"><TR><TD SIDES="LTBR"><B>D3</B></TD><TD SIDES="TB">Danh mục thuốc</TD></TR></TABLE>>];
+  D4  [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="5" BGCOLOR="#F2F2F2" COLOR="#2E5395"><TR><TD SIDES="LTBR"><B>D4</B></TD><TD SIDES="TB">Cữ thuốc, xác nhận</TD></TR></TABLE>>];
+  D5  [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="5" BGCOLOR="#F2F2F2" COLOR="#2E5395"><TR><TD SIDES="LTBR"><B>D5</B></TD><TD SIDES="TB">Chỉ số, lịch hẹn</TD></TR></TABLE>>];
+  D6  [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="5" BGCOLOR="#F2F2F2" COLOR="#2E5395"><TR><TD SIDES="LTBR"><B>D6</B></TD><TD SIDES="TB">Nhật ký thao tác</TD></TR></TABLE>>];
+  D6b [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="5" BGCOLOR="#F2F2F2" COLOR="#2E5395"><TR><TD SIDES="LTBR"><B>D6</B></TD><TD SIDES="TB">Nhật ký thao tác (*)</TD></TR></TABLE>>];
+
+  // ---------- 1.0 Hồ sơ và ủy quyền ----------
+  CG  -> P1 [label="hồ sơ, ủy quyền"];
+  P1  -> CG [label="mã ghép nối"];
+  PT2 -> P1 [label="mã ghép nối\n(nhập trên thiết bị)"];
+  P1  -> D1 [label="hồ sơ, thiết bị,\nủy quyền"];
+
+  // ---------- 2.0 Đơn thuốc ----------
+  CG -> P2 [label="thông tin đơn thuốc"];
+  P2 -> CG [label="gợi ý tên thuốc"];
+  DM -> P2 [label="danh mục chuẩn"];
+  P2 -> D3 [label="nạp danh mục"];
+  D3 -> P2 [label="tên thuốc khớp"];
+  P2 -> D2 [label="đơn thuốc"];
+
+  // ---------- 3.0 Tuân thủ ----------
+  D2 -> P3 [label="đơn Hiệu lực"];
+  D1 -> P3 [label="thiết bị, người\nđược ủy quyền"];
+  P3 -> D4 [label="cữ thuốc,\ntrạng thái"];
+  D4 -> P3 [label="cữ đang chờ"];
+  P3 -> PT [label="nhắc uống thuốc"];
+  PT -> P3 [label="xác nhận đã uống"];
+  DL -> P3 [label="xác nhận hộ"];
+  P3 -> DL [label="cảnh báo cữ bỏ lỡ"];
+  P3 -> CG2 [label="cảnh báo cữ bỏ lỡ"];
+
+  // ---------- 4.0 Chỉ số và tái khám ----------
+  CG -> P4 [label="chỉ số, lịch hẹn"];
+  P4 -> D5 [label="chỉ số, lịch hẹn"];
+  D5 -> P4 [label="lịch hẹn"];
+  P4 -> CG2 [label="nhắc tái khám"];
+
+  // ---------- 5.0 Báo cáo và ghi vết ----------
+  D4 -> P5 [label="dữ liệu tuân thủ"];
+  D5 -> P5 [label="lịch sử chỉ số"];
+  D6 -> P5 [label="nhật ký"];
+  P5 -> CG2 [label="tổng quan,\nbáo cáo PDF"];
+
+  // ---------- Ghi nhật ký (mọi tiến trình) ----------
+  edge [color="#888888", fontcolor="#555555"];
+  P1 -> D6b [label="nhật ký"];
+  P2 -> D6b [label="nhật ký"];
+  P4 -> D6b [label="nhật ký"];
+  P3 -> D6  [label="nhật ký"];
+  edge [color="#444444", fontcolor="#222222"];
+
+  // ---------- Luồng điều khiển (nét đứt) ----------
+  P2 -> P3 [style=dashed, label="sự kiện\nđơn đã xác nhận"];
+  SC -> P3 [style=dashed, label="cữ đến giờ,\ncữ quá hạn"];
+  SC -> P4 [style=dashed, label="lịch hẹn sắp tới"];
+
+  // ---------- Chú thích ----------
+  LG [shape=plain, label=<<TABLE BORDER="1" COLOR="#2E5395" CELLBORDER="0" CELLPADDING="3" BGCOLOR="#FFFFFF">
+    <TR><TD ALIGN="LEFT"><B>Chú thích</B></TD></TR>
+    <TR><TD ALIGN="LEFT">───►   luồng dữ liệu</TD></TR>
+    <TR><TD ALIGN="LEFT">- - -►   luồng điều khiển (tín hiệu kích hoạt)</TD></TR>
+    <TR><TD ALIGN="LEFT">(*)   tác nhân / kho dữ liệu được vẽ lặp lại</TD></TR>
+  </TABLE>>];
+
+  // ---------- Bố cục theo cột ----------
+  {rank=same; CG; DM; PT2; LG}
+  {rank=same; P1; SC; P4; P2; P1 -> SC -> P4 -> P2 [style=invis]}
+  {rank=same; D1; D2; D5; D6b; D3}
+  {rank=same; P3; P5}
+  {rank=same; D4; D6}
+  {rank=same; PT; DL; CG2}
+}

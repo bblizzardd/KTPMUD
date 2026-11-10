@@ -1,0 +1,35 @@
+digraph UseCase {
+  rankdir=LR; splines=true; nodesep=0.25; ranksep=0.9;
+  fontname="DejaVu Sans"; label="Biểu đồ Use Case tổng quát"; labelloc=t; fontsize=16;
+  node [fontname="DejaVu Sans", fontsize=11];
+  edge [fontname="DejaVu Sans", fontsize=9, arrowhead=none, color="#444444"];
+  subgraph cluster_left { style=invis;
+    CG [shape=box, style="rounded,filled", fillcolor="#FFF4DB", label="«actor»\nNgười chăm sóc"]; }
+  subgraph cluster_sys { label="Hệ thống theo dõi điều trị ngoại trú"; style="rounded"; color="#2E5395"; fontsize=12;
+    node [shape=ellipse, style=filled, fillcolor="#EEF3FB", color="#2E5395"];
+    UC01 [label="UC-01 Đăng ký, đăng nhập"];
+    UC02 [label="UC-02 Tạo hồ sơ bệnh nhân"];
+    UC03 [label="UC-03 Ghép nối thiết bị\nbệnh nhân"];
+    UC04 [label="UC-04 Ủy quyền người nhà"];
+    UC05 [label="UC-05 Nhập đơn thuốc"];
+    UCX  [label="Gợi ý tên thuốc\ntừ danh mục"];
+    UC06 [label="UC-06 Xác nhận đơn thuốc"];
+    UC09 [label="UC-09 Theo dõi tổng quan\ntuân thủ"];
+    UC11 [label="UC-11 Ghi nhận chỉ số\nxét nghiệm"];
+    UC13 [label="UC-13 Xuất báo cáo PDF"];
+    UC07 [label="UC-07 Xác nhận đã uống"];
+    UC08 [label="UC-08 Xác nhận hộ"];
+    UC10 [label="UC-10 Phát nhắc, phát hiện\ncữ bỏ lỡ"];
+    UC12 [label="UC-12 Nhắc lịch tái khám"];
+    {rank=same; UC05; UCX}
+  }
+  subgraph cluster_right { style=invis;
+    PT [shape=box, style="rounded,filled", fillcolor="#FFF4DB", label="«actor»\nBệnh nhân cao tuổi"];
+    DL [shape=box, style="rounded,filled", fillcolor="#FFF4DB", label="«actor»\nNgười nhà sống cùng"];
+    TM [shape=box, style="rounded,filled", fillcolor="#F2F2F2", label="«actor»\nBộ lập lịch\n(tác nhân thời gian)"];
+  }
+  CG -> {UC01 UC02 UC03 UC04 UC05 UC06 UC09 UC11 UC13};
+  UC05 -> UCX [style=dashed, arrowhead=vee, label="«include»"];
+  UC07 -> PT; UC08 -> DL; UC10 -> TM; UC12 -> TM;
+  UC10 -> CG [style=invis];
+}

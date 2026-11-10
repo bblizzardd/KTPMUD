@@ -1,0 +1,37 @@
+@startuml State_Don_Thuoc
+!include lib/ktpmud_theme.puml
+title Biểu đồ chuyển trạng thái: Đơn thuốc
+' Ký hiệu theo UML 2.5 (mục 14 - State Machines):
+'  - Nhãn chuyển trạng thái: sự kiện [điều kiện] / hành động
+'  - Chuyển trạng thái trong (internal transition) ghi trong ngăn dưới của trạng thái
+'  - Sự kiện thay đổi: when(điều kiện)
+'  - Chuyển trạng thái từ nút khởi đầu không có sự kiện, không có điều kiện
+
+state "Nháp" as Nhap $C_DRAFT
+Nhap : sửa dòng thuốc / cập nhật đơn
+Nhap : xác nhận [thiếu trường bắt buộc] / báo trường còn thiếu
+state "Hiệu lực" as HieuLuc $C_DONE
+state "Hết hạn" as HetHan $C_OFF
+state "Bị thay thế" as ThayThe $C_OFF
+state "Đã hủy" as Huy $C_OFF
+
+[*] --> Nhap
+Nhap --> HieuLuc : xác nhận [đủ trường bắt buộc]\n/ sinh lịch cữ thuốc
+Nhap --> Huy : hủy đơn
+HieuLuc --> HetHan : when(đã qua ngày tái khám)
+HieuLuc --> ThayThe : đơn mới được xác nhận\n/ hủy các cữ tương lai
+HetHan --> [*]
+ThayThe --> [*]
+Huy --> [*]
+
+note right of Nhap
+  Đơn được tạo khi người chăm sóc
+  chọn "Thêm đơn thuốc"
+end note
+note right of HieuLuc
+  BR-02: mỗi bệnh nhân có tối đa
+  một đơn ở trạng thái Hiệu lực.
+  Muốn đổi đơn đang dùng thì tạo
+  đơn mới, không sửa trực tiếp.
+end note
+@enduml

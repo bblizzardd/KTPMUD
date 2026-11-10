@@ -1,0 +1,70 @@
+/* ==========================================================================
+   An Tâm — design tokens
+   ========================================================================== */
+
+:root {
+  /* Nền & bề mặt */
+  --bg: #f3f5f7;
+  --surface: #ffffff;
+  --surface-2: #f8fafb;
+  --surface-sunken: #eef1f4;
+  --border: #e2e7ed;
+  --border-strong: #cdd5de;
+
+  /* Chữ */
+  --text: #122030;
+  --text-2: #3a4859;
+  --text-3: #627285;
+  --text-4: #8695a7;
+
+  /* Màu chủ đạo: xanh ngọc trầm, gợi cảm giác y tế, tin cậy */
+  --primary: #0f766e;
+  --primary-hover: #0b5f58;
+  --primary-press: #094d48;
+  --primary-soft: #e7f4f2;
+  --primary-soft-2: #cfeae6;
+  --primary-ink: #0a4c47;
+
+  /* Màu trạng thái (luôn đi kèm chữ, không dùng màu đơn lẻ để truyền nghĩa) */
+  --success: #157f3c;
+  --success-soft: #e7f6ec;
+  --success-border: #b9e2c6;
+  --delegate: #2950c8;
+  --delegate-soft: #e9efff;
+  --delegate-border: #c4d2f6;
+  --warning: #a95a06;
+  --warning-soft: #fdf3e1;
+  --warning-border: #f0d39f;
+  --danger: #b42318;
+  --danger-soft: #fdeceb;
+  --danger-border: #f3c1bc;
+  --info: #0b6a9e;
+  --info-soft: #e6f2f9;
+  --info-border: #b6d8ec;
+  --neutral: #4a5869;
+  --neutral-soft: #eef1f5;
+  --neutral-border: #d6dde6;
+  --muted: #8695a7;
+
+  /* Hình khối */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow-sm: 0 1px 3px rgba(16, 24, 40, 0.07), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-md: 0 6px 16px -4px rgba(16, 24, 40, 0.1), 0 2px 4px -2px rgba(16, 24, 40, 0.05);
+  --shadow-lg: 0 20px 44px -12px rgba(16, 24, 40, 0.24);
+  --ring: 0 0 0 3px rgba(15, 118, 110, 0.28);
+
+  /* Chữ */
+  --font: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+
+  /* Bố cục */
+  --sidebar-w: 248px;
+  --topbar-h: 64px;
+  --phone-dock-w: 440px;
+  --page-max: 1180px;
+}

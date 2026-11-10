@@ -1,0 +1,22 @@
+{
+  "name": "antam-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Web App An Tâm v1.0 — hỗ trợ người chăm sóc theo dõi điều trị ngoại trú ĐTĐ type 2 (theo báo cáo Tuần 6, nhóm N01-01)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5173 --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --port 5173 --host 127.0.0.1",
+    "test": "node --test tests/rules.test.js tests/api.test.js"
+  },
+  "dependencies": {
+    "lucide-react": "^0.468.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^6.0.0"
+  }
+}

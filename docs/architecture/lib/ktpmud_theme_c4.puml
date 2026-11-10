@@ -1,0 +1,20 @@
+' =====================================================================
+'  KTPMUD - Phần dùng chung cho biểu đồ C4 (đi kèm ktpmud_theme.puml)
+'  Giữ nguyên ký hiệu và màu chuẩn của thư viện C4-PlantUML,
+'  chỉ thống nhất font, tiêu đề, độ phân giải với các biểu đồ còn lại.
+'  Dùng: !include lib/ktpmud_theme_c4.puml  rồi  !include <C4/C4_Container>
+' =====================================================================
+<style>
+root {
+  FontName DejaVu Sans
+}
+title {
+  FontName DejaVu Sans
+  FontSize 16
+  FontStyle bold
+  FontColor #2E5395
+}
+</style>
+skinparam dpi 150
+skinparam shadowing false
+skinparam defaultFontName DejaVu Sans

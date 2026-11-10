@@ -1,0 +1,31 @@
+// DFD mức 0 (mức ngữ cảnh) - ký hiệu Gane-Sarson/DeMarco
+// Màu và font theo template chung lib/ktpmud_theme.puml
+digraph DFD0 {
+  graph [rankdir=LR, nodesep=0.7, ranksep=1.8, splines=true, dpi=150, pad=0.3,
+         fontname="DejaVu Sans Bold", fontsize=16, fontcolor="#2E5395",
+         label="Biểu đồ luồng dữ liệu mức 0 (mức ngữ cảnh)", labelloc=t];
+  node  [fontname="DejaVu Sans", fontsize=12, color="#2E5395", penwidth=1.2];
+  edge  [fontname="DejaVu Sans", fontsize=11, color="#444444", fontcolor="#222222", arrowsize=0.8];
+
+  // Tác nhân ngoài: hình chữ nhật
+  node [shape=box, style=filled, fillcolor="#FFFFFF", width=1.9, height=0.6];
+  CG [label="Người chăm sóc"];
+  DM [label="Danh mục thuốc\ncông khai"];
+  PT [label="Bệnh nhân cao tuổi"];
+  DL [label="Người nhà sống cùng"];
+
+  // Tiến trình duy nhất: hình tròn
+  P0 [shape=circle, style=filled, fillcolor="#EEF3FB", width=2.4, fixedsize=true,
+      label="0.0\nHệ thống theo dõi\nđiều trị ngoại trú"];
+
+  CG -> P0 [label="thông tin hồ sơ, ủy quyền\nthông tin đơn thuốc\nchỉ số xét nghiệm, lịch hẹn"];
+  P0 -> CG [label="gợi ý tên thuốc\ntrạng thái tuân thủ, cảnh báo\nnhắc tái khám, báo cáo PDF\nmã ghép nối"];
+  DM -> P0 [label="danh mục thuốc chuẩn"];
+  P0 -> PT [label="nhắc uống thuốc"];
+  PT -> P0 [label="xác nhận đã uống\nmã ghép nối"];
+  P0 -> DL [label="cảnh báo cữ bỏ lỡ"];
+  DL -> P0 [label="xác nhận hộ"];
+
+  {rank=same; CG; DM}
+  {rank=same; PT; DL}
+}

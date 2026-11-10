@@ -1,0 +1,85 @@
+@startuml Activity_Nhap_Don_Sinh_Cu
+!include lib/ktpmud_theme.puml
+title Biểu đồ hoạt động: Nhập, xác nhận đơn thuốc và sinh lịch cữ thuốc
+' Ký hiệu theo UML 2.5 (mục 15 - Activities):
+'  - Nút quyết định (decision): 1 luồng vào, nhiều luồng ra, mỗi luồng ra có guard [ ... ]
+'  - Nút hợp nhất (merge): nhiều luồng vào, 1 luồng ra (gộp các nhánh thay thế)
+'  - Không gộp decision và merge vào cùng một hình thoi
+'  - Fork/Join: thanh ngang đậm, tách/gộp luồng song song
+' Mỗi làn bơi ứng với một vai trò hoặc một container trong C4 mức 2
+
+|NC| Người chăm sóc\n(Web App)
+|BE| Backend API
+|WK| Background Worker
+
+|NC|
+start
+:Tra cứu đơn thuốc trên\nhệ thống số hóa của bệnh viện;
+:Chọn "Thêm đơn thuốc", nhập ngày kê,\nngày bắt đầu, ngày tái khám;
+|BE|
+:Tạo đơn ở trạng thái **Nháp**;
+
+' ---------- Vòng lặp nhập từng dòng thuốc ----------
+|NC|
+repeat
+  :Gõ tên thuốc;
+  |BE|
+  :Tra danh mục khi đủ 2 ký tự,\ntrả danh sách gợi ý;
+  |NC|
+  if (Có gợi ý phù hợp?) then ([có])
+    :Chọn thuốc từ gợi ý;
+  else ([không])
+    :Giữ tên tự do\nđúng như trên đơn gốc;
+  endif
+  :Nhập số đơn vị mỗi lần,\nbuổi uống, ghi chú;
+  |BE|
+  :Lưu dòng thuốc vào đơn Nháp;
+  |NC|
+repeat while (Còn thuốc khác?) is ([có]) not ([không])
+
+' ---------- Vòng lặp xem lại và sửa đơn ----------
+|BE|
+:Kiểm tra đơn Nháp: đánh dấu trường\nbắt buộc còn thiếu, cảnh báo\ntrùng hoạt chất (FR-08);
+|NC|
+repeat
+  :Xem lại toàn bộ đơn,\nđối chiếu với đơn gốc;
+  backward:Sửa, thêm hoặc xóa dòng thuốc\n(Backend lưu và kiểm tra lại);
+repeat while (Đơn còn sai hoặc\nthiếu trường bắt buộc?) is ([có]) not ([không])
+
+if (Xác nhận hay hủy đơn?) then ([xác nhận])
+  :Chọn "Xác nhận đơn";
+else ([hủy])
+  |BE|
+  :Chuyển đơn sang **Đã hủy**;
+  :Ghi nhật ký thao tác;
+  stop
+endif
+
+' ---------- Áp dụng đơn mới ----------
+|BE|
+if (Bệnh nhân đang có\nđơn Hiệu lực cũ?) then ([có])
+  :Chuyển đơn cũ sang **Bị thay thế**;
+  :Hủy các cữ tương lai của đơn cũ\n(Đã lên lịch → Đã hủy);
+else ([không])
+endif
+:Chuyển đơn mới sang **Hiệu lực**;
+:Ghi nhật ký thao tác;
+:Phát sự kiện "đơn đã xác nhận";
+
+fork
+  |NC|
+  :Nhận phản hồi "Đơn đã áp dụng,\nđang sinh lịch cữ";
+fork again
+  |WK|
+  :Nhận sự kiện "đơn đã xác nhận";
+  :Lấy mốc giờ nhắc theo buổi\ntừ hồ sơ bệnh nhân;
+  :Ngày D := ngày bắt đầu;
+  repeat
+    :Với mỗi cặp (dòng thuốc, buổi uống) của ngày D:\ntạo cữ ở trạng thái **Đã lên lịch**\n(bỏ qua cữ đã tồn tại);
+    :D := D + 1 ngày;
+  repeat while (D ≤ ngày tái khám?) is ([đúng]) not ([sai])
+  :Ghi nhật ký "đã sinh N cữ";
+end fork
+stop
+
+@enduml

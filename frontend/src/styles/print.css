@@ -1,0 +1,40 @@
+/* ==========================================================================
+   In trang (báo cáo PDF do máy chủ dựng, FR-20)
+   ========================================================================== */
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+
+  .no-print,
+  .sidebar,
+  .sidebar-backdrop,
+  .topbar,
+  .demo-fab,
+  .demo-panel,
+  .toast-stack,
+  .phone-dock,
+  .report-toolbar {
+    display: none !important;
+  }
+
+  .shell {
+    display: block;
+  }
+
+  .page {
+    padding: 0;
+    max-width: none;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
