@@ -6,10 +6,10 @@ info:
     Đặc tả giao diện lập trình phiên bản 1 cho hệ thống hỗ trợ người chăm sóc theo dõi
     điều trị ngoại trú bệnh nhân cao tuổi mắc đái tháo đường type 2 (Nhóm N01-01).
 
-    Hai cơ chế xác thực:
-    - `caregiverAuth`: JWT cấp cho người chăm sóc sau khi đăng nhập (Web App).
-    - `deviceAuth`: token thiết bị cấp sau khi ghép nối bằng mã một lần (Mobile App,
-      chế độ bệnh nhân hoặc người nhà). Phía bệnh nhân không đăng nhập bằng mật khẩu.
+    Các cơ chế xác thực trên cả web và app:
+    - `caregiverAuth`: JWT của người chăm sóc sau khi đăng nhập email/mật khẩu.
+    - `patientAuth`: JWT của bệnh nhân sau khi đăng nhập email/mật khẩu, chỉ truy cập hồ sơ liên kết.
+    - `deviceAuth`: token thiết bị cấp sau khi ghép nối bằng mã một lần, là lựa chọn bổ sung.
 
     Mọi lỗi trả về theo schema `Error`. Mọi thao tác ghi đều sinh bản ghi nhật ký (FR-18).
   contact:
@@ -19,7 +19,7 @@ servers:
     description: Máy chủ mock phục vụ Frontend lập trình song song
 tags:
   - name: Auth
-    description: Tài khoản người chăm sóc
+    description: Tài khoản người chăm sóc và bệnh nhân
   - name: Patients
     description: Hồ sơ bệnh nhân
   - name: Devices
@@ -45,7 +45,7 @@ paths:
   /auth/register:
     post:
       tags: [Auth]
-      summary: Đăng ký tài khoản người chăm sóc
+      summary: Đăng ký tài khoản người chăm sóc hoặc bệnh nhân
       operationId: register
       security: []
       requestBody:
@@ -58,13 +58,16 @@ paths:
           description: Tạo tài khoản thành công
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Caregiver' }
+              schema:
+                oneOf:
+                  - { $ref: '#/components/schemas/Caregiver' }
+                  - { $ref: '#/components/schemas/PatientAccount' }
         '400': { $ref: '#/components/responses/BadRequest' }
         '409': { $ref: '#/components/responses/Conflict' }
   /auth/login:
     post:
       tags: [Auth]
-      summary: Đăng nhập người chăm sóc
+      summary: Đăng nhập người chăm sóc hoặc bệnh nhân trên web/app
       operationId: login
       security: []
       requestBody:
@@ -414,6 +417,7 @@ paths:
       operationId: listTodayDosesForDevice
       security:
         - deviceAuth: []
+        - patientAuth: []
       responses:
         '200':
           description: Cữ thuốc trong ngày của bệnh nhân gắn với thiết bị
@@ -439,6 +443,7 @@ paths:
       operationId: confirmDose
       security:
         - deviceAuth: []
+        - patientAuth: []
       requestBody:
         required: false
         content:
@@ -632,6 +637,11 @@ components:
       type: http
       scheme: bearer
       description: Token thiết bị cấp qua /devices/pair
+    patientAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT tài khoản PATIENT, chỉ có quyền trên hồ sơ liên kết
   parameters:
     PatientId:
       name: patientId
@@ -692,6 +702,8 @@ components:
       type: object
       required: [email, password, displayName]
       properties:
+        role: { type: string, enum: [CAREGIVER, PATIENT], default: CAREGIVER }
+        pairingCode: { type: string, pattern: '^\d{6}$', description: 'Bắt buộc khi role=PATIENT; mã PATIENT chưa dùng và còn hiệu lực, liên kết tài khoản vào hồ sơ có sẵn.' }
         email: { type: string, format: email }
         password: { type: string, format: password, minLength: 8 }
         displayName: { type: string, maxLength: 100 }
@@ -699,11 +711,14 @@ components:
       type: object
       required: [email, password]
       properties:
+        role: { type: string, enum: [CAREGIVER, PATIENT], default: CAREGIVER }
         email: { type: string, format: email }
         password: { type: string, format: password }
     TokenPair:
       type: object
       properties:
+        role: { type: string, enum: [CAREGIVER, PATIENT] }
+        accountId: { type: string, format: uuid }
         accessToken: { type: string }
         refreshToken: { type: string }
         expiresIn: { type: integer, example: 900 }
@@ -713,6 +728,15 @@ components:
         id: { type: string, format: uuid }
         email: { type: string, format: email }
         displayName: { type: string }
+        createdAt: { type: string, format: date-time }
+    PatientAccount:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        displayName: { type: string }
+        patientId: { type: string, format: uuid }
+        role: { type: string, enum: [PATIENT] }
         createdAt: { type: string, format: date-time }
     PatientCreate:
       type: object
@@ -737,17 +761,17 @@ components:
           items: { $ref: '#/components/schemas/ReminderTime' }
         missedThresholdMinutes:
           type: integer
-          minimum: 15
-          maximum: 360
-          description: Ngưỡng chuyển sang Bỏ lỡ, chờ kiểm chứng với bác sĩ
+          enum: [60]
+          description: Cố định 60 phút; chỉ chuyển Bỏ lỡ khi đã quá giờ hẹn hơn 60 phút và chưa xác nhận.
     Patient:
       allOf:
         - $ref: '#/components/schemas/PatientCreate'
         - type: object
           properties:
             id: { type: string, format: uuid }
-            missedThresholdMinutes: { type: integer, example: 120 }
+            missedThresholdMinutes: { type: integer, enum: [60], example: 60 }
             pairedDevice: { type: boolean }
+            hasLoginAccount: { type: boolean }
             createdAt: { type: string, format: date-time }
     ReminderTime:
       type: object
@@ -830,6 +854,15 @@ components:
           type: array
           minItems: 1
           items: { $ref: '#/components/schemas/TimeSlot' }
+        times:
+          type: object
+          additionalProperties: false
+          description: Giờ HH:mm tự chọn cho từng buổi trong slots. Khi có times, phải có đúng các buổi đã chọn, không trùng giờ. Khi không có times, dùng giờ mặc định của hồ sơ.
+          properties:
+            MORNING: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$', example: '08:25' }
+            NOON: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$', example: '12:15' }
+            AFTERNOON: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$', example: '16:00' }
+            EVENING: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$', example: '20:30' }
         instruction: { type: string, maxLength: 200, example: Uống sau ăn }
     PrescriptionInput:
       type: object

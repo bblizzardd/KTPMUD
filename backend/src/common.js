@@ -25,6 +25,7 @@ export const newId = () => randomUUID();
 export const localDate = date => new Date(+new Date(date) + 7 * 3600_000).toISOString().slice(0, 10);
 export const shiftDate = (date, days) => new Date(Date.parse(`${date}T00:00:00Z`) + days * 86400_000).toISOString().slice(0, 10);
 export const TIME_SLOTS = ['MORNING', 'NOON', 'AFTERNOON', 'EVENING'];
+export const DOSE_WINDOW_MINUTES = 60;
 export const DOSE_STATUSES = ['SCHEDULED', 'PENDING', 'TAKEN', 'TAKEN_BY_DELEGATE', 'MISSED', 'LATE_CONFIRMED', 'CANCELLED'];
 export const PRESCRIPTION_STATUSES = ['DRAFT', 'ACTIVE', 'EXPIRED', 'SUPERSEDED', 'CANCELLED'];
 export const DEFAULT_REMINDERS = [

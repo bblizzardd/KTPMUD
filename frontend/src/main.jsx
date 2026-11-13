@@ -7,6 +7,7 @@ import './styles/components.css';
 import './styles/layout.css';
 import './styles/pages.css';
 import './styles/device.css';
+import './styles/uwu.css';
 import './styles/print.css';
 
 createRoot(document.getElementById('root')).render(

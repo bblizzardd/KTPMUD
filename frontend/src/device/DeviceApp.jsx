@@ -12,10 +12,12 @@ import {
   Signal,
   Type,
   Unlink,
+  Volume2,
   Wifi,
   WifiOff
 } from 'lucide-react';
 import { isNetworkError } from '../api/errors.js';
+import { href, ROUTES } from '../app/router.js';
 import { useNow } from '../app/hooks.js';
 import { CONFIRMED_STATUSES, SLOT_META } from '../domain/constants.js';
 import { checkConfirmable, groupDoses } from '../domain/rules.js';
@@ -163,6 +165,11 @@ function PairingScreen({ phone, result, onPaired, onDone }) {
       <div className="dev-brand">
         <HeartPulse size={26} aria-hidden="true" /> An Tâm
       </div>
+      <div className="stack-sm">
+        <a className="dev-btn dev-btn-confirm" href={href(ROUTES.login, { role: 'PATIENT', surface: 'app' })} target="_blank" rel="noopener noreferrer">Đăng nhập bệnh nhân</a>
+        <a className="dev-btn dev-btn-secondary" href={href(ROUTES.login, { role: 'CAREGIVER', surface: 'app' })} target="_blank" rel="noopener noreferrer">Đăng nhập người chăm sóc</a>
+        <p className="dev-text-sm">Hoặc ghép thiết bị bằng mã bên dưới.</p>
+      </div>
       <h2 className="dev-h1">Nhập mã ghép nối</h2>
       <p className="dev-text-sm">Mã gồm 6 số do con (người chăm sóc) tạo trên ứng dụng An Tâm. Mã chỉ dùng một lần.</p>
       <label className="sr-only" htmlFor={`pair-${phone.id}`}>
@@ -225,10 +232,11 @@ function RevokedScreen({ phone }) {
 
 function CorrectionSheet({ group, onCancel, onSave, nowMs }) {
   const original = group.lastConfirmation?.takenAt;
+  const [date, setDate] = useState(original ? toDateKey(original) : group.date);
   const [time, setTime] = useState(original ? fmtTime(original) : '');
   const [error, setError] = useState('');
   function save() {
-    const iso = atTime(group.date, time);
+    const iso = atTime(date, time);
     const check = checkConfirmable(group.doses.find((d) => d.lastConfirmation) || group.doses[0], { takenAt: iso, nowMs, correction: true });
     if (!check.ok) {
       setError(check.message);
@@ -240,9 +248,10 @@ function CorrectionSheet({ group, onCancel, onSave, nowMs }) {
     <div className="dev-sheet" role="dialog" aria-label="Sửa giờ uống">
       <h3 className="dev-h2">Sửa giờ đã uống</h3>
       <p className="dev-text-sm">Chỉ sửa khi bấm nhầm giờ. Bản ghi cũ vẫn được giữ lại để đối chiếu.</p>
+      <input type="date" className="dev-time-input" value={date} onChange={(e) => setDate(e.target.value)} aria-label="Ngày uống đúng" />
       <input type="time" className="dev-time-input" value={time} onChange={(e) => setTime(e.target.value)} aria-label="Giờ uống đúng" />
       {error && <p className="dev-error">{error}</p>}
-      <button type="button" className="dev-btn dev-btn-confirm" onClick={save} disabled={!time}>
+      <button type="button" className="dev-btn dev-btn-confirm" onClick={save} disabled={!time || !date}>
         LƯU GIỜ ĐÚNG
       </button>
       <button type="button" className="dev-btn dev-btn-ghost" onClick={onCancel}>
@@ -263,6 +272,28 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
   const [ringing, setRinging] = useState(null);
   const [sending, setSending] = useState(false);
   const seen = useRef(null);
+  useEffect(() => () => window.speechSynthesis?.cancel(), []);
+
+  function speakSchedule() {
+    if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
+      flash({ tone: 'warning', text: 'Trình duyệt này chưa hỗ trợ đọc giọng nói. Bạn có thể xem lịch thuốc bên dưới.' });
+      return;
+    }
+    const remaining = groups.filter((group) => !DONE.includes(group.status) && group.status !== 'CANCELLED');
+    const schedule = remaining.map((group) => {
+      const medicines = group.doses.map((dose) => `${dose.drugDisplayName}, ${fmtNumber(dose.unitsPerDose)} ${dose.unit || 'viên'}${dose.instruction ? `, ${dose.instruction}` : ''}`).join('; ');
+      const status = group.status === 'MISSED' ? 'Đã quá giờ, chưa có xác nhận. Nếu chưa uống, hãy hỏi người thân hoặc bác sĩ trước khi uống bù.' : group.status === 'SCHEDULED' ? 'Chưa đến giờ uống.' : 'Đã đến giờ uống.';
+      return `${fmtTime(group.scheduledAt)}: ${medicines}. ${status}`;
+    }).join(' ');
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(`Chào ${alias}. ${groups.length === 0 ? 'Hôm nay không có lịch thuốc.' : remaining.length ? `Lịch thuốc chưa xác nhận hôm nay. ${schedule}` : 'Hôm nay đã ghi nhận tất cả các cữ thuốc.'}`);
+    utterance.lang = 'vi-VN';
+    utterance.rate = 0.85;
+    utterance.onerror = (event) => {
+      if (!['interrupted', 'canceled'].includes(event.error)) flash({ tone: 'warning', text: 'Chưa đọc được lịch thuốc. Vui lòng thử lại hoặc xem lịch bên dưới.' });
+    };
+    window.speechSynthesis.speak(utterance);
+  }
 
   const pending = groups.filter((g) => g.status === 'PENDING');
   const missed = groups.filter((g) => g.status === 'MISSED');
@@ -294,7 +325,14 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
     if (sending) return;
     setRinging(null);
     setSending(true);
-    const res = await confirmDoses(phone, group.doses.filter((d) => d.status === 'PENDING' || d.status === 'MISSED'));
+    const targets = group.doses.filter(d => ['SCHEDULED', 'PENDING', 'MISSED'].includes(d.status));
+    const invalid = targets.map(d => checkConfirmable(d, { takenAt: new Date(nowMs).toISOString(), nowMs })).find(result => !result.ok);
+    if (!targets.length || invalid) {
+      setSending(false);
+      flash({ tone: 'warning', text: invalid?.message || 'Cữ này đã được xác nhận.' });
+      return;
+    }
+    const res = await confirmDoses(phone, targets);
     setSending(false);
     if (res.queued) {
       setJustDone(group.key);
@@ -329,6 +367,7 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
   const done = justDone ? groups.find((g) => g.key === justDone && DONE.includes(g.status)) : null;
   const recent = [...groups].reverse().find((g) => DONE.includes(g.status) && g.lastConfirmation && nowMs - Date.parse(g.lastConfirmation.recordedAt || g.lastConfirmation.takenAt) < 45 * MINUTE);
   const next = groups.find((g) => g.status === 'SCHEDULED');
+  const canConfirmEarly = group => group.status === 'SCHEDULED' && checkConfirmable(group.doses[0], { takenAt: new Date(nowMs).toISOString(), nowMs }).ok;
   let focus;
   if (pending.length) focus = { kind: 'PENDING', group: pending[0] };
   else if (done) focus = { kind: 'DONE', group: done };
@@ -368,6 +407,10 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
           <Type size={22} />
         </button>
       </div>
+
+      <button type="button" className="dev-btn dev-read-schedule" onClick={speakSchedule}>
+        <Volume2 size={26} aria-hidden="true" /> Đọc lịch thuốc cho tôi
+      </button>
 
       {!isPatient && unresolved.length > 0 && (
         <div className="dev-alerts">
@@ -454,6 +497,12 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
           <p className="dev-hint">
             <Clock size={18} aria-hidden="true" /> Điện thoại sẽ đổ chuông khi đến giờ.
           </p>
+          {canConfirmEarly(focus.group) && <>
+            <button type="button" className={`dev-btn ${isPatient ? 'dev-btn-confirm' : 'dev-btn-delegate'}`} onClick={() => doConfirm(focus.group)} disabled={sending}>
+              <Check size={28} aria-hidden="true" /> {confirmLabel}
+            </button>
+            <p className="dev-hint">Đang trong khoảng 60 phút trước giờ hẹn. Chỉ bấm sau khi đã uống.</p>
+          </>}
         </section>
       )}
 
@@ -476,7 +525,8 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
         )}
       </div>
 
-      <div className="dev-section-title">Hôm nay</div>
+      <div className="dev-section-title">Lịch thuốc hôm nay</div>
+      <p className="dev-text-sm">Uống trong khoảng ±60 phút quanh giờ hẹn được tính đúng giờ.</p>
       {groups.length === 0 ? (
         <p className="dev-text-sm">Không có cữ thuốc nào hôm nay.</p>
       ) : (
@@ -491,6 +541,11 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
                   <span className="dev-row-meds">{medsLine(g)}</span>
                 </span>
                 <span className={`dev-row-status tone-text-${st.tone}`}>{st.text}</span>
+                {canConfirmEarly(g) && focus.group?.key !== g.key && (
+                  <button type="button" className="dev-btn dev-btn-confirm" style={{ gridColumn: '1 / -1' }} onClick={() => doConfirm(g)} disabled={sending}>
+                    <Check size={24} aria-hidden="true" /> {confirmLabel}
+                  </button>
+                )}
               </li>
             );
           })}

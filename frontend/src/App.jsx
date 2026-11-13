@@ -4,6 +4,7 @@ import { navigate, ROUTES, useRoute } from './app/router.js';
 import { startClockSync } from './app/clock.js';
 import AppShell from './shell/AppShell.jsx';
 import AuthPage from './pages/AuthPage.jsx';
+import PatientPage from './pages/PatientPage.jsx';
 import NoPatientPage from './pages/NoPatientPage.jsx';
 import OverviewPage from './pages/OverviewPage.jsx';
 import DosesPage from './pages/DosesPage.jsx';
@@ -19,6 +20,7 @@ import DeviceStandalone from './device/DeviceStandalone.jsx';
 import { FullPageStatus } from './components/ui.jsx';
 
 const TITLES = {
+  [ROUTES.patient]: 'Lịch thuốc của tôi',
   [ROUTES.overview]: 'Tổng quan',
   [ROUTES.doses]: 'Lịch cữ thuốc',
   [ROUTES.prescriptions]: 'Đơn thuốc',
@@ -31,8 +33,8 @@ const TITLES = {
   [ROUTES.register]: 'Đăng ký'
 };
 
-function Redirect({ to }) {
-  useEffect(() => navigate(to), [to]);
+function Redirect({ to, surface }) {
+  useEffect(() => navigate(to, surface ? { surface } : undefined), [to, surface]);
   return null;
 }
 
@@ -75,16 +77,21 @@ function Root() {
     document.title = title ? `${title} · An Tâm` : 'An Tâm — Theo dõi điều trị ĐTĐ type 2';
   }, [route.path, route.segments]);
 
-  if (route.segments[0] === 'thiet-bi') return <DeviceStandalone route={route} />;
-  if (!session) return <AuthPage mode={route.path === ROUTES.register ? 'register' : 'login'} />;
+  const isApp = route.query.surface === 'app' || route.path === ROUTES.device;
+  if (route.path === ROUTES.device && (route.query.pairing === '1' || route.query.phone)) return <DeviceStandalone route={route} />;
+  if (!session) return <AuthPage mode={route.path === ROUTES.register ? 'register' : 'login'} surface={isApp ? 'app' : 'web'} initialRole={route.query.role || (route.path === ROUTES.patient ? 'PATIENT' : undefined)} />;
   if (caregiverError) return <FullPageStatus error={caregiverError} onRetry={reloadCaregiver} onLogout={logout} />;
+  if (session.role === 'PATIENT') {
+    if (!caregiver) return <FullPageStatus />;
+    return <PatientPage account={caregiver} surface={isApp ? 'app' : 'web'} />;
+  }
   if (!caregiver || !patientsReady) return <FullPageStatus />;
-  if (route.path === '/' || route.path === ROUTES.login || route.path === ROUTES.register) return <Redirect to={ROUTES.overview} />;
+  if (route.path === '/' || [ROUTES.login, ROUTES.register, ROUTES.patient, ROUTES.device].includes(route.path)) return <Redirect to={ROUTES.overview} surface={isApp ? 'app' : 'web'} />;
 
   return (
-    <AppShell route={route}>
+    <div className={isApp ? 'caregiver-app-mode' : undefined}><AppShell route={route}>
       <CaregiverRoutes route={route} />
-    </AppShell>
+    </AppShell></div>
   );
 }
 

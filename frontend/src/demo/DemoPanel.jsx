@@ -87,7 +87,7 @@ export default function DemoPanel() {
             {devTools ? (
               <>
                 <p className="muted text-xs" style={{ marginBottom: 10 }}>
-                  Máy chủ quét mỗi 15 giây: đến giờ thì cữ chuyển Đang chờ, quá hạn {patient?.missedThresholdMinutes ?? 120} phút thì chuyển Bỏ lỡ và gửi cảnh báo. Đồng hồ chỉ tua tiến; muốn về giờ thực, chạy lại dữ liệu mẫu.
+                  Máy chủ quét mỗi 15 giây: đến giờ thì cữ chuyển Đang chờ; hơn 60 phút sau giờ hẹn chưa xác nhận sẽ chuyển Bỏ lỡ. Uống trong khoảng ±60 phút được tính đúng giờ. Đồng hồ chỉ tua tiến; muốn về giờ thực, chạy lại dữ liệu mẫu.
                 </p>
                 <div className="demo-buttons">
                   <button type="button" className="btn btn-secondary" onClick={() => jump('NEXT_REMINDER')} disabled={!patient || busy}>

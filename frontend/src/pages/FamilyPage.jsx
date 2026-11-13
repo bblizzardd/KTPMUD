@@ -25,9 +25,11 @@ function PairingCard({ patient, delegates, devices }) {
         .filter((d) => d.role === current.role && (current.role === 'PATIENT' || d.delegateId === current.delegateId) && d.pairedAt >= current.createdAt)
         .sort((a, b) => b.pairedAt.localeCompare(a.pairedAt))[0]
     : null;
-  const valid = current && !pairedDevice && remaining > 0;
+  const accountLinked = current?.role === 'PATIENT' && current.hadLoginAccount === false && patient.hasLoginAccount;
+  const valid = current && !pairedDevice && !accountLinked && remaining > 0;
   // Trong lúc mã còn hiệu lực, hỏi lại danh sách thiết bị để thấy ngay khi điện thoại ghép xong.
   useQuery(valid ? patientKey(patient.id, 'devices') : null, () => api.listDevices(patient.id), { refreshMs: 3000 });
+  useQuery(valid && current.role === 'PATIENT' ? 'patients' : null, api.listPatients, { refreshMs: 3000 });
 
   async function generate() {
     const isPatient = target === 'PATIENT';
@@ -38,7 +40,7 @@ function PairingCard({ patient, delegates, devices }) {
     setBusy(false);
     if (!res.ok) return;
     const who = isPatient ? `điện thoại của ${patient.alias}` : `điện thoại của ${active.find((d) => d.id === target)?.alias} (người nhà)`;
-    setPairingCodes((map) => ({ ...map, [patient.id]: { ...res.result, ...body, createdAt, who } }));
+    setPairingCodes((map) => ({ ...map, [patient.id]: { ...res.result, ...body, createdAt, who, hadLoginAccount: Boolean(patient.hasLoginAccount) } }));
   }
 
   function openSimulator() {
@@ -50,7 +52,7 @@ function PairingCard({ patient, delegates, devices }) {
   const clear = () => setPairingCodes((map) => ({ ...map, [patient.id]: undefined }));
 
   return (
-    <Card title="Ghép nối điện thoại" subtitle="Bệnh nhân và người nhà dùng ứng dụng không cần mật khẩu: chỉ cần nhập mã một lần." req="UC-03 · FR-02 · US-14">
+    <Card title="Liên kết tài khoản & thiết bị" subtitle="Mã bệnh nhân dùng để liên kết tài khoản lúc đăng ký lần đầu, hoặc ghép thiết bị. Sau khi đăng ký, bệnh nhân đăng nhập bằng email/mật khẩu trên web và app." req="UC-03 · FR-02 · US-14">
       {valid ? (
         <div className="pair-active">
           <div className="pair-code" aria-live="polite">
@@ -70,8 +72,8 @@ function PairingCard({ patient, delegates, devices }) {
             </div>
           </div>
           <ol className="pair-steps">
-            <li>Mở ứng dụng An Tâm trên điện thoại cần ghép.</li>
-            <li>Nhập 6 số ở bên cạnh rồi bấm “Ghép nối”.</li>
+            {current.role === 'PATIENT' && !patient.hasLoginAccount && <li>Tạo tài khoản: chọn Bệnh nhân → Đăng ký trên web hoặc app, rồi nhập mã này cùng email và mật khẩu.</li>}
+            <li>Hoặc chọn “Ghép thiết bị bằng mã 6 số”, nhập mã rồi bấm “Ghép nối”.</li>
             <li>Mã chỉ dùng được một lần và hết hạn sau {PAIRING_CODE_TTL_MINUTES} phút. Máy chủ chỉ lưu bản băm của mã.</li>
           </ol>
           <div className="row">
@@ -85,12 +87,13 @@ function PairingCard({ patient, delegates, devices }) {
         </div>
       ) : (
         <div className="stack">
+          {accountLinked && <Callout tone="success" title="Đã liên kết tài khoản bệnh nhân" actions={<button type="button" className="btn btn-sm btn-secondary" onClick={clear}>Đóng</button>}>Bệnh nhân có thể đăng nhập bằng email và mật khẩu trên cả web và app.</Callout>}
           {current && pairedDevice && (
             <Callout tone="success" title={`Đã ghép nối lúc ${fmtTime(pairedDevice.pairedAt)}`} actions={<button type="button" className="btn btn-sm btn-secondary" onClick={clear}>Đóng</button>}>
               {pairedDevice.deviceName} của {pairedDevice.ownerAlias} đã được ghép với vai trò {pairedDevice.role === 'PATIENT' ? 'Bệnh nhân' : 'Người nhà'}.
             </Callout>
           )}
-          {current && !pairedDevice && (
+          {current && !pairedDevice && !accountLinked && (
             <Callout tone="warning" title="Mã đã hết hạn" actions={<button type="button" className="btn btn-sm btn-secondary" onClick={clear}>Đóng</button>}>
               Mã cho {current.who} không còn dùng được (mã ghép nối hết hạn trả về lỗi 410). Hãy tạo mã mới.
             </Callout>
@@ -98,7 +101,7 @@ function PairingCard({ patient, delegates, devices }) {
           <div className="pair-form">
             <Field label="Tạo mã cho" htmlFor="pair-target">
               <select id="pair-target" className="select" value={target} onChange={(e) => setTarget(e.target.value)}>
-                <option value="PATIENT">Điện thoại của {patient.alias} (bệnh nhân)</option>
+                <option value="PATIENT">{patient.alias} (bệnh nhân · tài khoản hoặc thiết bị)</option>
                 {active.map((d) => (
                   <option key={d.id} value={d.id}>
                     Điện thoại của {d.alias} (người nhà · {d.relation})

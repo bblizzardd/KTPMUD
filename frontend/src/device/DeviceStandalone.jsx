@@ -11,22 +11,22 @@ import { usePhones } from './phones.js';
 export default function DeviceStandalone({ route }) {
   const { toast } = useApp();
   const [savedId, setSavedId] = usePref('antam.v1.standalonePhone', 'phone-1');
-  const phones = usePhones();
+  const phones = usePhones().filter(p => !p.accountId);
   const wanted = route.query.phone || savedId;
   const phone = phones.find((p) => p.id === wanted) || phones[0];
 
   function select(id) {
     setSavedId(id);
-    window.location.hash = href(ROUTES.device, { phone: id });
+    window.location.hash = href(ROUTES.device, { phone: id, pairing: '1' });
   }
 
   return (
     <div className="device-standalone">
       <div className="device-standalone-bar">
         <a className="btn btn-sm btn-ghost" href={href(ROUTES.overview)}>
-          <ArrowLeft size={15} /> Trang người chăm sóc
+          <ArrowLeft size={15} /> Về trang chính
         </a>
-        <span className="muted text-xs">Ứng dụng điện thoại · kết nối thẳng tới máy chủ An Tâm</span>
+        <a className="btn btn-sm btn-ghost" href={href(ROUTES.login, { surface: 'app' })}>Đăng nhập tài khoản trên app</a>
       </div>
       {phone && (
         <div className="device-standalone-stage">

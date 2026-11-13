@@ -16,7 +16,6 @@ export default function PatientFormModal({ open, mode = 'create', patient, onClo
   const [alias, setAlias] = useState('');
   const [birthYear, setBirthYear] = useState('');
   const [times, setTimes] = useState(toMap(DEFAULT_REMINDER_TIMES));
-  const [threshold, setThreshold] = useState(DEFAULT_MISSED_THRESHOLD);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -26,12 +25,10 @@ export default function PatientFormModal({ open, mode = 'create', patient, onClo
       setAlias(patient.alias);
       setBirthYear(String(patient.birthYear));
       setTimes(toMap(patient.reminderTimes));
-      setThreshold(patient.missedThresholdMinutes);
     } else {
       setAlias('');
       setBirthYear('');
       setTimes(toMap(DEFAULT_REMINDER_TIMES));
-      setThreshold(DEFAULT_MISSED_THRESHOLD);
     }
     // Chỉ khởi tạo khi mở form/đổi hồ sơ, không reset khi dữ liệu nền thay đổi lúc đang nhập.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -46,7 +43,7 @@ export default function PatientFormModal({ open, mode = 'create', patient, onClo
     const body =
       mode === 'create'
         ? { alias: alias.trim(), birthYear: Number(birthYear), reminderTimes }
-        : { alias: alias.trim(), reminderTimes, missedThresholdMinutes: Number(threshold) };
+        : { alias: alias.trim(), reminderTimes, missedThresholdMinutes: DEFAULT_MISSED_THRESHOLD };
     const problems = validatePatientInput(body, { partial: mode === 'edit' });
     if (problems.length) {
       setError({ message: problems[0].issue, details: problems });
@@ -135,16 +132,9 @@ export default function PatientFormModal({ open, mode = 'create', patient, onClo
           {timeError ? <span className="field-error">{timeError}</span> : <span className="field-hint">Đơn thuốc chỉ dùng những buổi có thuốc; giờ các buổi phải tăng dần trong ngày.</span>}
         </fieldset>
 
-        {mode === 'edit' && (
-          <Field
-            label="Ngưỡng chuyển sang Bỏ lỡ (phút)"
-            htmlFor="pf-threshold"
-            error={fieldError(error, 'missedThresholdMinutes')}
-            hint="Từ 15 đến 360 phút. 120 phút hiện chỉ là giả định kiểm thử, cần ý kiến bác sĩ (TD-01)."
-          >
-            <input id="pf-threshold" className="input" type="number" min={15} max={360} step={5} value={threshold} onChange={(e) => setThreshold(e.target.value)} style={{ maxWidth: 160 }} />
-          </Field>
-        )}
+        <Callout tone="info" title="Khoảng đúng giờ: ±60 phút">
+          Uống sớm hoặc muộn tối đa 60 phút so với giờ hẹn được tính đúng giờ. Sau giờ hẹn hơn 60 phút chưa xác nhận sẽ tính bỏ lỡ. Bạn có thể tự chọn giờ riêng cho từng thuốc khi nhập đơn.
+        </Callout>
       </form>
     </Modal>
   );

@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { createApp } from '../src/app.js';
-import { DEFAULT_REMINDERS, localDate, newId, shiftDate } from '../src/common.js';
+import { DEFAULT_REMINDERS, DOSE_WINDOW_MINUTES, localDate, newId, shiftDate } from '../src/common.js';
 import { encryptToken, hashPassword, hashToken, opaqueToken } from '../src/security.js';
 import { tickMedication } from '../src/medication.js';
 
@@ -62,12 +62,12 @@ function seed(passwordHash) {
 
     const bo = db.insert('patients', {
       id: newId(), alias: 'Bố', birthYear: 1954, caregiverId: caregiver.id,
-      reminderTimes: DEFAULT_REMINDERS, missedThresholdMinutes: 120, createdAt: at(day(-95), '20:10'),
+      reminderTimes: DEFAULT_REMINDERS, missedThresholdMinutes: DOSE_WINDOW_MINUTES, createdAt: at(day(-95), '20:10'),
     });
     const me = db.insert('patients', {
       id: newId(), alias: 'Mẹ', birthYear: 1957, caregiverId: caregiver.id,
       reminderTimes: [{ slot: 'MORNING', time: '06:30' }, { slot: 'NOON', time: '11:30' }, { slot: 'AFTERNOON', time: '15:00' }, { slot: 'EVENING', time: '18:30' }],
-      missedThresholdMinutes: 120, createdAt: at(day(-2), '21:15'),
+      missedThresholdMinutes: DOSE_WINDOW_MINUTES, createdAt: at(day(-2), '21:15'),
     });
     for (const patient of [bo, me]) {
       log({ ...asCaregiver, patientId: patient.id, actionType: 'PATIENT_CREATED', targetType: 'Patient', targetId: patient.id }, patient.createdAt);
@@ -122,7 +122,7 @@ function seed(passwordHash) {
         for (const slot of ['MORNING', 'NOON', 'AFTERNOON', 'EVENING']) {
           const scheduledAt = at(date, times[slot]);
           const scheduledMs = Date.parse(scheduledAt);
-          const deadlineMs = scheduledMs + 120 * 60_000;
+          const deadlineMs = scheduledMs + DOSE_WINDOW_MINUTES * 60_000;
           // Prescription B starts at its confirmation; A's doses after that moment were cancelled.
           if (rx === rxB && scheduledMs < supersededAtMs) continue;
           // One outcome per slot so that drugs taken together share a story.

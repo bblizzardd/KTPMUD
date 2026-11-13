@@ -18,8 +18,10 @@ function readSession() {
 }
 
 let session = readSession();
+let sessionGeneration = 0;
 
-function writeSession(next) {
+function writeSession(next, refreshed = false) {
+  if (!refreshed) sessionGeneration++;
   session = next;
   try {
     if (next) sessionStorage.setItem(SESSION_KEY, JSON.stringify(next));
@@ -34,8 +36,8 @@ export function getSession() {
   return session;
 }
 
-export function setTokens(tokens) {
-  writeSession({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken });
+export function setTokens(tokens, refreshed = false) {
+  writeSession({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken, role: tokens.role || 'CAREGIVER', accountId: tokens.accountId || null }, refreshed);
 }
 
 export function clearSession() {
@@ -68,10 +70,12 @@ function refreshTokens() {
       if (!current?.refreshToken) throw new ApiError(401, 'UNAUTHORIZED', 'Phiên đăng nhập đã hết hạn.');
       const response = await send('/auth/refresh', { method: 'POST', body: { refreshToken: current.refreshToken } });
       if (!response.ok) {
-        clearSession();
+        if (session === current) clearSession();
         throw await errorFrom(response);
       }
-      setTokens(await response.json());
+      const tokens = await response.json();
+      if (session !== current) throw new ApiError(401, 'SESSION_CHANGED', 'Phiên đăng nhập đã thay đổi.');
+      setTokens({ ...tokens, role: tokens.role || current.role, accountId: tokens.accountId || current.accountId }, true);
     })().finally(() => {
       refreshing = null;
     });
@@ -111,11 +115,19 @@ export async function request(path, { method = 'GET', body, auth = 'caregiver', 
   if (auth === 'none') return parse(await send(path, { method, body }), { blob });
 
   if (!session) throw new ApiError(401, 'UNAUTHORIZED', 'Vui lòng đăng nhập.');
+  const generation = sessionGeneration;
+  const ensureSameSession = () => {
+    if (generation !== sessionGeneration) throw new ApiError(401, 'SESSION_CHANGED', 'Phiên đăng nhập đã thay đổi.');
+  };
   if (refreshing) await refreshing.catch(() => {});
+  ensureSameSession();
   let response = await send(path, { method, body, token: session?.accessToken });
+  ensureSameSession();
   if (response.status === 401 && session?.refreshToken) {
     await refreshTokens();
+    ensureSameSession();
     response = await send(path, { method, body, token: session?.accessToken });
+    ensureSameSession();
   }
   if (response.status === 401) clearSession();
   return parse(response, { blob });

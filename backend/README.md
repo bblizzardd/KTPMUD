@@ -35,7 +35,7 @@ Dữ liệu mẫu đều là dữ liệu **giả**: hai hồ sơ "Bố" và "M�
 
 ## Phần đã triển khai
 
-- Đăng ký, đăng nhập, JWT 15 phút, refresh token 30 ngày có xoay vòng và chặn dùng lại; mật khẩu băm scrypt.
+- Đăng ký, đăng nhập cho cả CAREGIVER và PATIENT trên web/app; JWT 15 phút, refresh token 30 ngày có xoay vòng và chặn dùng lại; mật khẩu băm scrypt. Đăng ký PATIENT cần mã liên kết PATIENT còn hiệu lực; một tài khoản cho mỗi hồ sơ. SQLite tự thêm bảng patientAccounts khi nâng cấp.
 - Hồ sơ thuộc từng người chăm sóc; token thiết bị chỉ được đọc cữ hôm nay và xác nhận cho đúng bệnh nhân đã ghép.
 - PIN 6 số dùng một lần, hết hạn sau 5 phút; thu hồi thiết bị/người nhà có hiệu lực ngay. Token thiết bị lưu dạng hash, push token mã hóa AES-256-GCM.
 - Đơn nháp, kiểm tra trùng hoạt chất, xác nhận/thay thế/hủy; một đơn ACTIVE cho mỗi bệnh nhân, bảo vệ bằng transaction và unique index.
@@ -47,9 +47,9 @@ Dữ liệu mẫu đều là dữ liệu **giả**: hai hồ sơ "Bố" và "M�
 
 ## Quy ước nghiệp vụ đã chọn
 
-1. Ngày nghiệp vụ theo **UTC+07 (Việt Nam)**; timestamp trả ISO UTC. Giờ mặc định: 07:00, 11:30, 15:00, 19:00; ngưỡng bỏ lỡ mặc định 120 phút.
+1. Ngày nghiệp vụ theo **UTC+07 (Việt Nam)**; timestamp trả ISO UTC. Mỗi dòng thuốc có `times` để tự chọn giờ theo các buổi trong `slots`. Đơn cũ không có `times` dùng giờ mặc định của hồ sơ (07:00, 11:30, 15:00, 19:00 nếu chưa đổi). Ngưỡng bỏ lỡ cố định **60 phút** sau giờ hẹn.
 2. Một `Dose` tương ứng **một dòng thuốc + một buổi + một ngày** đúng schema OpenAPI. UI demo đang gom nhiều thuốc vào một cữ, nên cần ánh xạ khi tích hợp.
-3. `takenAt` là thời điểm bấm xác nhận; `recordedAt` là thời điểm server nhận. Chấp nhận gửi lại offline tối đa 72 giờ, `takenAt` phải cùng ngày của cữ, từ giờ nhắc đến thời điểm hiện tại. Nếu bấm đúng hạn rồi gửi muộn do offline thì vẫn tính đúng hạn. Bấm đúng `deadlineAt` còn trong hạn; sau đó là `LATE_CONFIRMED`.
+3. `takenAt` là giờ uống được ghi nhận; `recordedAt` là thời điểm server nhận. Đúng giờ khi `scheduledAt - 60 phút <= takenAt <= scheduledAt + 60 phút`, kể cả qua nửa đêm; không nhận giờ uống ở tương lai hoặc sớm hơn cửa sổ. Sau cửa sổ là `LATE_CONFIRMED`, chỉ được ghi giờ uống trong ngày của cữ. Chấp nhận gửi lại offline tối đa 72 giờ và phân loại theo `takenAt`. Đúng mốc +60 phút vẫn trong hạn; quá mốc này chưa xác nhận thì `MISSED`. Khi khởi động, hồ sơ và các cữ chưa xác nhận ở trạng thái SCHEDULED/PENDING được cập nhật sang 60 phút, có ghi audit; lịch sử đã ghi nhận được giữ nguyên.
 4. Xác nhận lặp trả `409`; đính chính phải tham chiếu xác nhận **mới nhất của cùng cữ**. Đính chính sửa thời điểm đã ghi nhận bằng bản ghi mới; chưa có nghiệp vụ rút lại xác nhận thành “chưa uống”.
 5. Tỷ lệ = `(TAKEN + TAKEN_BY_DELEGATE) / (TAKEN + TAKEN_BY_DELEGATE + LATE_CONFIRMED + MISSED)`. Bỏ cữ chưa có kết quả và cữ hủy; không có kết quả thì trả 0. `INCLUDE_LATE_IN_RATE=true` đưa xác nhận muộn vào tử số. Đây là lựa chọn kỹ thuật cho điểm còn mở trong đặc tả.
 6. Đổi giờ nhắc/ngưỡng trên hồ sơ áp dụng khi xác nhận đơn tiếp theo; cữ đã sinh giữ nguyên thời điểm để bảo toàn lịch sử.

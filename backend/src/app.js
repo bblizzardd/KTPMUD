@@ -8,7 +8,7 @@ import { getConfig } from './config.js';
 import { ApiError, newId, idSchema, parse } from './common.js';
 import { buildSecurity, hashPassword } from './security.js';
 import { registerAccountRoutes } from './accounts.js';
-import { registerMedicationRoutes } from './medication.js';
+import { registerMedicationRoutes, applyMedicationTimingPolicy } from './medication.js';
 import { registerClinicalRoutes } from './clinical.js';
 import { seedCatalog } from './catalog.js';
 import { createDevClock, registerDevRoutes } from './devtools.js';
@@ -22,6 +22,7 @@ export async function createApp(options = {}) {
     id: newId(), patientId, userId, actionType, targetType, targetId, status, detail, timestamp: ctx.now().toISOString(),
   });
   ctx.dummyPasswordHash = await hashPassword('unused-timing-equalizer');
+  applyMedicationTimingPolicy(ctx);
   buildSecurity(ctx);
   seedCatalog(ctx);
   const app = express();

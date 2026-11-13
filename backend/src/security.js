@@ -31,16 +31,16 @@ export function decryptToken(value, keyHex) {
   return Buffer.concat([cipher.update(data), cipher.final()]).toString('utf8');
 }
 
-export async function createTokenPair(ctx, caregiverId) {
+export async function createTokenPair(ctx, accountId, role = 'CAREGIVER') {
   const now = Math.floor(+ctx.now() / 1000);
-  const accessToken = await new SignJWT({ role: 'CAREGIVER' }).setProtectedHeader({ alg: 'HS256' })
-    .setIssuer('antam').setAudience('antam-web').setSubject(caregiverId).setJti(newId())
+  const accessToken = await new SignJWT({ role }).setProtectedHeader({ alg: 'HS256' })
+    .setIssuer('antam').setAudience('antam-web').setSubject(accountId).setJti(newId())
     .setIssuedAt(now).setExpirationTime(now + ctx.config.accessTokenSeconds)
     .sign(new TextEncoder().encode(ctx.config.jwtSecret));
   const refreshToken = opaqueToken();
   return {
-    response: { accessToken, refreshToken, expiresIn: ctx.config.accessTokenSeconds },
-    record: { id: newId(), caregiverId, tokenHash: hashToken(refreshToken), used: false,
+    response: { accessToken, refreshToken, expiresIn: ctx.config.accessTokenSeconds, role, accountId },
+    record: { id: newId(), ...(role === 'PATIENT' ? { patientAccountId: accountId } : { caregiverId: accountId }), role, tokenHash: hashToken(refreshToken), used: false,
       expiresAt: new Date(+ctx.now() + ctx.config.refreshTokenDays * 86400_000).toISOString(), createdAt: ctx.now().toISOString() },
   };
 }
@@ -51,19 +51,29 @@ export function buildSecurity(ctx) {
     if (!match) throw new ApiError(401, 'UNAUTHORIZED', 'Cần token xác thực hợp lệ');
     return match[1];
   }
-  async function authenticateCaregiver(token) {
+  async function authenticateAccount(token, requiredRole) {
     try {
       const { payload } = await jwtVerify(token, new TextEncoder().encode(ctx.config.jwtSecret), {
         algorithms: ['HS256'], issuer: 'antam', audience: 'antam-web', currentDate: ctx.now(),
       });
-      if (payload.role !== 'CAREGIVER' || !ctx.db.get('caregivers', payload.sub)) throw new Error('Invalid user');
-      return { id: payload.sub, role: 'CAREGIVER', expiresAt: payload.exp * 1000 };
+      if (!['CAREGIVER', 'PATIENT'].includes(payload.role) || (requiredRole && payload.role !== requiredRole)) throw new Error('Invalid role');
+      const account = ctx.db.get(payload.role === 'PATIENT' ? 'patientAccounts' : 'caregivers', payload.sub);
+      if (!account || (payload.role === 'PATIENT' && (!account.active || !ctx.db.get('patients', account.patientId)))) throw new Error('Invalid user');
+      return { id: payload.sub, role: payload.role, ...(payload.role === 'PATIENT' ? { patientId: account.patientId, accountAuth: true } : {}), expiresAt: payload.exp * 1000 };
     } catch { throw new ApiError(401, 'UNAUTHORIZED', 'Phiên đăng nhập không hợp lệ hoặc đã hết hạn'); }
   }
-  ctx.authenticateCaregiver = authenticateCaregiver;
-  ctx.caregiver = async (req, res, next) => { req.actor = await authenticateCaregiver(bearer(req)); next(); };
-  ctx.device = (req, res, next) => {
-    const token = ctx.db.list('devices', { tokenHash: hashToken(bearer(req)) })[0];
+  ctx.authenticateCaregiver = token => authenticateAccount(token, 'CAREGIVER');
+  ctx.account = async (req, res, next) => { req.actor = await authenticateAccount(bearer(req)); next(); };
+  ctx.caregiver = async (req, res, next) => { req.actor = await ctx.authenticateCaregiver(bearer(req)); next(); };
+  ctx.device = async (req, res, next) => {
+    const raw = bearer(req);
+    if (raw.split('.').length === 3) {
+      req.actor = await authenticateAccount(raw, 'PATIENT');
+      req.auditContext = { patientId: req.actor.patientId, targetType: 'Patient', targetId: req.actor.patientId };
+      next();
+      return;
+    }
+    const token = ctx.db.list('devices', { tokenHash: hashToken(raw) })[0];
     const delegate = token?.delegateId ? ctx.db.get('delegates', token.delegateId) : null;
     if (!token?.active || Date.parse(token.expiresAt) <= +ctx.now() || (token.role === 'DELEGATE' && !delegate?.active)) {
       throw new ApiError(401, 'DEVICE_UNAUTHORIZED', 'Thiết bị đã hết hạn hoặc bị thu hồi. Hãy ghép nối lại');

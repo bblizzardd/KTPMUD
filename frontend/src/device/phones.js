@@ -3,8 +3,10 @@
 // một điện thoại thật. Dữ liệu nghiệp vụ vẫn nằm trên máy chủ.
 
 import { useSyncExternalStore } from 'react';
+import { ACCOUNT_SESSION } from '../api/device.js';
 
 const KEY = 'antam.v1.phones';
+const ACCOUNT_KEY = 'antam.v1.accountPhones';
 const listeners = new Set();
 
 const blank = (p) => ({ token: null, online: true, queue: [], largeText: false, cache: null, acked: [], ...p });
@@ -19,7 +21,8 @@ function defaults() {
 function read() {
   try {
     const list = JSON.parse(localStorage.getItem(KEY) || 'null');
-    return Array.isArray(list) && list.length ? list.map(blank) : defaults();
+    const accounts = JSON.parse(sessionStorage.getItem(ACCOUNT_KEY) || '[]');
+    return [...(Array.isArray(list) && list.length ? list.filter(p => !p.accountId).map(blank) : defaults()), ...(Array.isArray(accounts) ? accounts.filter(p => p.accountId).map(blank) : [])];
   } catch {
     return defaults();
   }
@@ -30,7 +33,8 @@ let phones = read();
 function commit(next) {
   phones = next;
   try {
-    localStorage.setItem(KEY, JSON.stringify(next));
+    localStorage.setItem(KEY, JSON.stringify(next.filter(p => !p.accountId)));
+    sessionStorage.setItem(ACCOUNT_KEY, JSON.stringify(next.filter(p => p.accountId)));
   } catch {
     // Không lưu được thì vẫn chạy trong bộ nhớ của tab.
   }
@@ -53,6 +57,16 @@ export function listPhones() {
 
 export function getPhone(id) {
   return phones.find((p) => p.id === id) || null;
+}
+
+export function ensureAccountPhone(account) {
+  const id = `account-${account.id}`;
+  if (!getPhone(id)) commit([...phones, blank({ id, accountId: account.id, name: account.displayName, token: ACCOUNT_SESSION, online: navigator.onLine })]);
+  return getPhone(id);
+}
+
+export function clearAccountPhones() {
+  commit(phones.filter(p => !p.accountId));
 }
 
 export function updatePhone(id, patch) {

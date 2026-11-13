@@ -3,7 +3,7 @@ import { mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 
 const TABLES = ['caregivers', 'patients', 'delegates', 'pairingCodes', 'devices', 'refreshTokens',
-  'drugs', 'prescriptions', 'doses', 'confirmations', 'alerts', 'labResults', 'appointments', 'reports', 'auditLogs'];
+  'drugs', 'prescriptions', 'doses', 'confirmations', 'alerts', 'labResults', 'appointments', 'reports', 'auditLogs', 'patientAccounts'];
 const PATIENT_TABLES = TABLES.filter(name => !['caregivers', 'patients', 'refreshTokens', 'drugs'].includes(name));
 
 export function openDatabase(filename) {
@@ -38,6 +38,20 @@ export function openDatabase(filename) {
         }
       }
       sql.prepare('INSERT INTO schemaMigrations VALUES (1, ?)').run(new Date().toISOString());
+      sql.exec('COMMIT');
+    } catch (error) { sql.exec('ROLLBACK'); throw error; }
+  }
+  if (!sql.prepare('SELECT version FROM schemaMigrations WHERE version = 2').get()) {
+    sql.exec('BEGIN IMMEDIATE');
+    try {
+      sql.exec(`CREATE TABLE IF NOT EXISTS patientAccounts (
+        id TEXT PRIMARY KEY, data TEXT NOT NULL CHECK(json_valid(data)),
+        patientId TEXT GENERATED ALWAYS AS (json_extract(data, '$.patientId')) VIRTUAL REFERENCES patients(id),
+        CHECK(json_extract(data, '$.id') = id)
+      );
+      CREATE UNIQUE INDEX IF NOT EXISTS patient_account_email ON patientAccounts(json_extract(data, '$.email'));
+      CREATE UNIQUE INDEX IF NOT EXISTS patient_account_profile ON patientAccounts(patientId);`);
+      sql.prepare('INSERT INTO schemaMigrations VALUES (2, ?)').run(new Date().toISOString());
       sql.exec('COMMIT');
     } catch (error) { sql.exec('ROLLBACK'); throw error; }
   }

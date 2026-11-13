@@ -45,7 +45,7 @@ test('UC-07: điều kiện ghi xác nhận giống Backend (409, 422, cùng ng�
   const base = {
     date: '2026-10-22',
     scheduledAt: atTime('2026-10-22', '07:00'),
-    deadlineAt: atTime('2026-10-22', '09:00'),
+    deadlineAt: atTime('2026-10-22', '08:00'),
     lastConfirmation: null
   };
   const nowMs = Date.parse(atTime('2026-10-22', '10:00'));
@@ -58,8 +58,9 @@ test('UC-07: điều kiện ghi xác nhận giống Backend (409, 422, cùng ng�
   assert.equal(dup.code, 'DOSE_ALREADY_CONFIRMED');
   assert.match(dup.message, /07:04/);
   assert.equal(checkConfirmable({ ...base, status: 'CANCELLED' }, { takenAt, nowMs }).code, 'DOSE_CANCELLED');
-  // Trước giờ nhắc, ở tương lai hoặc khác ngày của cữ đều bị từ chối (422).
-  assert.equal(checkConfirmable({ ...base, status: 'SCHEDULED' }, { takenAt: atTime('2026-10-22', '06:30'), nowMs }).code, 'INVALID_TAKEN_AT');
+  // Chấp nhận sớm trong 60 phút, từ chối sớm hơn, tương lai hoặc khác ngày ngoài cửa sổ.
+  assert.equal(checkConfirmable({ ...base, status: 'SCHEDULED' }, { takenAt: atTime('2026-10-22', '06:30'), nowMs }).ok, true);
+  assert.equal(checkConfirmable({ ...base, status: 'SCHEDULED' }, { takenAt: atTime('2026-10-22', '05:59'), nowMs }).code, 'INVALID_TAKEN_AT');
   assert.equal(checkConfirmable({ ...base, status: 'PENDING' }, { takenAt: addMinutes(takenAt, 30), nowMs }).status, 422);
   const nextDay = Date.parse(atTime('2026-10-23', '08:00'));
   assert.equal(
@@ -68,7 +69,7 @@ test('UC-07: điều kiện ghi xác nhận giống Backend (409, 422, cùng ng�
   );
   // Đính chính (BR-05): chỉ khi đã có xác nhận, giờ mới vẫn phải hợp lệ.
   assert.equal(checkConfirmable(confirmed, { takenAt: atTime('2026-10-22', '07:15'), nowMs, correction: true }).ok, true);
-  assert.equal(checkConfirmable(confirmed, { takenAt: atTime('2026-10-22', '06:50'), nowMs, correction: true }).status, 422);
+  assert.equal(checkConfirmable(confirmed, { takenAt: atTime('2026-10-22', '06:50'), nowMs, correction: true }).ok, true);
   assert.equal(checkConfirmable({ ...base, status: 'PENDING' }, { takenAt, nowMs, correction: true }).status, 409);
 });
 
@@ -148,7 +149,7 @@ test('FR-09: sinh cữ theo cặp (thuốc, buổi) từ ngày bắt đầu tớ
   assert.equal(doses[0].slot, 'MORNING');
   assert.equal(doses[0].scheduledAt, '2026-10-22T00:00:00.000Z', '07:00 giờ Việt Nam');
   assert.equal(doses.at(-1).date, '2026-10-24');
-  assert.equal(Date.parse(doses[0].deadlineAt) - Date.parse(doses[0].scheduledAt), 90 * 60_000);
+  assert.equal(Date.parse(doses[0].deadlineAt) - Date.parse(doses[0].scheduledAt), 60 * 60_000, 'Ngưỡng cũ của hồ sơ không thay đổi quy tắc 60 phút');
   assert.ok(doses.every((d) => d.status === 'SCHEDULED'));
 
   const existing = new Set(doses.map((d) => `${d.prescriptionItemId}|${d.date}|${d.slot}`));
@@ -161,6 +162,37 @@ test('BR-03: khi thay đơn chỉ hủy cữ "Đã lên lịch" của đơn cũ 
   const doses = [at('07:00', 'TAKEN'), at('11:30', 'PENDING'), at('19:00', 'SCHEDULED'), at('19:00', 'SCHEDULED', 'other')];
   const cancelled = dosesToCancelOnSupersede(doses, 'old', Date.parse(atTime('2026-10-22', '12:00')));
   assert.deepEqual(cancelled.map((d) => d.scheduledAt), [atTime('2026-10-22', '19:00')]);
+});
+
+test('Giờ tự chọn được dùng khi xem trước, sắp xếp và gom các cữ', () => {
+  const prescription = {
+    id: 'rx', patientId: 'p', issuedDate: '2026-10-22', startDate: '2026-10-22', nextVisitDate: '2026-10-22',
+    items: [
+      { id: 'a', drugNameRaw: 'A', unitsPerDose: 1, slots: ['MORNING'], times: { MORNING: '09:45' } },
+      { id: 'b', drugNameRaw: 'B', unitsPerDose: 1, slots: ['MORNING'], times: { MORNING: '08:25' } },
+    ],
+  };
+  const doses = planDoses({ prescription, patient: { missedThresholdMinutes: 120 } });
+  assert.deepEqual(doses.map(d => fmtTime(d.scheduledAt)), ['08:25', '09:45']);
+  assert.equal(groupDoses(doses).length, 2, 'Thuốc cùng buổi nhưng khác giờ không xác nhận chung');
+  assert.deepEqual(validatePrescriptionInput(prescription, { today: '2026-10-22' }), []);
+  prescription.items[0].times.MORNING = '';
+  assert.equal(validatePrescriptionInput(prescription, { today: '2026-10-22' })[0].field, 'items[0].times.MORNING');
+});
+
+test('Khoảng đúng giờ ±60 phút gồm hai mốc và có thể qua nửa đêm', () => {
+  const dose = { date: '2026-10-22', scheduledAt: atTime('2026-10-22', '00:30'), status: 'SCHEDULED' };
+  const scheduled = Date.parse(dose.scheduledAt);
+  for (const delta of [-3600000, 3600000]) {
+    const takenAt = new Date(scheduled + delta).toISOString();
+    assert.equal(checkConfirmable(dose, { takenAt, nowMs: scheduled + 7200000 }).ok, true);
+  }
+  assert.equal(checkConfirmable(dose, { takenAt: new Date(scheduled - 3600001).toISOString(), nowMs: scheduled }).code, 'INVALID_TAKEN_AT');
+  const lateNight = { ...dose, scheduledAt: atTime('2026-10-22', '23:30') };
+  const afterMidnight = atTime('2026-10-23', '00:30');
+  assert.equal(checkConfirmable(lateNight, { takenAt: afterMidnight, nowMs: Date.parse(afterMidnight) }).ok, true);
+  assert.deepEqual(validatePatientInput({ missedThresholdMinutes: 60 }, { partial: true }), []);
+  assert.equal(validatePatientInput({ missedThresholdMinutes: 120 }, { partial: true })[0].field, 'missedThresholdMinutes');
 });
 
 test('Ngày giờ theo giờ Việt Nam (UTC+07) dù máy đặt múi giờ khác', () => {

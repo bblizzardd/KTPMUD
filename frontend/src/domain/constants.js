@@ -157,8 +157,8 @@ export const AUDIT_ACTIONS = {
 };
 
 export const DEFAULT_REMINDER_TIMES = SLOTS.map((slot) => ({ slot, time: SLOT_META[slot].defaultTime }));
-// FR-12 / TD-01: 120 phút chỉ là giả định kiểm thử, chờ ý kiến chuyên môn.
-export const DEFAULT_MISSED_THRESHOLD = 120;
+// Quy tắc đã chốt: đúng giờ trong ±60 phút, bỏ lỡ sau giờ hẹn 60 phút.
+export const DEFAULT_MISSED_THRESHOLD = 60;
 export const PAIRING_CODE_TTL_MINUTES = 5;
 export const ADHERENCE_PERIODS = [7, 30, 90];
 export const REPORT_PERIODS = [30, 60, 90];

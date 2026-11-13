@@ -42,19 +42,20 @@ File `openapi.yaml` là bản hợp đồng giao tiếp (API Contract) giữa Ba
 
 ## 2. Cơ chế Xác thực & Phân quyền (Security)
 
-Hệ thống triển khai 2 cơ chế độc lập:
+Hệ thống hỗ trợ đăng nhập tài khoản cho cả hai vai trò trên web/app và ghép thiết bị tùy chọn:
 
 | Cơ chế | Đối tượng sử dụng | Nền tảng | Cách thức cấp phát |
 | :--- | :--- | :--- | :--- |
-| **`caregiverAuth`** | Người chăm sóc (Caregiver) | Web Application | Đăng nhập bằng Email/Password qua `/auth/login` -> Nhận JWT Bearer Token. Mặc định áp dụng cho tất cả API trừ khi có ghi chú riêng. |
-| **`deviceAuth`** | Bệnh nhân / Người nhà | Mobile Application | Ghép nối bằng mã 6 số (Pairing Code) qua `/devices/pair` -> Nhận `deviceToken`. |
+| **`caregiverAuth`** | Người chăm sóc (Caregiver) | Web và App | Email/Password và `role=CAREGIVER` qua `/auth/login` → JWT. Mặc định cho API quản lý hồ sơ. |
+| **`patientAuth`** | Bệnh nhân | Web và App | Email/Password và `role=PATIENT` qua `/auth/login` → JWT. Chỉ xem hồ sơ phiên, lịch thuốc và xác nhận của bệnh nhân liên kết. |
+| **`deviceAuth`** | Bệnh nhân / Người nhà | Web và App | Ghép bằng mã 6 số qua `/devices/pair` → `deviceToken`; lựa chọn bổ sung. |
 
 ---
 
 ## 3. Phân loại Module (Tags)
 
 API được phân chia thành 11 nhóm chức năng chính:
-1. `Auth`: Đăng ký, đăng nhập, làm mới token cho Người chăm sóc.
+1. `Auth`: Đăng ký, đăng nhập, làm mới token cho Người chăm sóc và Bệnh nhân.
 2. `Patients`: Quản lý hồ sơ bệnh nhân được chăm sóc.
 3. `Devices`: Sinh mã và ghép nối thiết bị di động.
 4. `Delegates`: Quản lý người nhà bấm xác nhận uống thuốc hộ.
@@ -73,16 +74,16 @@ API được phân chia thành 11 nhóm chức năng chính:
 ### 4.1. Phân hệ Xác thực (Auth)
 
 * **`POST /auth/register`**
-  * **Mô tả:** Đăng ký tài khoản người chăm sóc mới.
+  * **Mô tả:** Đăng ký tài khoản người chăm sóc hoặc bệnh nhân mới.
   * **Security:** Không yêu cầu (`security: []`).
-  * **Request Body:** `RegisterRequest` (email, password từ 8 ký tự, displayName).
-  * **Mã trả về:** `201 Created` (thông tin `Caregiver`), `400 Bad Request`, `409 Conflict` (trùng email).
+  * **Request Body:** `RegisterRequest` (email, password từ 8 ký tự, displayName, role mặc định CAREGIVER). PATIENT bắt buộc có pairingCode 6 số, vai trò PATIENT, còn hạn và chưa dùng để liên kết hồ sơ. Mỗi hồ sơ có một tài khoản bệnh nhân.
+  * **Mã trả về:** `201 Created` (Caregiver hoặc PatientAccount), `400 Bad Request`, `409 Conflict` (email hoặc hồ sơ đã có tài khoản), `410 Gone` (mã không hợp lệ, hết hạn hoặc đã dùng).
 
 * **`POST /auth/login`**
-  * **Mô tả:** Xác thực người chăm sóc qua email và mật khẩu.
+  * **Mô tả:** Xác thực người chăm sóc hoặc bệnh nhân qua email và mật khẩu trên cả web/app.
   * **Security:** Không yêu cầu (`security: []`).
-  * **Request Body:** `LoginRequest` (email, password).
-  * **Mã trả về:** `200 OK` (trả về `TokenPair` gồm `accessToken`, `refreshToken`, `expiresIn`), `401 Unauthorized`.
+  * **Request Body:** `LoginRequest` (email, password, role CAREGIVER hoặc PATIENT; mặc định CAREGIVER).
+  * **Mã trả về:** `200 OK` (TokenPair gồm accessToken, refreshToken, expiresIn, role, accountId), `401 Unauthorized`.
 
 * **`POST /auth/refresh`**
   * **Mô tả:** Cấp lại `accessToken` mới khi token cũ hết hiệu lực mà không cần đăng nhập lại.
@@ -107,7 +108,7 @@ API được phân chia thành 11 nhóm chức năng chính:
   * **Mã trả về:** `200 OK`, `403 Forbidden` (không có quyền), `404 Not Found`.
 
 * **`PATCH /patients/{patientId}`**
-  * **Mô tả:** Cập nhật thông tin hồ sơ, mốc giờ nhắc thuốc mặc định hoặc ngưỡng trễ giờ `missedThresholdMinutes` (từ 15 đến 360 phút).
+  * **Mô tả:** Cập nhật thông tin hồ sơ hoặc mốc giờ nhắc thuốc mặc định. `missedThresholdMinutes` cố định là `60`. Trong đơn thuốc, trường `items[].times` cho phép chọn giờ HH:mm riêng theo từng buổi trong `slots`.
   * **Request Body:** `PatientUpdate`.
   * **Mã trả về:** `200 OK`, `400`, `403`, `404`.
 
@@ -203,7 +204,7 @@ API được phân chia thành 11 nhóm chức năng chính:
 * **`POST /doses/{doseId}/confirmations`**
   * **Mô tả:** Xác nhận đã uống thuốc "Một chạm" (FR-15):
     * Xác định người uống qua token thiết bị: vai trò `PATIENT` ghi nhận trạng thái `TAKEN` (Đã uống); vai trò `DELEGATE` ghi nhận `TAKEN_BY_DELEGATE` (Đã uống hộ).
-    * Nếu bấm sau thời hạn quy định (`deadlineAt`), hệ thống ghi nhận `LATE_CONFIRMED` (Xác nhận muộn).
+    * Uống trong khoảng từ 60 phút trước tới 60 phút sau giờ hẹn, bao gồm hai mốc, được tính đúng giờ. Khoảng này có thể qua nửa đêm. Sau mốc +60 phút là `LATE_CONFIRMED` (Xác nhận muộn); quá mốc này chưa xác nhận là `MISSED`. Phân loại theo `takenAt`, kể cả khi gửi lại ngoại tuyến.
     * **Tính bất biến:** Bản ghi xác nhận không được sửa hay xóa. Nếu người dùng ấn nhầm, thực hiện đính chính bằng cách gửi bản ghi mới có trường `correctsConfirmationId`.
   * **Security:** `deviceAuth`.
   * **Request Body:** `ConfirmationCreate` (tùy chọn).

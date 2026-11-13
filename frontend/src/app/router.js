@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 export const ROUTES = {
   login: '/dang-nhap',
   register: '/dang-ky',
+  patient: '/benh-nhan',
   overview: '/tong-quan',
   doses: '/lich-cu-thuoc',
   prescriptions: '/don-thuoc',
@@ -36,6 +37,8 @@ export function useRoute() {
 }
 
 export function href(path, query) {
+  const surface = typeof window !== 'undefined' ? parseHash().query.surface : null;
+  if (surface === 'app' && query?.surface === undefined) query = { surface, ...query };
   const qs = query ? new URLSearchParams(Object.entries(query).filter(([, v]) => v !== undefined && v !== null && v !== '')).toString() : '';
   return `#${path}${qs ? `?${qs}` : ''}`;
 }

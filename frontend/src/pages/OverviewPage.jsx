@@ -7,6 +7,7 @@ import {
   FileText,
   PhoneCall,
   Pill,
+  Plus,
   Smartphone,
   UserPlus
 } from 'lucide-react';
@@ -206,15 +207,23 @@ export default function OverviewPage() {
     <>
       <PageHeader
         eyebrow={`${weekdayOf(today)}, ${fmtDate(today)}`}
-        title={`Tổng quan · ${patient.alias}`}
-        subtitle="Tình hình uống thuốc hôm nay và mức độ tuân thủ theo kỳ, không cần gọi điện hỏi."
+        title={`Quản lý đơn thuốc & sức khỏe cho ${patient.alias}`}
+        subtitle="Theo dõi lịch uống thuốc và chăm sóc người thân từ xa."
         req="UC-09 · FR-19 · US-04"
         actions={
-          <a className="btn btn-secondary" href={href(ROUTES.reports)}>
+          <><a className="btn btn-primary" href={href(ROUTES.prescriptionNew)}>
+            <Plus size={19} aria-hidden="true" /> Thêm đơn thuốc mới
+          </a><a className="btn btn-secondary" href={href(ROUTES.reports)}>
             <FileText size={16} aria-hidden="true" /> Báo cáo cho bác sĩ
-          </a>
+          </a></>
         }
       />
+
+      <div className="overview-stats">
+        <div className="overview-stat"><span>Tỷ lệ tuân thủ uống thuốc</span><strong>{summary.adherenceRate === null ? 'Chưa có dữ liệu' : percent(summary.adherenceRate)}</strong><small>{summary.taken + summary.takenByDelegate} / {summary.totalDoses} cữ đúng hạn trong {days} ngày</small></div>
+        <div className="overview-stat stat-amber"><span>Lịch uống thuốc hôm nay</span><strong>{doneToday} / {todayGroups.length} buổi</strong><small>Đã có xác nhận uống thuốc</small></div>
+        <div className="overview-stat"><span>Lịch tái khám sắp tới</span><strong>{nextVisit ? fmtDate(nextVisit.visitDate) : 'Chưa có lịch'}</strong><small>{nextVisit ? `Nhắc trước ${nextVisit.remindDaysBefore} ngày` : 'Thêm lịch tại Chỉ số & tái khám'}</small></div>
+      </div>
 
       {unreadMissed.length > 0 && (
         <Callout
@@ -240,7 +249,7 @@ export default function OverviewPage() {
       <div className="ov-grid">
         <Card
           className="ov-today"
-          title="Hôm nay"
+          title="Lịch uống thuốc hôm nay"
           subtitle={todayGroups.length ? `${doneToday}/${todayGroups.length} buổi đã có xác nhận` : undefined}
           req="FR-10 · FR-11 · FR-13"
           actions={

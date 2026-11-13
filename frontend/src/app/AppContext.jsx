@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { clearAccountPhones } from '../device/phones.js';
 import * as api from '../api/caregiver.js';
 import { getSession, onSessionChange } from '../api/http.js';
 import { isApiError, isNetworkError } from '../api/errors.js';
@@ -12,6 +13,7 @@ export const patientKey = (patientId, suffix = '') => `p:${patientId}:${suffix}`
 
 export function AppProvider({ children }) {
   const [session, setSession] = useState(getSession);
+  const sessionRef = useRef(session);
   const [toasts, setToasts] = useState([]);
   const [annotate, setAnnotate] = usePref('antam.v1.annotate', false);
   const [phoneOpen, setPhoneOpen] = usePref('antam.v1.phoneOpen', false);
@@ -24,9 +26,12 @@ export function AppProvider({ children }) {
   useEffect(
     () =>
       onSessionChange((next) => {
+        const previous = sessionRef.current;
+        sessionRef.current = next;
         setSession(next);
-        if (!next) {
+        if (!next || previous?.accountId !== next.accountId || previous?.role !== next.role) {
           clearQueries();
+          clearAccountPhones();
           setPairingCodes({});
         }
       }),
@@ -35,7 +40,7 @@ export function AppProvider({ children }) {
 
   const signedIn = Boolean(session);
   const meQ = useQuery('me', api.getMe, { enabled: signedIn });
-  const patientsQ = useQuery('patients', api.listPatients, { enabled: signedIn });
+  const patientsQ = useQuery('patients', api.listPatients, { enabled: signedIn && session.role !== 'PATIENT' });
   const caregiver = signedIn ? meQ.data || null : null;
   const patients = useMemo(() => [...(patientsQ.data || [])].sort((a, b) => a.createdAt.localeCompare(b.createdAt)), [patientsQ.data]);
   const patient = patients.find((p) => p.id === selectedPatientId) || patients[0] || null;

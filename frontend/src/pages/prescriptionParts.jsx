@@ -44,7 +44,7 @@ export function RxItemsTable({ items, highlight = [] }) {
                     {SLOTS.map((s) => (
                       <span key={s} className={item.slots.includes(s) ? 'on' : ''} title={SLOT_META[s].long}>
                         {item.slots.includes(s) && <Check size={11} strokeWidth={3} aria-hidden="true" />}
-                        {SLOT_META[s].label}
+                        {SLOT_META[s].label}{item.slots.includes(s) && item.times?.[s] ? ` · ${item.times[s]}` : ''}
                       </span>
                     ))}
                   </span>

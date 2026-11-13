@@ -14,6 +14,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  Monitor,
   Pill,
   Plus,
   Smartphone,
@@ -380,24 +381,32 @@ export default function AppShell({ route, children }) {
 
   return (
     <div className={`shell ${navOpen ? 'nav-open' : ''} ${phoneOpen ? 'phone-open' : ''}`}>
-      <Sidebar route={route} linkStatus={linkStatus} />
-      <div className="sidebar-backdrop" onClick={() => setNavOpen(false)} aria-hidden="true" />
-      <div className="main">
         <header className="topbar no-print">
           <button type="button" className="topbar-icon-btn topbar-menu-btn" onClick={() => setNavOpen(true)} aria-label="Mở menu">
             <Menu size={20} />
           </button>
-          <PatientSwitcher route={route} />
+          <a className="topbar-brand" href={href(ROUTES.overview)} aria-label="An Tâm · Tổng quan">
+            <span className="logo-mark"><Pill size={27} aria-hidden="true" /></span>
+            <span><strong>AN TÂM</strong><small>Chăm sóc người thân, an tâm mỗi ngày</small></span>
+          </a>
+          <span className="role-badge">Người thân</span>
           <div className="topbar-right">
             <SimulatedClock />
+            <a className="topbar-icon-btn" href={href(route.path, { surface: route.query.surface === 'app' ? 'web' : 'app' })} aria-label={route.query.surface === 'app' ? 'Chuyển sang giao diện web' : 'Chuyển sang giao diện app'} title={route.query.surface === 'app' ? 'Giao diện web' : 'Giao diện app'}>
+              {route.query.surface === 'app' ? <Monitor size={19} /> : <Smartphone size={19} />}
+            </a>
             <button type="button" className="topbar-phone-btn" aria-pressed={phoneOpen} onClick={() => setPhoneOpen(!phoneOpen)} title="Xem ứng dụng trên điện thoại của bệnh nhân / người nhà (mô phỏng)">
               <Smartphone size={17} aria-hidden="true" />
-              <span className="label">Điện thoại mô phỏng</span>
+              <span className="label">Xem giao diện điện thoại</span>
             </button>
             {patient && <AlertsButton />}
             <AccountMenu />
           </div>
         </header>
+      <Sidebar route={route} linkStatus={linkStatus} />
+      <div className="sidebar-backdrop" onClick={() => setNavOpen(false)} aria-hidden="true" />
+      <div className="main">
+        <div className="patient-toolbar"><PatientSwitcher route={route} /><span>Theo dõi sức khỏe người thân</span></div>
         <div className="content-area">
           <main className="page" id="main">
             {children}

@@ -15,8 +15,8 @@ const qs = (values) => {
 
 // --- Auth (UC-01) ---
 export const register = (body) => request('/auth/register', { method: 'POST', body, auth: 'none' });
-export async function login({ email, password }) {
-  const tokens = await request('/auth/login', { method: 'POST', body: { email, password }, auth: 'none' });
+export async function login({ email, password, role = 'CAREGIVER' }) {
+  const tokens = await request('/auth/login', { method: 'POST', body: { email, password, role }, auth: 'none' });
   setTokens(tokens);
   return tokens;
 }
@@ -63,6 +63,7 @@ export function toPrescriptionInput(form) {
       unitsPerDose: Number(item.unitsPerDose),
       unit: text(item.unit) || 'viên',
       slots: [...item.slots],
+      ...(item.times ? { times: Object.fromEntries(item.slots.map(slot => [slot, item.times[slot]])) } : {}),
       ...(text(item.instruction) ? { instruction: text(item.instruction) } : {})
     }))
   };

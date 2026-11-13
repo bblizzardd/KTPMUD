@@ -60,7 +60,7 @@ function StatusGuide({ open, onClose }) {
             </table>
           </div>
           <p className="fine-print" style={{ marginTop: 8 }}>
-            "Trong thời hạn" xét theo thời điểm bấm (takenAt), nên xác nhận lưu tạm khi mất mạng rồi gửi lại sau (tối đa 72 giờ) vẫn được tính đúng hạn. Cữ bỏ lỡ còn nhận xác nhận muộn tới hết ngày của cữ.
+            Đúng giờ là từ 60 phút trước đến 60 phút sau giờ hẹn, gồm cả hai mốc. Quá mốc sau mà chưa xác nhận sẽ tính bỏ lỡ. Xét theo giờ uống (takenAt), kể cả xác nhận ngoại tuyến gửi lại trong 72 giờ. Khoảng đúng giờ có thể qua nửa đêm; ngoài khoảng đó chỉ nhận xác nhận muộn trong ngày của cữ.
           </p>
         </div>
       </div>

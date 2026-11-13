@@ -50,8 +50,8 @@ function reject(status, code, message) {
 }
 
 /**
- * Điều kiện ghi một xác nhận, giống Backend (UC-07, UC-08): thời điểm uống từ giờ nhắc
- * tới hiện tại và trong cùng ngày của cữ; cữ đã có xác nhận chỉ nhận bản đính chính.
+ * Cho phép uống sớm tối đa 60 phút; khoảng ±60 phút có thể qua nửa đêm.
+ * Ngoài khoảng đúng giờ, xác nhận muộn chỉ được ghi trong ngày của cữ.
  * Trả về { ok: true } hoặc mô tả lỗi theo mã HTTP.
  */
 export function checkConfirmable(dose, { takenAt, nowMs, correction = false }) {
@@ -59,8 +59,10 @@ export function checkConfirmable(dose, { takenAt, nowMs, correction = false }) {
   if (Number.isNaN(takenMs)) return reject(422, 'INVALID_TAKEN_AT', 'Thời điểm uống không hợp lệ.');
   if (dose.status === 'CANCELLED') return reject(409, 'DOSE_CANCELLED', 'Cữ thuốc này đã bị hủy vì đơn thuốc đã được thay thế.');
   if (takenMs > nowMs) return reject(422, 'INVALID_TAKEN_AT', 'Giờ uống không được muộn hơn bây giờ.');
-  if (takenMs < Date.parse(dose.scheduledAt)) return reject(422, 'INVALID_TAKEN_AT', `Giờ uống phải từ giờ nhắc ${fmtTime(dose.scheduledAt)} trở đi.`);
-  if (toDateKey(takenMs) !== dose.date) return reject(422, 'CONFIRMATION_OUTSIDE_DOSE_DAY', 'Chỉ ghi giờ uống trong ngày của cữ thuốc.');
+  const scheduledMs = Date.parse(dose.scheduledAt);
+  const windowMs = DEFAULT_MISSED_THRESHOLD * 60_000;
+  if (takenMs < scheduledMs - windowMs) return reject(422, 'INVALID_TAKEN_AT', `Chỉ xác nhận từ 60 phút trước giờ hẹn ${fmtTime(dose.scheduledAt)}.`);
+  if (toDateKey(takenMs) !== dose.date && Math.abs(takenMs - scheduledMs) > windowMs) return reject(422, 'CONFIRMATION_OUTSIDE_DOSE_DAY', 'Ngoài khoảng đúng giờ ±60 phút, chỉ ghi giờ uống trong ngày của cữ thuốc.');
   if (correction) {
     if (!dose.lastConfirmation) return reject(409, 'INVALID_CORRECTION', 'Cữ thuốc chưa có xác nhận nào để đính chính.');
     return { ok: true };
@@ -153,6 +155,13 @@ export function validatePrescriptionInput(input, { forConfirm = false, today = t
     else if (units > 50) add(`items[${i}].unitsPerDose`, 'Số đơn vị mỗi lần quá lớn, hãy kiểm tra lại.');
     const slots = Array.isArray(item?.slots) ? item.slots.filter((s) => SLOTS.includes(s)) : [];
     if (slots.length === 0) add(`items[${i}].slots`, 'Chọn ít nhất một buổi uống.');
+    if (item.times !== undefined) {
+      for (const slot of slots) {
+        if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(item.times?.[slot] || '')) add(`items[${i}].times.${slot}`, 'Chọn giờ uống hợp lệ.');
+      }
+      const times = slots.map(slot => item.times?.[slot]).filter(Boolean);
+      if (new Set(times).size !== times.length) add(`items[${i}].times`, 'Các lần uống của cùng một thuốc phải khác giờ.');
+    }
     if (String(item?.instruction || '').length > 200) add(`items[${i}].instruction`, 'Ghi chú tối đa 200 ký tự.');
   });
   return details;
@@ -176,13 +185,13 @@ export function itemDisplayName(item) {
  * Buổi đã qua giờ trong khoảng đó cũng được sinh (chuyển Bỏ lỡ nếu không xác nhận muộn).
  */
 export function planDoses({ prescription, patient, existingKeys = new Set(), makeId }) {
-  const threshold = Number(patient?.missedThresholdMinutes) || DEFAULT_MISSED_THRESHOLD;
+  const threshold = DEFAULT_MISSED_THRESHOLD;
   const planned = [];
   for (let day = prescription.startDate; day <= prescription.nextVisitDate; day = addDays(day, 1)) {
     for (const slot of SLOTS) {
-      const scheduledAt = atTime(day, reminderTimeOf(patient, slot));
       for (const item of prescription.items) {
         if (!item.slots.includes(slot)) continue;
+        const scheduledAt = atTime(day, item.times?.[slot] || reminderTimeOf(patient, slot));
         const key = doseKey(item.id, day, slot);
         if (existingKeys.has(key)) continue;
         planned.push({
@@ -204,7 +213,7 @@ export function planDoses({ prescription, patient, existingKeys = new Set(), mak
       }
     }
   }
-  return planned;
+  return planned.sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt));
 }
 
 export function doseKey(itemId, date, slot) {
@@ -347,7 +356,7 @@ export function validatePatientInput(input, { partial = false, nowYear = new Dat
   }
   if (input.missedThresholdMinutes !== undefined) {
     const t = Number(input.missedThresholdMinutes);
-    if (!Number.isInteger(t) || t < 15 || t > 360) add('missedThresholdMinutes', 'Ngưỡng bỏ lỡ từ 15 đến 360 phút.');
+    if (t !== DEFAULT_MISSED_THRESHOLD) add('missedThresholdMinutes', 'Ngưỡng bỏ lỡ cố định là 60 phút.');
   }
   return details;
 }

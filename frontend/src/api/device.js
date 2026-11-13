@@ -3,7 +3,8 @@
 
 import { request } from './http.js';
 
-const device = (token) => ({ auth: 'device', deviceToken: token });
+export const ACCOUNT_SESSION = 'account-session';
+const device = (token) => token === ACCOUNT_SESSION ? { auth: 'account' } : { auth: 'device', deviceToken: token };
 
 export const pairDevice = ({ code, pushToken, platform = 'ANDROID', deviceName }) =>
   request('/devices/pair', { method: 'POST', auth: 'none', body: { code, pushToken, platform, ...(deviceName ? { deviceName } : {}) } });

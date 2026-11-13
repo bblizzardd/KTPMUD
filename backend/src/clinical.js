@@ -34,8 +34,10 @@ function auditActor(ctx, log, cache) {
   if (log.userId && log.userId !== SYSTEM_ID) {
     const caregiver = ctx.db.get('caregivers', log.userId);
     const device = caregiver ? null : ctx.db.get('devices', log.userId);
+    const account = caregiver || device ? null : ctx.db.get('patientAccounts', log.userId);
     if (caregiver) actor = { actorRole: 'CAREGIVER', actorLabel: caregiver.displayName };
     else if (device) actor = { actorRole: device.role, actorLabel: device.ownerAlias };
+    else if (account) actor = { actorRole: 'PATIENT', actorLabel: account.displayName };
     else actor = { actorRole: 'UNKNOWN', actorLabel: 'Không xác định' };
   }
   cache.set(log.userId, actor);

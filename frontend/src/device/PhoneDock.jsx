@@ -78,7 +78,7 @@ export function PhoneControls({ phones, phone, onSelect, notify, standalone = fa
 
 export default function PhoneDock({ onClose }) {
   const { phoneId, setPhoneId, toast } = useApp();
-  const phones = usePhones();
+  const phones = usePhones().filter(p => !p.accountId);
   const phone = phones.find((p) => p.id === phoneId) || phones[0];
   if (!phone) return null;
   return (
@@ -86,7 +86,7 @@ export default function PhoneDock({ onClose }) {
       <div className="phone-dock-head">
         <div>
           <strong>Điện thoại mô phỏng</strong>
-          <span>Ứng dụng của bệnh nhân / người nhà — không cần đăng nhập</span>
+          <span>Đăng nhập bệnh nhân / người chăm sóc, hoặc ghép thiết bị bằng mã</span>
         </div>
         <button type="button" className="btn btn-ghost btn-icon btn-sm" onClick={onClose} aria-label="Đóng điện thoại mô phỏng">
           <X size={18} />

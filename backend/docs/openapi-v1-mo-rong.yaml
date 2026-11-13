@@ -15,7 +15,10 @@ paths:
   /auth/me:
     get:
       tags: [Auth]
-      summary: Người chăm sóc đang đăng nhập
+      summary: Tài khoản người chăm sóc hoặc bệnh nhân đang đăng nhập
+      security:
+        - caregiverAuth: []
+        - patientAuth: []
       operationId: getMe
       x-ly-do: Web App kiểm tra phiên khi tải lại trang
       responses:
@@ -23,7 +26,10 @@ paths:
           description: Thông tin công khai của tài khoản
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Caregiver' }
+              schema:
+                oneOf:
+                  - { $ref: '#/components/schemas/Caregiver' }
+                  - { $ref: '../../docs/api/openapi.yaml#/components/schemas/PatientAccount' }
         '401': { $ref: '../../docs/api/openapi.yaml#/components/responses/Unauthorized' }
 
   /drugs/{drugId}:
@@ -87,6 +93,7 @@ paths:
       x-ly-do: Màn hình điện thoại chào đúng người và phát hiện máy đã bị thu hồi (401)
       security:
         - deviceAuth: []
+        - patientAuth: []
       responses:
         '200':
           description: Hồ sơ thiết bị
@@ -103,6 +110,7 @@ paths:
       x-ly-do: US-10 — lần gần nhất có thể là hôm qua, ngoài phạm vi /device/doses/today
       security:
         - deviceAuth: []
+        - patientAuth: []
       responses:
         '200':
           description: Lần uống gần nhất; null khi chưa có
@@ -288,6 +296,14 @@ paths:
 
 components:
   securitySchemes:
+    caregiverAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    patientAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
     deviceAuth:
       type: http
       scheme: bearer

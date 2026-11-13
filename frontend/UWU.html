@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>An Tâm - Nhắc Lịch Uống Thuốc Cho Người Cao Tuổi</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font: Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: {
+                            900: '#064e3b',
+                            800: '#065f46',
+                            700: '#047857',
+                            600: '#059669',
+                            100: '#d1fae5',
+                            50: '#ecfdf5'
+                        },
+                        amber: {
+                            500: '#f59e0b',
+                            100: '#fef3c7',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Segoe UI', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f0fdf4;
+            color: #0f172a;
+        }
+        /* Mobile Frame Styling */
+        .mobile-frame {
+            max-width: 420px;
+            height: 850px;
+            border: 12px solid #0f172a;
+            border-radius: 48px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+            overflow: hidden;
+            margin: 0 auto;
+            position: relative;
+            background-color: #f8fafc;
+        }
+        .mobile-notch {
+            width: 140px;
+            height: 24px;
+            background-color: #0f172a;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-bottom-left-radius: 14px;
+            border-bottom-right-radius: 14px;
+            z-index: 50;
+        }
+        /* Accessibility Focus */
+        button:focus-visible, input:focus-visible, select:focus-visible {
+            outline: 4px solid #f59e0b;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col pb-16">
+
+    <!-- ==================== 0. LOGIN / WELCOME SCREEN ==================== -->
+    <div id="loginScreen" class="fixed inset-0 z-50 bg-gradient-to-br from-emerald-950 via-emerald-900 to-emerald-800 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+        <div class="max-w-xl w-full bg-white rounded-3xl p-6 sm:p-10 shadow-2xl border-4 border-emerald-500/20 text-center my-auto">
+            
+            <!-- Logo Header -->
+            <div class="w-20 h-20 bg-emerald-100 text-emerald-800 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <i class="fa-solid fa-pills text-4xl text-emerald-700"></i>
+            </div>
+            
+            <h1 class="text-3xl sm:text-4xl font-black text-emerald-950 tracking-tight">Chào mừng đến với An Tâm</h1>
+            <p class="text-slate-600 font-bold text-base sm:text-lg mt-2">Ứng dụng theo dõi uống thuốc & chăm sóc sức khỏe cho người cao tuổi</p>
+
+            <!-- Role Selector Cards -->
+            <div class="mt-8 space-y-4">
+                <p class="text-xs font-black text-emerald-800 uppercase tracking-wider text-left">Vui lòng chọn vai trò để tiếp tục:</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Choose Patient -->
+                    <button onclick="performLogin('patient')" class="group p-5 bg-emerald-50 hover:bg-emerald-100 border-3 border-emerald-600 rounded-3xl text-left transition flex flex-col justify-between shadow-sm hover:shadow-md">
+                        <div>
+                            <div class="w-12 h-12 bg-emerald-700 text-white rounded-2xl flex items-center justify-center font-black text-xl mb-3 shadow">
+                                <i class="fa-solid fa-user-heart"></i>
+                            </div>
+                            <h3 class="text-xl font-black text-emerald-950 group-hover:text-emerald-700 transition">Tôi là Bệnh Nhân</h3>
+                            <p class="text-xs font-bold text-emerald-800 mt-1">Giao diện chữ to, đơn giản, nhắc giờ uống thuốc rõ ràng.</p>
+                        </div>
+                        <div class="mt-4 flex items-center text-xs font-black text-emerald-900">
+                            Vào ứng dụng <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition"></i>
+                        </div>
+                    </button>
+
+                    <!-- Choose Caregiver -->
+                    <button onclick="performLogin('caregiver')" class="group p-5 bg-amber-50 hover:bg-amber-100 border-3 border-amber-500 rounded-3xl text-left transition flex flex-col justify-between shadow-sm hover:shadow-md">
+                        <div>
+                            <div class="w-12 h-12 bg-amber-500 text-emerald-950 rounded-2xl flex items-center justify-center font-black text-xl mb-3 shadow">
+                                <i class="fa-solid fa-user-shield"></i>
+                            </div>
+                            <h3 class="text-xl font-black text-amber-950 group-hover:text-amber-800 transition">Tôi là Người Thân</h3>
+                            <p class="text-xs font-bold text-amber-900 mt-1">Xem tiến độ uống thuốc từ xa, thêm & quản lý đơn thuốc.</p>
+                        </div>
+                        <div class="mt-4 flex items-center text-xs font-black text-amber-950">
+                            Vào trang quản lý <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition"></i>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Fast Quick Access Options -->
+            <div class="mt-8 border-t border-slate-100 pt-6 space-y-3">
+                <p class="text-xs text-slate-400 font-bold">Nhập mã 6 số cá nhân (Ví dụ dành cho Bố):</p>
+                <div class="flex items-center justify-center gap-2">
+                    <input type="text" placeholder="123 456" maxlength="6" class="w-40 text-center font-mono text-xl font-black tracking-widest px-4 py-2.5 bg-slate-100 border-2 border-slate-200 rounded-xl focus:border-emerald-600 focus:outline-none">
+                    <button onclick="performLogin('patient')" class="bg-emerald-900 hover:bg-emerald-800 text-white font-black px-5 py-2.5 rounded-xl text-sm transition">
+                        Vào ngay
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- ==================== TOP CONTROL BAR ==================== -->
+    <header class="bg-emerald-900 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+            
+            <!-- Logo & Title -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="showLoginScreen()">
+                <div class="w-12 h-12 bg-white text-emerald-900 rounded-2xl flex items-center justify-center shadow-lg font-black text-2xl">
+                    <i class="fa-solid fa-pills text-emerald-700"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black tracking-tight text-white flex items-center gap-2">
+                        AN TÂM
+                        <span id="roleBadge" class="text-xs px-3 py-1 bg-amber-400 text-emerald-950 font-black rounded-full uppercase tracking-wider">Bệnh Nhân</span>
+                    </h1>
+                    <p class="text-xs text-emerald-100 hidden sm:block">Dành riêng cho Ông Bà • Chữ to • Dễ nhìn</p>
+                </div>
+            </div>
+
+            <!-- Mode Controls -->
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                
+                <!-- Toggle Patient vs Caregiver Interface -->
+                <button onclick="toggleUserRole()" id="roleToggleBtn" class="bg-emerald-800 hover:bg-emerald-700 border border-emerald-600 text-white px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition">
+                    <i class="fa-solid fa-user-shield text-amber-300"></i>
+                    <span id="roleToggleLabel">Đổi sang Giao diện Người Thân</span>
+                </button>
+
+                <!-- Mobile Simulator Button -->
+                <button onclick="toggleMobileView()" id="mobileSimBtn" class="bg-amber-400 hover:bg-amber-300 text-emerald-950 font-extrabold px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow-sm transition">
+                    <i class="fa-solid fa-mobile-screen"></i>
+                    <span class="hidden md:inline" id="mobileSimLabel">Xem giao diện Điện thoại</span>
+                </button>
+
+                <!-- Logout / Switch Account -->
+                <button onclick="showLoginScreen()" title="Đăng xuất / Chuyển tài khoản" class="bg-emerald-950 hover:bg-black text-emerald-200 p-2.5 rounded-xl text-sm transition">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+
+            </div>
+        </div>
+    </header>
+
+
+    <!-- ==================== MAIN CONTENT CONTAINER ==================== -->
+    <main class="flex-grow max-w-5xl w-full mx-auto px-4 sm:px-6 py-6">
+
+        <!-- ================= PATIENT VIEW ================= -->
+        <div id="patientView" class="space-y-6">
+
+            <!-- 1. PATIENT HEADER & QUICK AUDIO ASSISTANT -->
+            <div class="bg-gradient-to-r from-emerald-900 to-emerald-800 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative z-10">
+                    <div class="flex items-center gap-4">
+                        <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-4 border-emerald-500 shadow-md">
+                        <div>
+                            <span class="text-xs bg-emerald-700 text-emerald-100 font-bold px-3 py-1 rounded-full uppercase tracking-wider">Hồ sơ bệnh nhân</span>
+                            <h2 class="text-2xl sm:text-4xl font-black text-white mt-1">Bố Nguyễn Văn Bằng</h2>
+                            <p class="text-emerald-100 text-sm sm:text-base font-bold mt-1">
+                                <i class="fa-regular fa-calendar-check text-amber-300 mr-1"></i> Hôm nay: Thứ Ba, 10 tháng 11
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Audio Reader Button -->
+                    <button onclick="speakSchedule()" class="w-full sm:w-auto bg-amber-400 hover:bg-amber-300 active:scale-95 text-emerald-950 font-black px-6 py-4 rounded-2xl shadow-lg flex items-center justify-center gap-3 text-lg transition shrink-0">
+                        <i class="fa-solid fa-volume-high text-2xl text-emerald-900"></i>
+                        <span>Đọc lịch thuốc cho tôi</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. MEDICINE SCHEDULE CARDS -->
+            <div class="space-y-4">
+                <div class="flex items-center justify-between pt-2">
+                    <h3 class="text-2xl sm:text-3xl font-black text-emerald-950 flex items-center gap-3">
+                        <i class="fa-solid fa-clock text-emerald-700"></i>
+                        Lịch Uống Thuốc Hôm Nay
+                    </h3>
+                    <span id="medCountBadge" class="text-sm font-extrabold bg-emerald-200 text-emerald-900 px-3 py-1 rounded-full">3 Liều trong ngày</span>
+                </div>
+
+                <!-- DYNAMIC SENIOR MEDICINE LIST -->
+                <div class="space-y-6" id="seniorMedList">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- ================= CAREGIVER FULL MANAGEMENT VIEW ================= -->
+        <div id="caregiverView" class="space-y-6 hidden">
+            
+            <!-- Caregiver Overview Header -->
+            <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-800">Quản Lý Đơn Thuốc & Sức Khỏe Cho Bố</h2>
+                    <p class="text-slate-500 text-sm font-bold">Theo dõi thời gian thực xem Bố đã uống thuốc chưa từ xa.</p>
+                </div>
+                <!-- Add New Medicine Button -->
+                <button onclick="openModal('addMedModal')" class="w-full sm:w-auto bg-emerald-800 hover:bg-emerald-700 active:scale-95 text-white font-black px-6 py-3.5 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-base transition">
+                    <i class="fa-solid fa-plus text-amber-300"></i>
+                    <span>Thêm đơn thuốc mới</span>
+                </button>
+            </div>
+
+            <!-- Monitoring Stats -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-5 bg-white rounded-3xl border-2 border-emerald-100 shadow-sm">
+                    <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Tỷ lệ tuân thủ uống thuốc</p>
+                    <p class="text-3xl font-black text-emerald-900 mt-1">96.5%</p>
+                    <p class="text-xs text-emerald-700 font-bold mt-1">✓ Đã uống 58 / 60 liều tháng này</p>
+                </div>
+                <div class="p-5 bg-white rounded-3xl border-2 border-amber-100 shadow-sm">
+                    <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Số dư thuốc còn lại</p>
+                    <p class="text-3xl font-black text-amber-900 mt-1">Còn 12 ngày</p>
+                    <p class="text-xs text-amber-700 font-bold mt-1">Cần mua thêm trước 22/11</p>
+                </div>
+                <div class="p-5 bg-white rounded-3xl border-2 border-slate-100 shadow-sm">
+                    <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Bác sĩ phụ trách</p>
+                    <p class="text-xl font-black text-slate-800 mt-1">BS. Nguyễn Văn Minh</p>
+                    <p class="text-xs text-slate-500 font-bold">BV Việt Xô • ĐT: 0912.345.678</p>
+                </div>
+            </div>
+
+            <!-- Doctor Visit Summary Section for Caregiver -->
+            <div class="bg-emerald-900 text-white rounded-3xl p-6 sm:p-7 shadow-xl space-y-4">
+                <div class="flex items-center justify-between border-b border-emerald-800 pb-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-amber-400 text-emerald-950 rounded-xl flex items-center justify-center text-xl font-black">
+                            <i class="fa-solid fa-notes-medical"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-black">Tình Trạng & Chẩn Đoán Khám Gần Nhất</h3>
+                            <p class="text-xs text-emerald-200">Khám ngày 01/11/2026 tại Bệnh viện Hữu Nghị Việt Xô</p>
+                        </div>
+                    </div>
+                    <span class="text-xs bg-emerald-800 text-emerald-200 font-bold px-3 py-1 rounded-full">Tái khám: 01/12/2026</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div class="bg-emerald-950/60 p-4 rounded-2xl border border-emerald-700/50">
+                        <p class="text-xs font-black text-amber-300 uppercase">Chẩn đoán chính</p>
+                        <p class="text-base font-bold mt-1">Đái tháo đường Type 2 • Huyết áp tâm thu ổn định</p>
+                    </div>
+                    <div class="bg-emerald-950/60 p-4 rounded-2xl border border-emerald-700/50">
+                        <p class="text-xs font-black text-amber-300 uppercase">Lời dặn của Bác sĩ</p>
+                        <p class="text-sm font-medium mt-1">Duy trì liều Metformin sau ăn sáng. Uống đủ 1.5 - 2 lít nước/ngày. Hạn chế ăn tinh bột buổi tối.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Remote Live Status Log for Caregiver -->
+            <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-200 space-y-4">
+                <h3 class="text-xl font-black text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-emerald-700"></i>
+                    Nhật Ký Uống Thuốc Trong Ngày
+                </h3>
+                <div class="divide-y divide-slate-100" id="caregiverStatusList">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- ================= MOBILE SIMULATOR FRAME ================= -->
+        <div id="mobileSimulator" class="hidden">
+            <div class="mobile-frame">
+                <div class="mobile-notch"></div>
+                
+                <!-- Simulated Mobile Header -->
+                <div class="bg-emerald-900 text-white pt-9 pb-4 px-5 flex items-center justify-between shadow-md">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-pills text-amber-300 text-xl"></i>
+                        <span class="font-black text-lg">An Tâm Mobile</span>
+                    </div>
+                    <span class="text-xs bg-amber-400 text-emerald-950 font-black px-2.5 py-0.5 rounded-full">Bố Bằng</span>
+                </div>
+
+                <!-- Simulated Mobile Content -->
+                <div class="p-4 space-y-4 overflow-y-auto max-h-[720px]" id="mobileMedList">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+
+    <!-- ==================== MODAL: THÊM ĐƠN THUỐC MỚI (FOR CAREGIVER) ==================== -->
+    <div id="addMedModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border-4 border-emerald-600 relative my-auto max-h-[90vh] overflow-y-auto">
+            
+            <button onclick="closeModal('addMedModal')" class="absolute top-5 right-5 w-10 h-10 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full flex items-center justify-center font-black text-xl">
+                ✕
+            </button>
+
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="w-12 h-12 bg-emerald-100 text-emerald-800 rounded-2xl flex items-center justify-center text-2xl font-black">
+                    <i class="fa-solid fa-prescription-bottle-medical"></i>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-black text-emerald-950">Thêm Thuốc Mới Cho Bố</h3>
+                    <p class="text-xs text-slate-500 font-bold">Thông tin sẽ tự động đồng bộ sang giao diện của Bố</p>
+                </div>
+            </div>
+
+            <form onsubmit="handleAddNewMedicine(event)" class="space-y-4">
+                
+                <!-- Tên thuốc -->
+                <div>
+                    <label class="block text-xs font-black text-slate-700 uppercase tracking-wider mb-1">Tên Thuốc & Hàm Lượng *</label>
+                    <input type="text" id="inputMedName" required placeholder="Ví dụ: Glucophage 500mg" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 font-bold text-slate-900 focus:border-emerald-600 focus:outline-none">
+                </div>
+
+                <!-- Công dụng / Ghi chú ngắn -->
+                <div>
+                    <label class="block text-xs font-black text-slate-700 uppercase tracking-wider mb-1">Công Dụng Thuốc (Hiển thị cho Bố dễ hiểu) *</label>
+                    <input type="text" id="inputMedUsage" required placeholder="Ví dụ: Thuốc hạ đường huyết / Thuốc bổ mắt" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 font-bold text-slate-900 focus:border-emerald-600 focus:outline-none">
+                </div>
+
+                <!-- Khung giờ uống & Hướng dẫn -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-black text-slate-700 uppercase tracking-wider mb-1">Thời Gian Uống *</label>
+                        <select id="inputMedTime" required class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 font-bold text-slate-900 focus:border-emerald-600 focus:outline-none">
+                            <option value="07:30 SÁNG">07:30 SÁNG (Buổi sáng)</option>
+                            <option value="11:30 TRƯA">11:30 TRƯA (Buổi trưa)</option>
+                            <option value="20:00 TỐI">20:00 TỐI (Buổi tối)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-slate-700 uppercase tracking-wider mb-1">Liều Dùng (Chữ to) *</label>
+                        <input type="text" id="inputMedDose" required placeholder="Ví dụ: Uống 1 viên" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 font-bold text-slate-900 focus:border-emerald-600 focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Chọn hình dạng thuốc mô phỏng trực quan -->
+                <div>
+                    <label class="block text-xs font-black text-slate-700 uppercase tracking-wider mb-2">Chọn Hình Dạng Thuốc Mô Phỏng (Cho Bố dễ nhận biết) *</label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="pillShape" value="oval" checked class="peer sr-only">
+                            <div class="p-3 border-2 border-slate-200 peer-checked:border-emerald-600 peer-checked:bg-emerald-50 rounded-2xl flex flex-col items-center justify-center text-center transition">
+                                <div class="w-10 h-5 bg-white border-2 border-emerald-600 rounded-full flex items-center justify-center mb-1">
+                                    <div class="w-full h-0.5 bg-emerald-300"></div>
+                                </div>
+                                <span class="text-[11px] font-black text-slate-800">Viên dẹt dài</span>
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="radio" name="pillShape" value="capsule" class="peer sr-only">
+                            <div class="p-3 border-2 border-slate-200 peer-checked:border-amber-500 peer-checked:bg-amber-50 rounded-2xl flex flex-col items-center justify-center text-center transition">
+                                <div class="w-8 h-4 rounded-full flex overflow-hidden border border-amber-600 mb-1">
+                                    <div class="w-1/2 bg-amber-500"></div>
+                                    <div class="w-1/2 bg-emerald-600"></div>
+                                </div>
+                                <span class="text-[11px] font-black text-slate-800">Viên nhộng</span>
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="radio" name="pillShape" value="round" class="peer sr-only">
+                            <div class="p-3 border-2 border-slate-200 peer-checked:border-emerald-600 peer-checked:bg-emerald-50 rounded-2xl flex flex-col items-center justify-center text-center transition">
+                                <div class="w-6 h-6 bg-white border-2 border-emerald-700 rounded-full flex items-center justify-center mb-1">
+                                    <div class="w-full h-0.5 bg-emerald-300"></div>
+                                </div>
+                                <span class="text-[11px] font-black text-slate-800">Viên tròn</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Lời dặn uống thuốc -->
+                <div>
+                    <label class="block text-xs font-black text-slate-700 uppercase tracking-wider mb-1">Lời Dặn Uống *</label>
+                    <input type="text" id="inputMedNote" required placeholder="Ví dụ: Ngay sau khi ăn cơm xong 15 phút" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 font-bold text-slate-900 focus:border-emerald-600 focus:outline-none">
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-4 flex items-center justify-end space-x-3">
+                    <button type="button" onclick="closeModal('addMedModal')" class="px-5 py-3.5 rounded-xl font-bold text-slate-600 hover:bg-slate-100">
+                        Hủy bỏ
+                    </button>
+                    <button type="submit" class="bg-emerald-800 hover:bg-emerald-700 text-white font-black px-7 py-3.5 rounded-xl text-base shadow-lg transition">
+                        Lưu & Đồng bộ ngay
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+
+    <!-- ==================== TOAST NOTIFICATION ==================== -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 text-white font-black px-6 py-4 rounded-2xl shadow-2xl transform translate-y-32 opacity-0 transition-all duration-300 z-50 flex items-center space-x-3">
+        <i class="fa-solid fa-circle-check text-emerald-400 text-2xl"></i>
+        <span id="toastMsg" class="text-lg">Thao tác thành công!</span>
+    </div>
+
+
+    <!-- ==================== JAVASCRIPT STATE & LOGIC ==================== -->
+    <script>
+        // Initial Medicine Data Store
+        let medicines = [
+            {
+                id: 'med-1',
+                name: 'Metformin 850mg',
+                usage: 'Thuốc kiểm soát đường huyết',
+                time: '07:30 SÁNG',
+                subnote: '(Sau khi ăn sáng)',
+                dose: 'Uống đúng 1 viên',
+                shape: 'oval',
+                status: 'taken', // 'taken' or 'pending'
+                takenTime: '07:32 AM'
+            },
+            {
+                id: 'med-2',
+                name: 'Amlodipine 5mg',
+                usage: 'Thuốc ổn định huyết áp',
+                time: '11:30 TRƯA',
+                subnote: '(Sau khi ăn trưa)',
+                dose: 'Uống đúng 1 viên',
+                shape: 'capsule',
+                status: 'taken',
+                takenTime: '11:40 AM'
+            },
+            {
+                id: 'med-3',
+                name: 'Gliclazide 60mg',
+                usage: 'Thuốc hạ đường huyết buổi tối',
+                time: '20:00 TỐI',
+                subnote: '(Ngay sau bữa ăn tối)',
+                dose: 'UỐNG 1 VIÊN TRÒN',
+                shape: 'round',
+                status: 'pending',
+                takenTime: null
+            }
+        ];
+
+        let isPatientRole = true;
+        let isMobileSimulator = false;
+
+        // Initialize UI on Load
+        window.onload = function() {
+            renderMedicines();
+        };
+
+        // Render All Views Dynamically
+        function renderMedicines() {
+            renderSeniorList();
+            renderCaregiverList();
+            renderMobileList();
+        }
+
+        // Render Patient Interface List
+        function renderSeniorList() {
+            const container = document.getElementById('seniorMedList');
+            if (!container) return;
+
+            let html = '';
+            let pendingCount = 0;
+
+            medicines.forEach((med) => {
+                if (med.status === 'pending') pendingCount++;
+
+                // Visual shape renderer
+                let shapeGraphic = '';
+                if (med.shape === 'oval') {
+                    shapeGraphic = `
+                        <div class="w-20 h-20 bg-emerald-100 border-2 border-emerald-300 rounded-2xl flex flex-col items-center justify-center shrink-0 shadow-inner">
+                            <div class="w-12 h-6 bg-white border-2 border-emerald-600 rounded-full flex items-center justify-center shadow-sm">
+                                <div class="w-full h-0.5 bg-emerald-300"></div>
+                            </div>
+                            <span class="text-[10px] font-black text-emerald-800 mt-1 uppercase">Viên dẹt</span>
+                        </div>`;
+                } else if (med.shape === 'capsule') {
+                    shapeGraphic = `
+                        <div class="w-20 h-20 bg-amber-100 border-2 border-amber-300 rounded-2xl flex flex-col items-center justify-center shrink-0 shadow-inner">
+                            <div class="w-10 h-5 rounded-full flex overflow-hidden border-2 border-amber-600 shadow-sm">
+                                <div class="w-1/2 bg-amber-500"></div>
+                                <div class="w-1/2 bg-emerald-600"></div>
+                            </div>
+                            <span class="text-[10px] font-black text-amber-900 mt-1 uppercase">Viên nhộng</span>
+                        </div>`;
+                } else {
+                    shapeGraphic = `
+                        <div class="w-20 h-20 bg-amber-500 border-2 border-amber-600 rounded-2xl flex flex-col items-center justify-center shrink-0 shadow-md">
+                            <div class="w-10 h-10 bg-white rounded-full border-2 border-amber-800 flex items-center justify-center shadow">
+                                <div class="w-full h-0.5 bg-amber-300"></div>
+                            </div>
+                            <span class="text-[10px] font-black text-white mt-1 uppercase tracking-wider">Viên tròn</span>
+                        </div>`;
+                }
+
+                if (med.status === 'taken') {
+                    html += `
+                        <div class="bg-white rounded-3xl p-6 sm:p-7 shadow-md border-3 border-emerald-500 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 transition">
+                            <div class="flex items-start space-x-5">
+                                ${shapeGraphic}
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="bg-emerald-800 text-white font-black text-xs px-3 py-1 rounded-lg uppercase tracking-wider">${med.time}</span>
+                                        <span class="text-xs font-bold text-slate-500">${med.subnote}</span>
+                                    </div>
+                                    <h4 class="text-2xl sm:text-3xl font-black text-slate-900">${med.name}</h4>
+                                    <p class="text-base font-bold text-emerald-800"><i class="fa-solid fa-circle-info mr-1"></i> ${med.usage}</p>
+                                    <p class="text-lg font-extrabold text-slate-700 mt-2">Liều dùng: <span class="text-emerald-900 font-black underline">${med.dose}</span></p>
+                                </div>
+                            </div>
+                            <button disabled class="w-full md:w-auto bg-emerald-600 text-white font-black px-8 py-5 rounded-2xl text-xl flex items-center justify-center gap-3 shadow-lg cursor-default border-0">
+                                <i class="fa-solid fa-circle-check text-2xl text-amber-300"></i>
+                                <span>ĐÃ UỐNG XONG</span>
+                            </button>
+                        </div>`;
+                } else {
+                    html += `
+                        <div class="bg-amber-100/90 rounded-3xl p-6 sm:p-7 shadow-xl border-4 border-amber-400 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 transition">
+                            <div class="flex items-start space-x-5">
+                                ${shapeGraphic}
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="bg-amber-500 text-emerald-950 font-black text-sm px-3 py-1 rounded-lg uppercase tracking-wider animate-pulse">${med.time} HÔM NAY</span>
+                                        <span class="text-xs font-bold text-amber-950">${med.subnote}</span>
+                                    </div>
+                                    <h4 class="text-3xl sm:text-4xl font-black text-amber-950">${med.name}</h4>
+                                    <p class="text-base font-extrabold text-amber-900"><i class="fa-solid fa-circle-info mr-1"></i> ${med.usage}</p>
+                                    <p class="text-xl font-black text-amber-950 mt-2">Liều dùng: <span class="text-rose-700 font-black text-2xl underline">${med.dose}</span></p>
+                                </div>
+                            </div>
+                            <button onclick="markMedAsTaken('${med.id}')" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black px-9 py-6 rounded-3xl text-2xl flex items-center justify-center gap-3 shadow-2xl transition border-4 border-emerald-300">
+                                <i class="fa-solid fa-hand-pointer text-3xl text-amber-300"></i>
+                                <span>BẤM ĐÃ UỐNG THUỐC</span>
+                            </button>
+                        </div>`;
+                }
+            });
+
+            container.innerHTML = html;
+            const countBadge = document.getElementById('medCountBadge');
+            if (countBadge) countBadge.innerText = `${medicines.length} Liều trong ngày (${pendingCount} liều chưa uống)`;
+        }
+
+        // Render Caregiver Interface Monitoring List
+        function renderCaregiverList() {
+            const container = document.getElementById('caregiverStatusList');
+            if (!container) return;
+
+            let html = '';
+            medicines.forEach((med) => {
+                const isTaken = med.status === 'taken';
+                html += `
+                    <div class="py-4 flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-10 h-10 ${isTaken ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'} rounded-xl flex items-center justify-center text-lg font-black">
+                                <i class="fa-solid ${isTaken ? 'fa-check' : 'fa-clock'}"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-black text-slate-900 text-base">${med.name}</h4>
+                                <p class="text-xs text-slate-500 font-bold">${med.time} • Liều: ${med.dose}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs font-black px-3 py-1 rounded-full ${isTaken ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-200 text-amber-950'}">
+                                ${isTaken ? '✓ Đã uống (' + (med.takenTime || 'Đúng giờ') + ')' : 'Chờ Bố uống'}
+                            </span>
+                        </div>
+                    </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        // Render Mobile Simulator Content
+        function renderMobileList() {
+            const container = document.getElementById('mobileMedList');
+            if (!container) return;
+
+            let html = `
+                <button onclick="speakSchedule()" class="w-full bg-amber-400 text-emerald-950 font-black p-3.5 rounded-2xl flex items-center justify-between shadow">
+                    <span class="text-sm">🔊 Đọc lịch thuốc hôm nay</span>
+                    <i class="fa-solid fa-circle-play text-xl"></i>
+                </button>
+                <div class="space-y-3">
+                    <p class="text-xs font-black text-slate-500 uppercase">Lịch uống thuốc hôm nay</p>`;
+
+            medicines.forEach((med) => {
+                const isTaken = med.status === 'taken';
+                html += `
+                    <div class="${isTaken ? 'bg-white border-2 border-emerald-500' : 'bg-amber-100 border-2 border-amber-400'} p-4 rounded-2xl space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="${isTaken ? 'bg-emerald-800 text-white' : 'bg-amber-500 text-emerald-950'} text-[10px] font-black px-2 py-0.5 rounded">${med.time}</span>
+                            <span class="${isTaken ? 'text-emerald-700 font-extrabold' : 'text-amber-950 font-black'} text-xs">
+                                ${isTaken ? '✓ Đã uống' : 'CẦN UỐNG'}
+                            </span>
+                        </div>
+                        <h5 class="font-black text-lg text-slate-900">${med.name}</h5>
+                        <p class="text-xs text-slate-600 font-bold">${med.dose} ${med.subnote}</p>
+                        ${!isTaken ? `
+                            <button onclick="markMedAsTaken('${med.id}')" class="w-full bg-emerald-600 text-white font-black py-3 rounded-xl text-sm shadow-md mt-2">
+                                BẤM ĐÃ UỐNG THUỐC
+                            </button>` : ''}
+                    </div>`;
+            });
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        // Action: Mark medicine as taken
+        function markMedAsTaken(id) {
+            const med = medicines.find(m => m.id === id);
+            if (med) {
+                med.status = 'taken';
+                const now = new Date();
+                med.takenTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                renderMedicines();
+                openToast(`Tuyệt vời Bố ơi! Đã ghi nhận Bố uống thuốc ${med.name}.`);
+                speakText(`Giỏi lắm Bố ơi! Đã ghi nhận Bố uống xong thuốc ${med.name}.`);
+            }
+        }
+
+        // Action: Add new medicine (Caregiver modal)
+        function handleAddNewMedicine(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('inputMedName').value;
+            const usage = document.getElementById('inputMedUsage').value;
+            const time = document.getElementById('inputMedTime').value;
+            const dose = document.getElementById('inputMedDose').value;
+            const note = document.getElementById('inputMedNote').value;
+            const shape = document.querySelector('input[name="pillShape"]:checked').value;
+
+            const newMed = {
+                id: 'med-' + Date.now(),
+                name: name,
+                usage: usage,
+                time: time,
+                subnote: `(${note})`,
+                dose: dose,
+                shape: shape,
+                status: 'pending',
+                takenTime: null
+            };
+
+            medicines.push(newMed);
+            renderMedicines();
+            closeModal('addMedModal');
+            event.target.reset();
+
+            openToast(`Đã thêm đơn thuốc ${name} và đồng bộ cho Bố!`);
+        }
+
+        // Perform Login Action
+        function performLogin(role) {
+            document.getElementById('loginScreen').classList.add('hidden');
+            if (role === 'caregiver') {
+                isPatientRole = false;
+                document.getElementById('patientView').classList.add('hidden');
+                document.getElementById('caregiverView').classList.remove('hidden');
+                updateRoleBadge('Người Thân');
+            } else {
+                isPatientRole = true;
+                document.getElementById('patientView').classList.remove('hidden');
+                document.getElementById('caregiverView').classList.add('hidden');
+                updateRoleBadge('Bệnh Nhân');
+            }
+            openToast(`Chào mừng bạn quay trở lại An Tâm!`);
+        }
+
+        function showLoginScreen() {
+            document.getElementById('loginScreen').classList.remove('hidden');
+        }
+
+        function updateRoleBadge(roleText) {
+            const badge = document.getElementById('roleBadge');
+            const toggleBtnLabel = document.getElementById('roleToggleLabel');
+            if (roleText === 'Người Thân') {
+                badge.innerText = "Người Thân";
+                badge.className = "text-xs px-3 py-1 bg-amber-400 text-slate-950 font-black rounded-full uppercase tracking-wider";
+                toggleBtnLabel.innerText = "Đổi sang Giao diện Bệnh Nhân";
+            } else {
+                badge.innerText = "Bệnh Nhân";
+                badge.className = "text-xs px-3 py-1 bg-amber-400 text-emerald-950 font-black rounded-full uppercase tracking-wider";
+                toggleBtnLabel.innerText = "Đổi sang Giao diện Người Thân";
+            }
+        }
+
+        // Toggle User Role Button
+        function toggleUserRole() {
+            isPatientRole = !isPatientRole;
+            const patientView = document.getElementById('patientView');
+            const caregiverView = document.getElementById('caregiverView');
+            const mobileSim = document.getElementById('mobileSimulator');
+
+            mobileSim.classList.add('hidden');
+            isMobileSimulator = false;
+
+            if (isPatientRole) {
+                patientView.classList.remove('hidden');
+                caregiverView.classList.add('hidden');
+                updateRoleBadge('Bệnh Nhân');
+                openToast("Đã chuyển sang Giao diện Bệnh Nhân!");
+            } else {
+                patientView.classList.add('hidden');
+                caregiverView.classList.remove('hidden');
+                updateRoleBadge('Người Thân');
+                openToast("Đã chuyển sang Giao diện Quản lý của Người Thân!");
+            }
+        }
+
+        // Toggle Mobile View
+        function toggleMobileView() {
+            isMobileSimulator = !isMobileSimulator;
+            const patientView = document.getElementById('patientView');
+            const caregiverView = document.getElementById('caregiverView');
+            const mobileSim = document.getElementById('mobileSimulator');
+            const mobileSimLabel = document.getElementById('mobileSimLabel');
+
+            if (isMobileSimulator) {
+                patientView.classList.add('hidden');
+                caregiverView.classList.add('hidden');
+                mobileSim.classList.remove('hidden');
+                mobileSimLabel.innerText = "Xem giao diện Máy tính";
+                openToast("Đang mô phỏng giao diện Điện thoại!");
+            } else {
+                mobileSim.classList.add('hidden');
+                if (isPatientRole) {
+                    patientView.classList.remove('hidden');
+                } else {
+                    caregiverView.classList.remove('hidden');
+                }
+                mobileSimLabel.innerText = "Xem giao diện Điện thoại";
+                openToast("Đã về giao diện Màn hình lớn!");
+            }
+        }
+
+        // Voice Assistant TTS
+        function speakSchedule() {
+            const pendingMeds = medicines.filter(m => m.status === 'pending');
+            if (pendingMeds.length === 0) {
+                speakText("Chào Bố Bằng. Hôm nay Bố đã hoàn thành uống tất cả các liều thuốc rồi ạ. Chúc Bố một ngày tốt lành!");
+            } else {
+                const names = pendingMeds.map(m => m.name).join(', ');
+                speakText(`Chào Bố Bằng. Hôm nay Bố còn ${pendingMeds.length} liều thuốc chưa uống, đó là ${names}. Bố nhớ bấm nút màu xanh sau khi uống thuốc xong nhé.`);
+            }
+        }
+
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'vi-VN';
+                utterance.rate = 0.85;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Modal Controls
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        // Toast Helper
+        function openToast(msg) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            toastMsg.innerText = msg;
+            toast.classList.remove('translate-y-32', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-32', 'opacity-0');
+            }, 3500);
+        }
+    </script>
+</body>
+</html>

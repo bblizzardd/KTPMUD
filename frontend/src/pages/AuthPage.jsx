@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BellRing, Building2, Eye, EyeOff, FileText, HeartPulse, ShieldCheck, Smartphone } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, HeartPulse, Pill, ShieldCheck, Smartphone } from 'lucide-react';
 import * as api from '../api/caregiver.js';
 import { fieldError } from '../api/errors.js';
 import { isEmail } from '../domain/rules.js';
@@ -26,18 +26,31 @@ function PasswordInput({ id, value, onChange, autoComplete, invalid }) {
   );
 }
 
-export default function AuthPage({ mode = 'login' }) {
+export default function AuthPage({ mode = 'login', surface = 'web', initialRole }) {
   const { toast } = useApp();
   const [tab, setTab] = useState(mode);
   const [login, setLogin] = useState({ email: '', password: '' });
-  const [reg, setReg] = useState({ displayName: '', email: '', password: '', confirm: '' });
+  const [reg, setReg] = useState({ displayName: '', email: '', password: '', confirm: '', pairingCode: '' });
+  const [role, setRole] = useState(initialRole === 'PATIENT' ? 'PATIENT' : 'CAREGIVER');
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [showForm, setShowForm] = useState(mode === 'register' || Boolean(initialRole));
+  const roleLabel = role === 'PATIENT' ? 'bệnh nhân' : 'người chăm sóc';
+
+  function chooseRole(next) {
+    setRole(next);
+    setShowForm(true);
+    setError(null);
+  }
 
   useEffect(() => {
     setTab(mode);
     setError(null);
+    if (mode === 'register') setShowForm(true);
   }, [mode]);
+  useEffect(() => {
+    if (['PATIENT', 'CAREGIVER'].includes(initialRole)) chooseRole(initialRole);
+  }, [initialRole]);
 
   async function run(task) {
     if (busy) return;
@@ -55,9 +68,9 @@ export default function AuthPage({ mode = 'login' }) {
   function submitLogin(e) {
     e.preventDefault();
     run(async () => {
-      await api.login({ email: login.email.trim(), password: login.password });
+      await api.login({ email: login.email.trim(), password: login.password, role });
       toast({ title: 'Đăng nhập thành công' });
-      navigate(ROUTES.overview);
+      navigate(role === 'PATIENT' ? ROUTES.patient : ROUTES.overview, { surface });
     });
   }
 
@@ -66,6 +79,7 @@ export default function AuthPage({ mode = 'login' }) {
     const details = [];
     if (!reg.displayName.trim()) details.push({ field: 'displayName', issue: 'Nhập tên hiển thị.' });
     if (!isEmail(reg.email)) details.push({ field: 'email', issue: 'Email không hợp lệ.' });
+    if (role === 'PATIENT' && !/^\d{6}$/.test(reg.pairingCode)) details.push({ field: 'pairingCode', issue: 'Nhập mã liên kết 6 số do người chăm sóc cung cấp.' });
     if (reg.password.length < 8) details.push({ field: 'password', issue: 'Mật khẩu tối thiểu 8 ký tự.' });
     else if (reg.password !== reg.confirm) details.push({ field: 'confirm', issue: 'Mật khẩu nhập lại chưa khớp.' });
     if (details.length) {
@@ -73,78 +87,58 @@ export default function AuthPage({ mode = 'login' }) {
       return;
     }
     run(async () => {
-      const body = { email: reg.email.trim(), password: reg.password, displayName: reg.displayName.trim() };
+      const body = { email: reg.email.trim(), password: reg.password, displayName: reg.displayName.trim(), role, ...(role === 'PATIENT' ? { pairingCode: reg.pairingCode } : {}) };
       await api.register(body);
       await api.login(body);
-      toast({ title: 'Đã tạo tài khoản', message: 'Bắt đầu bằng việc tạo hồ sơ người thân.' });
-      navigate(ROUTES.overview);
+      toast({ title: 'Đã tạo tài khoản', message: role === 'PATIENT' ? 'Bạn có thể dùng tài khoản này trên cả web và app.' : 'Bắt đầu bằng việc tạo hồ sơ người thân.' });
+      navigate(role === 'PATIENT' ? ROUTES.patient : ROUTES.overview, { surface });
     });
   }
 
   const fe = (f) => fieldError(error, f);
 
   return (
-    <div className="auth-page">
-      <section className="auth-brand">
-        <div className="auth-logo">
-          <span className="logo-mark">
-            <HeartPulse size={22} aria-hidden="true" />
-          </span>
-          An Tâm
-        </div>
-        <div>
-          <h1>Biết bố mẹ đã uống thuốc chưa — không cần gọi hỏi nhiều lần.</h1>
-          <p className="lead">Hỗ trợ người chăm sóc theo dõi điều trị ngoại trú đái tháo đường type 2 cho người thân cao tuổi.</p>
-        </div>
-        <div className="auth-points">
-          <div className="auth-point">
-            <span className="auth-point-icon">
-              <BellRing size={19} aria-hidden="true" />
-            </span>
-            <div>
-              <strong>Nhắc đúng giờ, một nút “Đã uống”</strong>
-              <span>Chữ lớn, không cần đăng nhập trên điện thoại của bố mẹ.</span>
-            </div>
-          </div>
-          <div className="auth-point">
-            <span className="auth-point-icon">
-              <ShieldCheck size={19} aria-hidden="true" />
-            </span>
-            <div>
-              <strong>Cảnh báo khi bỏ lỡ cữ</strong>
-              <span>Gửi tới bạn và người nhà sống cùng được ủy quyền.</span>
-            </div>
-          </div>
-          <div className="auth-point">
-            <span className="auth-point-icon">
-              <FileText size={19} aria-hidden="true" />
-            </span>
-            <div>
-              <strong>Báo cáo 30 ngày cho bác sĩ</strong>
-              <span>Phân biệt tự xác nhận, xác nhận hộ và xác nhận muộn.</span>
-            </div>
-          </div>
-        </div>
-        <div className="auth-scope">
-          <Building2 size={15} aria-hidden="true" /> Phạm vi: Khoa Nội tiết – Đái tháo đường, Bệnh viện Hữu Nghị
-        </div>
-      </section>
-
+    <div className={`auth-page ${surface === 'app' ? 'auth-app-mode' : ''}`}>
       <main className="auth-main">
         <div className="auth-card">
-          <h2>{tab === 'login' ? 'Đăng nhập' : 'Tạo tài khoản người chăm sóc'}</h2>
-          <p className="muted text-sm">Dành cho người con / người chăm sóc chính.</p>
+          <div className="welcome-heading">
+            <span className="welcome-logo"><Pill size={38} aria-hidden="true" /></span>
+            <h1>Chào mừng đến với An Tâm</h1>
+            <p>Ứng dụng theo dõi uống thuốc & chăm sóc sức khỏe cho người cao tuổi</p>
+            <div className="auth-surfaces" aria-label="Chọn giao diện">
+              <a href={href(ROUTES.login, { surface: 'web', role })} aria-current={surface === 'web' ? 'page' : undefined}>Giao diện web</a>
+              <a href={href(ROUTES.login, { surface: 'app', role })} aria-current={surface === 'app' ? 'page' : undefined}>Giao diện app</a>
+            </div>
+          </div>
+          <p className="role-prompt">Vui lòng chọn vai trò để tiếp tục:</p>
+          <div className="role-options">
+            <button type="button" className="role-option role-patient" aria-pressed={showForm && role === 'PATIENT'} aria-controls="account-auth" onClick={() => chooseRole('PATIENT')} disabled={busy}>
+              <span className="role-icon"><HeartPulse size={26} aria-hidden="true" /></span>
+              <strong>Tôi là Bệnh Nhân</strong>
+              <span>Giao diện chữ to, đơn giản, nhắc giờ uống thuốc rõ ràng.</span>
+              <span className="role-action">Đăng nhập bệnh nhân <ArrowRight size={16} aria-hidden="true" /></span>
+            </button>
+            <button type="button" className="role-option role-caregiver" aria-pressed={showForm && role === 'CAREGIVER'} aria-controls="account-auth" onClick={() => chooseRole('CAREGIVER')} disabled={busy}>
+              <span className="role-icon"><ShieldCheck size={26} aria-hidden="true" /></span>
+              <strong>Tôi là Người Chăm Sóc</strong>
+              <span>Xem tiến độ uống thuốc từ xa, thêm & quản lý đơn thuốc.</span>
+              <span className="role-action">Đăng nhập người chăm sóc <ArrowRight size={16} aria-hidden="true" /></span>
+            </button>
+          </div>
+          {showForm && <section id="account-auth" className="caregiver-auth" aria-label={`Tài khoản ${roleLabel}`}>
+          <h2>{tab === 'login' ? `Đăng nhập ${roleLabel}` : `Tạo tài khoản ${roleLabel}`}</h2>
+          <p className="muted text-sm">Dùng cùng tài khoản trên web và app.</p>
           <Segmented
             ariaLabel="Đăng nhập hoặc đăng ký"
             value={tab}
-            onChange={(v) => navigate(v === 'login' ? ROUTES.login : ROUTES.register)}
+            onChange={(v) => { if (!busy) { setTab(v); setError(null); } }}
             options={[
               { value: 'login', label: 'Đăng nhập' },
               { value: 'register', label: 'Đăng ký' }
             ]}
           />
 
-          {error && !error.details?.length && (
+          {error && (!error.details?.length || tab === 'login') && (
             <Callout tone="danger" className="mb-12">
               {error.message}
             </Callout>
@@ -161,7 +155,7 @@ export default function AuthPage({ mode = 'login' }) {
               <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={busy}>
                 {busy && <Spinner />} Đăng nhập
               </button>
-              {DEMO_ACCOUNT && (
+              {DEMO_ACCOUNT && role === 'CAREGIVER' && (
                 <div className="demo-hint">
                   <span>
                     Tài khoản demo: <span className="mono">{DEMO_ACCOUNT.email}</span> / <span className="mono">{DEMO_ACCOUNT.password}</span>
@@ -174,9 +168,12 @@ export default function AuthPage({ mode = 'login' }) {
             </form>
           ) : (
             <form className="stack" onSubmit={submitRegister} noValidate>
-              <Field label="Tên hiển thị" required htmlFor="reg-name" error={fe('displayName')} hint="Ví dụ: Bình (con trai)">
+              <Field label="Tên hiển thị" required htmlFor="reg-name" error={fe('displayName')} hint={role === 'PATIENT' ? 'Ví dụ: Bố, Mẹ' : 'Ví dụ: Bình (con trai)'}>
                 <input id="reg-name" className="input" maxLength={100} autoComplete="nickname" value={reg.displayName} onChange={(e) => setReg((f) => ({ ...f, displayName: e.target.value }))} aria-invalid={Boolean(fe('displayName'))} />
               </Field>
+              {role === 'PATIENT' && <Field label="Mã liên kết hồ sơ" required htmlFor="reg-pairing" error={fe('pairingCode')} hint="Chỉ cần khi tạo tài khoản lần đầu. Người chăm sóc lấy mã bệnh nhân tại Hồ sơ & thiết bị → Tạo mã 6 số.">
+                <input id="reg-pairing" className="input" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={reg.pairingCode} onChange={e => setReg(f => ({ ...f, pairingCode: e.target.value.replace(/\D/g, '').slice(0, 6) }))} aria-invalid={Boolean(fe('pairingCode'))} />
+              </Field>}
               <Field label="Email" required htmlFor="reg-email" error={fe('email')}>
                 <input id="reg-email" className="input" type="email" autoComplete="email" value={reg.email} onChange={(e) => setReg((f) => ({ ...f, email: e.target.value }))} aria-invalid={Boolean(fe('email'))} />
               </Field>
@@ -195,10 +192,11 @@ export default function AuthPage({ mode = 'login' }) {
             </form>
           )}
 
+          </section>}
           <div className="auth-device-link">
             <Smartphone size={18} aria-hidden="true" />
             <span>
-              Bạn là bệnh nhân hoặc người nhà? <a href={href(ROUTES.device)}>Mở ứng dụng trên điện thoại</a>
+              Cách kết nối bổ sung: <a href={href(ROUTES.device, { pairing: '1', surface })}>Ghép thiết bị bằng mã 6 số <ArrowRight size={14} aria-hidden="true" /></a>
             </span>
           </div>
         </div>

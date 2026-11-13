@@ -124,6 +124,76 @@ function prescription(overrides = {}) {
   };
 }
 
+test('patient accounts sign in on web/app, refresh their session and cannot access caregiver or other-patient data', async t => {
+  const f = await fixture(t);
+  const owner = await f.user();
+  const patient = await f.patient(owner);
+  const other = await f.patient(owner, { alias: 'Mẹ' });
+  await activePrescription(f, owner, patient);
+  await activePrescription(f, owner, other);
+  const pairing = await f.ok('POST', `/patients/${patient.id}/pairing-codes`, owner.token, { role: 'PATIENT' }, 201);
+  const credentials = { email: 'patient@example.test', password: PASSWORD, role: 'PATIENT' };
+  const account = await f.ok('POST', '/auth/register', undefined, { ...credentials, displayName: 'Bố', pairingCode: pairing.code }, 201);
+  assert.equal(account.patientId, patient.id);
+  assert.equal(account.role, 'PATIENT');
+  assert.equal('passwordHash' in account, false);
+  const web = await f.ok('POST', '/auth/login', undefined, credentials);
+  const app = await f.ok('POST', '/auth/login', undefined, credentials);
+  assert.equal(web.accountId, app.accountId);
+  assert.equal(web.role, 'PATIENT');
+  assert.notEqual(web.refreshToken, app.refreshToken);
+  assert.equal((await f.ok('GET', '/auth/me', web.accessToken)).id, account.id);
+  assert.equal((await f.ok('GET', '/device/me', app.accessToken)).patientId, patient.id);
+  const doses = await f.ok('GET', '/device/doses/today', web.accessToken);
+  assert.ok(doses.length > 0 && doses.every(d => d.patientId === patient.id));
+  await f.ok('GET', '/patients', web.accessToken, undefined, 401);
+  await f.ok('POST', `/patients/${patient.id}/prescriptions`, web.accessToken, prescription(), 401);
+  await f.ok('GET', '/device/doses/today', owner.token, undefined, 401);
+  const otherDose = f.ctx.db.list('doses', { patientId: other.id })[0];
+  await f.ok('POST', `/doses/${otherDose.id}/confirmations`, web.accessToken, {}, 403);
+  const mine = doses.find(d => d.status === 'PENDING');
+  const confirmation = await f.ok('POST', `/doses/${mine.id}/confirmations`, app.accessToken, {}, 201);
+  assert.equal(confirmation.actorRole, 'PATIENT');
+  assert.equal(confirmation.actorId, account.id);
+  const updated = await f.ok('GET', '/device/doses/today', web.accessToken);
+  assert.equal(updated.find(d => d.id === mine.id).lastConfirmation.actorLabel, 'Bố');
+  const audit = await f.ok('GET', `/patients/${patient.id}/audit-logs?actorRole=PATIENT`, owner.token);
+  assert.ok(audit.items.some(log => log.actionType === 'DOSE_CONFIRMED' && log.actorLabel === 'Bố'));
+  await f.time('2026-10-22T00:26:00.000Z');
+  await f.ok('GET', '/auth/me', web.accessToken, undefined, 401);
+  const refreshed = await f.ok('POST', '/auth/refresh', undefined, { refreshToken: web.refreshToken });
+  assert.equal(refreshed.role, 'PATIENT');
+  assert.equal(refreshed.accountId, account.id);
+  await f.ok('GET', '/device/doses/today', refreshed.accessToken);
+  await f.ok('POST', '/auth/refresh', undefined, { refreshToken: web.refreshToken }, 401);
+  f.ctx.db.update('patientAccounts', account.id, { active: false });
+  await f.ok('GET', '/device/me', refreshed.accessToken, undefined, 401);
+  await f.ok('POST', '/auth/refresh', undefined, { refreshToken: app.refreshToken }, 401);
+});
+
+test('patient registration needs an unused patient pairing code and never creates a caregiver account', async t => {
+  const f = await fixture(t);
+  const owner = await f.user();
+  const patient = await f.patient(owner);
+  const body = { email: 'patient@example.test', password: PASSWORD, displayName: 'Bố', role: 'PATIENT' };
+  await f.ok('POST', '/auth/register', undefined, body, 400);
+  await f.ok('POST', '/auth/register', undefined, { ...body, pairingCode: '999999' }, 410);
+  const delegate = await f.ok('POST', `/patients/${patient.id}/delegates`, owner.token, { alias: 'Mẹ', relation: 'Vợ' }, 201);
+  const delegateCode = await f.ok('POST', `/patients/${patient.id}/pairing-codes`, owner.token, { role: 'DELEGATE', delegateId: delegate.id }, 201);
+  await f.ok('POST', '/auth/register', undefined, { ...body, pairingCode: delegateCode.code }, 410);
+  const expired = await f.ok('POST', `/patients/${patient.id}/pairing-codes`, owner.token, { role: 'PATIENT' }, 201);
+  await f.time('2026-10-22T00:16:00.000Z');
+  await f.ok('POST', '/auth/register', undefined, { ...body, pairingCode: expired.code }, 410);
+  const pairing = await f.ok('POST', `/patients/${patient.id}/pairing-codes`, owner.token, { role: 'PATIENT' }, 201);
+  const results = await Promise.all([f.req('POST', '/auth/register', undefined, { ...body, pairingCode: pairing.code }), f.req('POST', '/auth/register', undefined, { ...body, pairingCode: pairing.code })]);
+  assert.deepEqual(results.map(r => r.status).sort(), [201, 410]);
+  assert.equal(f.ctx.db.list('patientAccounts').length, 1);
+  assert.equal(f.ctx.db.list('caregivers', { email: body.email }).length, 0);
+  await f.ok('POST', '/auth/login', undefined, { email: body.email, password: body.password, role: 'CAREGIVER' }, 401);
+  await f.ok('POST', '/auth/login', undefined, { email: body.email, password: 'wrong', role: 'PATIENT' }, 401);
+  await f.ok('POST', '/devices/pair', undefined, { code: pairing.code, platform: 'ANDROID', pushToken: 'test' }, 410);
+});
+
 async function activePrescription(f, owner, patient, input = prescription()) {
   const draft = await f.ok('POST', `/patients/${patient.id}/prescriptions`, owner.token, input, 201);
   const active = await f.ok('POST', `/prescriptions/${draft.id}/confirm`, owner.token, undefined, 202);
@@ -410,13 +480,13 @@ test('deadline equality permits delegate confirmation and expiration follows the
   const delegate = await f.ok('POST', `/patients/${patient.id}/delegates`, owner.token, { alias: 'Mẹ', relation: 'Vợ' }, 201);
   const paired = await f.device(owner, patient.id, 'DELEGATE', delegate.id);
   const rx = await activePrescription(f, owner, patient, prescription({ nextVisitDate: DATE }));
-  await f.time('2026-10-22T02:00:00.000Z');
+  await f.time('2026-10-22T01:00:00.000Z');
   const atDeadline = (await f.ok('GET', '/device/doses/today', paired.token)).filter(item => item.slot === 'MORNING');
   assert.ok(atDeadline.every(dose => dose.status === 'PENDING'));
   const confirmation = await f.ok('POST', `/doses/${atDeadline[0].id}/confirmations`, paired.token, {}, 201);
   assert.equal(confirmation.actorRole, 'DELEGATE');
   assert.equal(confirmation.resultingStatus, 'TAKEN_BY_DELEGATE');
-  await f.time('2026-10-22T02:00:00.001Z');
+  await f.time('2026-10-22T01:00:00.001Z');
   await tickMedication(f.ctx);
   assert.equal(f.ctx.db.get('doses', atDeadline[1].id).status, 'MISSED');
   await f.time('2026-10-22T16:59:59.999Z');
@@ -434,7 +504,7 @@ test('confirmation event times reject future, early, different-day and stale off
   const morning = (await f.ok('GET', '/device/doses/today', paired.token)).filter(item => item.slot === 'MORNING');
   const endpoint = `/doses/${morning[0].id}/confirmations`;
   await f.ok('POST', endpoint, paired.token, { takenAt: '2026-10-22T00:11:00.000Z' }, 422);
-  await f.ok('POST', endpoint, paired.token, { takenAt: '2026-10-21T23:59:59.999Z' }, 422);
+  await f.ok('POST', endpoint, paired.token, { takenAt: '2026-10-21T22:59:59.999Z' }, 422);
   await f.ok('POST', endpoint, paired.token, { takenAt: '2026-02-30T00:10:00.000Z' }, 400);
   await f.time('2026-10-23T01:00:00.000Z');
   await f.ok('POST', endpoint, paired.token, { takenAt: '2026-10-23T00:10:00.000Z' }, 422);

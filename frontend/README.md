@@ -13,6 +13,12 @@ npm test         # 18 kiểm thử
 
 `.env.local` (không đưa lên Git) có thể đặt `VITE_DEMO_ACCOUNT=email:mật-khẩu` để trang đăng nhập hiện nút "Điền sẵn". Khi phát triển, `ANTAM_BACKEND` đổi địa chỉ Backend cho proxy của Vite.
 
+## Đăng nhập web và app
+
+Cả hai vai trò Bệnh nhân và Người chăm sóc có đăng nhập email/mật khẩu. Thêm `?surface=app` vào đường dẫn hash để dùng giao diện app, hoặc chuyển bằng nút Web/App. Bệnh nhân đăng nhập tới `#/benh-nhan`, người chăm sóc tới `#/tong-quan`. App hiện là giao diện trong trình duyệt.
+
+Bệnh nhân đăng ký lần đầu bằng mã PATIENT 6 số do người chăm sóc cấp trong Hồ sơ & thiết bị để liên kết hồ sơ; các lần đăng nhập sau không cần mã. Bộ đệm và hàng đợi xác nhận của tài khoản bệnh nhân lưu trong sessionStorage của tab và xóa khi đăng xuất; nếu còn xác nhận chưa gửi, giao diện yêu cầu xác nhận trước khi đăng xuất. Thiết bị mô phỏng ghép bằng mã vẫn được hỗ trợ riêng.
+
 ## Màn hình theo báo cáo
 
 | Màn hình | Chức năng (BPC) | UC / FR |

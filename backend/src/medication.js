@@ -1,13 +1,15 @@
 import { z } from 'zod';
 import {
   ApiError, parse, dateSchema, idSchema, localDate, shiftDate, newId,
-  TIME_SLOTS, DOSE_STATUSES, PRESCRIPTION_STATUSES,
+  TIME_SLOTS, DOSE_STATUSES, PRESCRIPTION_STATUSES, DOSE_WINDOW_MINUTES,
 } from './common.js';
 
 const DEFAULT_TIMES = { MORNING: '07:00', NOON: '11:30', AFTERNOON: '15:00', EVENING: '19:00' };
 const SYSTEM_ID = '00000000-0000-4000-8000-000000000000';
 const FINISHED = new Set(['TAKEN', 'TAKEN_BY_DELEGATE', 'LATE_CONFIRMED', 'MISSED']);
 const MAX_GENERATED_DOSES = 50_000;
+const WINDOW_MS = DOSE_WINDOW_MINUTES * 60_000;
+const timeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Giờ uống phải có dạng HH:mm');
 const itemSchema = z.object({
   drugId: idSchema.nullable().optional(),
   drugNameRaw: z.string().trim().min(1).max(200),
@@ -16,7 +18,19 @@ const itemSchema = z.object({
   slots: z.array(z.enum(TIME_SLOTS)).min(1).max(4)
     .refine((slots) => new Set(slots).size === slots.length, 'Không được lặp buổi uống'),
   instruction: z.string().trim().max(200).optional(),
-}).strict();
+  times: z.object(Object.fromEntries(TIME_SLOTS.map(slot => [slot, timeSchema.optional()]))).strict().optional(),
+}).strict().superRefine((item, context) => {
+  if (!item.times) return; // Older clients use patient reminder times.
+  for (const slot of item.slots) {
+    if (!item.times[slot]) context.addIssue({ code: 'custom', path: ['times', slot], message: 'Chọn giờ uống cho buổi này' });
+  }
+  for (const slot of Object.keys(item.times)) {
+    if (!item.slots.includes(slot)) context.addIssue({ code: 'custom', path: ['times', slot], message: 'Giờ uống phải thuộc buổi đã chọn' });
+  }
+  if (new Set(Object.values(item.times)).size !== Object.values(item.times).length) {
+    context.addIssue({ code: 'custom', path: ['times'], message: 'Các lần uống của cùng một thuốc phải khác giờ' });
+  }
+});
 const prescriptionSchema = z.object({
   issuedDate: dateSchema,
   startDate: dateSchema,
@@ -107,6 +121,24 @@ function emitAlert(ctx, alert) {
   ctx.events?.emit?.('alert', alert);
 }
 
+/** Apply the fixed window to outstanding schedules; retain recorded history. */
+export function applyMedicationTimingPolicy(ctx) {
+  ctx.db.transaction(() => {
+    for (const patient of ctx.db.list('patients')) {
+      if (patient.missedThresholdMinutes === DOSE_WINDOW_MINUTES) continue;
+      ctx.db.update('patients', patient.id, { missedThresholdMinutes: DOSE_WINDOW_MINUTES });
+      systemAudit(ctx, patient.id, 'MEDICATION_TIMING_POLICY_UPDATED', 'Patient', patient.id, 'Đúng giờ ±60 phút; bỏ lỡ sau giờ hẹn 60 phút.');
+    }
+    for (const dose of ctx.db.list('doses')) {
+      if (dose.lastConfirmationId || !['SCHEDULED', 'PENDING'].includes(dose.status)) continue;
+      const deadlineAt = new Date(Date.parse(dose.scheduledAt) + WINDOW_MS).toISOString();
+      if (dose.deadlineAt === deadlineAt) continue;
+      ctx.db.update('doses', dose.id, { deadlineAt });
+      systemAudit(ctx, dose.patientId, 'DOSE_WINDOW_UPDATED', 'Dose', dose.id, { previousDeadlineAt: dose.deadlineAt, deadlineAt });
+    }
+  });
+}
+
 function createAlert(ctx, data, now) {
   if (ctx.db.list('alerts', { dedupKey: data.dedupKey }).length) return null;
   const alert = ctx.db.insert('alerts', {
@@ -161,8 +193,9 @@ export function tickMedication(ctx) {
 export function serializeConfirmation(ctx, confirmation) {
   if (!confirmation) return null;
   const device = ctx.db.get('devices', confirmation.actorId);
+  const account = ctx.db.get('patientAccounts', confirmation.actorId);
   const fallback = confirmation.actorRole === 'PATIENT' ? ctx.db.get('patients', confirmation.patientId)?.alias : 'Người nhà';
-  return { ...confirmation, actorLabel: device?.ownerAlias || fallback || '' };
+  return { ...confirmation, actorLabel: device?.ownerAlias || account?.displayName || fallback || '' };
 }
 
 export function serializeDose(ctx, dose) {
@@ -215,7 +248,7 @@ function generateDoses(ctx, prescription, patient, now) {
   }
   const times = { ...DEFAULT_TIMES };
   for (const reminder of patient.reminderTimes ?? []) times[reminder.slot] = reminder.time;
-  const threshold = patient.missedThresholdMinutes ?? 120;
+  const threshold = DOSE_WINDOW_MINUTES;
   const existing = new Set(ctx.db.list('doses', { prescriptionId: prescription.id })
     .map((dose) => `${dose.prescriptionItemId}:${dose.date}:${dose.slot}`));
   let count = 0;
@@ -225,7 +258,7 @@ function generateDoses(ctx, prescription, patient, now) {
       for (const slot of item.slots) {
         const key = `${item.id}:${date}:${slot}`;
         if (existing.has(key)) continue;
-        const scheduledAt = new Date(`${date}T${times[slot]}:00+07:00`);
+        const scheduledAt = new Date(`${date}T${item.times?.[slot] || times[slot]}:00+07:00`);
         ctx.db.insert('doses', {
           id: newId(), patientId: patient.id, prescriptionId: prescription.id,
           prescriptionItemId: item.id, drugDisplayName: item.drugNameRaw,
@@ -386,7 +419,9 @@ export function registerMedicationRoutes(router, ctx) {
   router.get('/device/doses/today', ctx.device, (req, res) => {
     tickMedication(ctx);
     const today = localDate(ctx.now());
-    const doses = ctx.db.list('doses', { patientId: req.actor.patientId, date: today })
+    const nowMs = +ctx.now();
+    const doses = ctx.db.list('doses', { patientId: req.actor.patientId })
+      .filter(dose => dose.date === today || Math.abs(Date.parse(dose.scheduledAt) - nowMs) <= WINDOW_MS)
       .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt) || a.id.localeCompare(b.id));
     res.json(doses.map((dose) => serializeDose(ctx, dose)));
   });
@@ -403,10 +438,11 @@ export function registerMedicationRoutes(router, ctx) {
     const takenAt = input.takenAt ? new Date(input.takenAt) : now;
     const dose = ctx.db.get('doses', doseId);
     if (dose.status === 'CANCELLED') throw new ApiError(409, 'DOSE_CANCELLED', 'Cữ thuốc đã bị hủy');
-    if (takenAt.getTime() < Date.parse(dose.scheduledAt) || takenAt.getTime() > now.getTime()) {
-      throw new ApiError(422, 'INVALID_TAKEN_AT', 'Thời điểm uống phải từ giờ cữ thuốc đến thời điểm hiện tại');
+    const scheduledMs = Date.parse(dose.scheduledAt);
+    if (takenAt.getTime() < scheduledMs - WINDOW_MS || takenAt.getTime() > now.getTime()) {
+      throw new ApiError(422, 'INVALID_TAKEN_AT', 'Thời điểm uống phải từ 60 phút trước giờ hẹn đến thời điểm hiện tại');
     }
-    if (localDate(takenAt) !== dose.date) {
+    if (localDate(takenAt) !== dose.date && Math.abs(takenAt.getTime() - scheduledMs) > WINDOW_MS) {
       throw new ApiError(422, 'CONFIRMATION_OUTSIDE_DOSE_DAY', 'Chỉ ghi nhận thời điểm uống trong ngày của cữ thuốc');
     }
     const maxAgeHours = ctx.config.offlineMaxAgeHours ?? 72;
@@ -421,7 +457,7 @@ export function registerMedicationRoutes(router, ctx) {
     } else if (dose.lastConfirmationId) {
       throw new ApiError(409, 'DOSE_ALREADY_CONFIRMED', 'Cữ thuốc này đã được xác nhận');
     }
-    const resultingStatus = takenAt.getTime() > Date.parse(dose.deadlineAt)
+    const resultingStatus = takenAt.getTime() > scheduledMs + WINDOW_MS
       ? 'LATE_CONFIRMED'
       : req.actor.role === 'DELEGATE' ? 'TAKEN_BY_DELEGATE' : 'TAKEN';
     const confirmation = ctx.db.transaction(() => {
@@ -460,7 +496,7 @@ export function registerMedicationRoutes(router, ctx) {
       .sort((a, b) => b.confirmation.takenAt.localeCompare(a.confirmation.takenAt));
     const latest = confirmed[0];
     if (!latest) return res.json(null);
-    const sameSlot = confirmed.filter(({ dose }) => dose.date === latest.dose.date && dose.slot === latest.dose.slot);
+    const sameSlot = confirmed.filter(({ dose }) => dose.scheduledAt === latest.dose.scheduledAt && dose.slot === latest.dose.slot);
     res.json({
       date: latest.dose.date, slot: latest.dose.slot, takenAt: latest.confirmation.takenAt,
       actorRole: latest.confirmation.actorRole, actorLabel: latest.confirmation.actorLabel,

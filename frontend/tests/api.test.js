@@ -3,7 +3,49 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { clearSession, getSession, request, setTokens } from '../src/api/http.js';
 import { fieldError, isNetworkError } from '../src/api/errors.js';
-import { toPrescriptionInput } from '../src/api/caregiver.js';
+import { login, toPrescriptionInput } from '../src/api/caregiver.js';
+import { ACCOUNT_SESSION, listTodayDoses } from '../src/api/device.js';
+import { href, ROUTES } from '../src/app/router.js';
+
+test('giữ giao diện app khi chuyển màn hình và cho phép chuyển về web', () => {
+  const previous = globalThis.window;
+  globalThis.window = { location: { hash: '#/tong-quan?surface=app' } };
+  try {
+    assert.equal(href(ROUTES.family), '#/ho-so?surface=app');
+    assert.equal(href(ROUTES.patient, { surface: 'web' }), '#/benh-nhan?surface=web');
+  } finally {
+    if (previous === undefined) delete globalThis.window;
+    else globalThis.window = previous;
+  }
+});
+
+test('dữ liệu bệnh nhân lưu riêng trong phiên và xóa khi đăng xuất, giữ thiết bị mô phỏng', async () => {
+  const storage = () => {
+    const data = new Map();
+    return { getItem: key => data.get(key) ?? null, setItem: (key, value) => data.set(key, value) };
+  };
+  const previousLocal = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  const previousSession = Object.getOwnPropertyDescriptor(globalThis, 'sessionStorage');
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: storage() });
+  Object.defineProperty(globalThis, 'sessionStorage', { configurable: true, value: storage() });
+  try {
+    const phones = await import('../src/device/phones.js');
+    const patient = phones.ensureAccountPhone({ id: 'patient-account', displayName: 'Bệnh nhân' });
+    phones.updatePhone(patient.id, { cache: { private: true }, queue: [{ id: 'unsent' }] });
+    assert.equal(JSON.parse(localStorage.getItem('antam.v1.phones')).some(p => p.accountId), false);
+    assert.equal(JSON.parse(sessionStorage.getItem('antam.v1.accountPhones'))[0].queue.length, 1);
+    const simulatorCount = phones.listPhones().filter(p => !p.accountId).length;
+    phones.clearAccountPhones();
+    assert.equal(phones.getPhone(patient.id), null);
+    assert.deepEqual(JSON.parse(sessionStorage.getItem('antam.v1.accountPhones')), []);
+    assert.equal(phones.listPhones().length, simulatorCount);
+  } finally {
+    if (previousLocal) Object.defineProperty(globalThis, 'localStorage', previousLocal);
+    else delete globalThis.localStorage;
+    if (previousSession) Object.defineProperty(globalThis, 'sessionStorage', previousSession);
+    else delete globalThis.sessionStorage;
+  }
+});
 
 const json = (status, body) => new Response(body === undefined ? null : JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
@@ -91,4 +133,41 @@ test('đơn thuốc gửi lên chỉ gồm đúng các trường của Prescript
     nextVisitDate: '2026-11-20',
     items: [{ drugId: null, drugNameRaw: 'Panfor SR 500mg', unitsPerDose: 1, unit: 'viên', slots: ['MORNING'] }]
   });
+});
+
+test('giữ giờ uống tự chọn và chỉ gửi giờ của các buổi còn được chọn', () => {
+  const payload = toPrescriptionInput({
+    issuedDate: '2026-10-22', startDate: '2026-10-22', nextVisitDate: '2026-11-22',
+    items: [{ drugNameRaw: 'A', unitsPerDose: 1, slots: ['MORNING'], times: { MORNING: '08:25', EVENING: '20:00' } }],
+  });
+  assert.deepEqual(payload.items[0].times, { MORNING: '08:25' });
+});
+
+test('đăng nhập bệnh nhân giữ vai trò và dùng phiên tài khoản để đọc lịch, kể cả sau refresh', async () => {
+  const calls = mockFetch(url => url.endsWith('/auth/login')
+    ? json(200, { accessToken: 'patient-access', refreshToken: 'patient-refresh', role: 'PATIENT', accountId: 'patient-account' })
+    : url.endsWith('/auth/refresh')
+      ? json(200, { accessToken: 'patient-new', refreshToken: 'refresh-new', role: 'PATIENT', accountId: 'patient-account' })
+      : getSession()?.accessToken === 'patient-new' ? json(200, [{ id: 'own-dose' }]) : json(401, { code: 'UNAUTHORIZED' }));
+  await login({ email: 'patient@example.test', password: 'password', role: 'PATIENT' });
+  assert.equal(calls[0].body.role, 'PATIENT');
+  assert.deepEqual(await listTodayDoses(ACCOUNT_SESSION), [{ id: 'own-dose' }]);
+  assert.equal(getSession().role, 'PATIENT');
+  assert.equal(getSession().accountId, 'patient-account');
+  assert.equal(calls.at(-1).auth, 'Bearer patient-new');
+  clearSession();
+});
+
+test('yêu cầu của phiên cũ không được gửi lại bằng tài khoản vừa đăng nhập', async () => {
+  setTokens({ accessToken: 'patient', refreshToken: 'r-patient', role: 'PATIENT', accountId: 'p' });
+  let finish;
+  const calls = mockFetch(() => new Promise(resolve => { finish = resolve; }));
+  const pending = request('/device/doses/today');
+  clearSession();
+  setTokens({ accessToken: 'caregiver', refreshToken: 'r-caregiver', role: 'CAREGIVER', accountId: 'c' });
+  finish(json(401, { code: 'UNAUTHORIZED' }));
+  await assert.rejects(pending, error => error.code === 'SESSION_CHANGED');
+  assert.equal(calls.length, 1);
+  assert.equal(getSession().accountId, 'c');
+  clearSession();
 });

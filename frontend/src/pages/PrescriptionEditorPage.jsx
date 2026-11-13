@@ -13,7 +13,7 @@ import { Callout, Card, Field, PageHeader, PageStatus, Spinner } from '../compon
 import DrugAutocomplete from '../components/DrugAutocomplete.jsx';
 
 let tmpSeq = 0;
-const newItem = () => ({ id: `tmp-${Date.now().toString(36)}-${++tmpSeq}`, drugId: null, drugNameRaw: '', unitsPerDose: 1, unit: 'viên', slots: [], instruction: '' });
+const newItem = () => ({ id: `tmp-${Date.now().toString(36)}-${++tmpSeq}`, drugId: null, drugNameRaw: '', unitsPerDose: 1, unit: 'viên', slots: [], times: {}, instruction: '' });
 
 function storageKey(patientId, rxId) {
   return `antam.v1.rxForm.${patientId}.${rxId || 'new'}`;
@@ -27,14 +27,14 @@ function readAutosave(key) {
   }
 }
 
-function initialForm(existing, today) {
+function initialForm(existing, today, patient) {
   if (existing) {
     return {
       issuedDate: existing.issuedDate,
       startDate: existing.startDate,
       nextVisitDate: existing.nextVisitDate,
       sourceNote: existing.sourceNote || '',
-      items: existing.items.map((i) => ({ ...newItem(), ...i, unit: i.unit || 'viên', instruction: i.instruction || '', slots: [...i.slots] }))
+      items: existing.items.map((i) => ({ ...newItem(), ...i, unit: i.unit || 'viên', instruction: i.instruction || '', slots: [...i.slots], times: i.times || Object.fromEntries(i.slots.map(slot => [slot, reminderTimeOf(patient, slot)])) }))
     };
   }
   return { issuedDate: today, startDate: today, nextVisitDate: '', sourceNote: 'Hệ thống số hóa BV Hữu Nghị', items: [newItem()] };
@@ -57,7 +57,7 @@ function Editor({ prescriptionId, existing = null, loadError = null }) {
   const [busy, setBusy] = useState(false);
   const key = storageKey(patient.id, prescriptionId);
   const saved = useMemo(() => readAutosave(key), [key]);
-  const [form, setForm] = useState(() => (saved?.form ? saved.form : initialForm(existing, today)));
+  const [form, setForm] = useState(() => initialForm(saved?.form || existing, today, patient));
   const [restored, setRestored] = useState(Boolean(saved?.form));
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState(null);
@@ -113,7 +113,8 @@ function Editor({ prescriptionId, existing = null, loadError = null }) {
   };
   const toggleSlot = (index, slot) => {
     const item = form.items[index];
-    setItem(index, { slots: item.slots.includes(slot) ? item.slots.filter((s) => s !== slot) : SLOTS.filter((s) => s === slot || item.slots.includes(s)) });
+    const slots = item.slots.includes(slot) ? item.slots.filter((s) => s !== slot) : SLOTS.filter((s) => s === slot || item.slots.includes(s));
+    setItem(index, { slots, times: Object.fromEntries(slots.map(s => [s, item.times?.[s] ?? reminderTimeOf(patient, s)])) });
   };
 
   function discardAutosave() {
@@ -123,7 +124,7 @@ function Editor({ prescriptionId, existing = null, loadError = null }) {
       // bỏ qua
     }
     dirty.current = false;
-    setForm(initialForm(existing, today));
+    setForm(initialForm(existing, today, patient));
     setRestored(false);
     setSubmitted(false);
   }
@@ -275,10 +276,18 @@ function Editor({ prescriptionId, existing = null, loadError = null }) {
                   <div className="chips" role="group" aria-label={`Buổi uống của thuốc ${i + 1}`}>
                     {SLOTS.map((slot) => (
                       <button key={slot} type="button" className="chip" aria-pressed={item.slots.includes(slot)} onClick={() => toggleSlot(i, slot)}>
-                        {SLOT_META[slot].label} <span className="chip-sub num">{reminderTimeOf(patient, slot)}</span>
+                        {SLOT_META[slot].label}
                       </button>
                     ))}
                   </div>
+                  <div className="grid-2" style={{ marginTop: 12 }}>
+                    {item.slots.map(slot => (
+                      <Field key={slot} label={`Giờ uống ${SLOT_META[slot].label.toLowerCase()}`} htmlFor={`rx-time-${i}-${slot}`} error={err(`items[${i}].times.${slot}`)}>
+                        <input id={`rx-time-${i}-${slot}`} className="input" type="time" required value={item.times?.[slot] ?? reminderTimeOf(patient, slot)} onChange={e => setItem(i, { times: { ...item.times, [slot]: e.target.value } })} aria-invalid={Boolean(err(`items[${i}].times.${slot}`))} />
+                      </Field>
+                    ))}
+                  </div>
+                  {err(`items[${i}].times`) && <span className="field-error">{err(`items[${i}].times`)}</span>}
                 </Field>
                 <Field label="Ghi chú cách dùng" htmlFor={`rx-note-${i}`} error={err(`items[${i}].instruction`)}>
                   <input id={`rx-note-${i}`} className="input" maxLength={200} placeholder="Ví dụ: uống sau ăn" value={item.instruction} onChange={(e) => setItem(i, { instruction: e.target.value })} />
@@ -291,7 +300,7 @@ function Editor({ prescriptionId, existing = null, loadError = null }) {
             <Plus size={16} aria-hidden="true" /> Thêm thuốc
           </button>
           <p className="fine-print">
-            Giờ nhắc theo buổi lấy từ hồ sơ {patient.alias}; đổi trong mục Hồ sơ & thiết bị. Ứng dụng không gợi ý liều — chỉ ghi lại đúng chỉ định trên đơn.
+            Tự chọn giờ cho từng thuốc và từng buổi. Uống trong khoảng ±60 phút quanh giờ hẹn được tính đúng giờ; quá 60 phút sau giờ hẹn chưa xác nhận sẽ tính bỏ lỡ.
           </p>
         </div>
       </Card>
