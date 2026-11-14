@@ -160,26 +160,6 @@ export async function confirmDoses(phone, doses) {
   return { queued: false, takenAt, results };
 }
 
-/** Đính chính giờ uống (BR-05): thêm bản ghi mới tham chiếu bản ghi đang có. */
-export async function correctDoses(phone, doses, takenAt) {
-  const targets = doses.filter((d) => d.lastConfirmation?.id);
-  if (!phone.online) {
-    updatePhone(phone.id, (p) => ({
-      queue: [...p.queue, ...targets.map((d) => ({ doseId: d.id, takenAt, correctsConfirmationId: d.lastConfirmation.id, queuedAt: new Date(clock.now()).toISOString() }))]
-    }));
-    return { queued: true, results: [] };
-  }
-  const results = await Promise.all(
-    targets.map((d) =>
-      deviceApi.confirmDose(phone.token, d.id, { takenAt, correctsConfirmationId: d.lastConfirmation.id }).then(
-        (confirmation) => ({ ok: true, dose: d, confirmation }),
-        (error) => ({ ok: false, dose: d, error })
-      )
-    )
-  );
-  return { queued: false, results };
-}
-
 let audioCtx = null;
 
 /** Âm báo nhắc thuốc (FR-10). Trình duyệt có thể chặn âm thanh cho tới khi người dùng chạm. */

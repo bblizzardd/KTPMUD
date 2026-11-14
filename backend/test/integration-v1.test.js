@@ -124,19 +124,21 @@ test('device profile, labelled confirmations, correction history and last confir
   const [morning] = await f.ok('GET', '/device/doses/today', phone.deviceToken);
   const original = await f.ok('POST', `/doses/${morning.id}/confirmations`, phone.deviceToken, { takenAt: '2026-10-22T00:08:00.000Z' }, 201);
   assert.equal('actorLabel' in original, false, 'POST response keeps the stored record shape');
-  await f.ok('POST', `/doses/${morning.id}/confirmations`, phone.deviceToken, { takenAt: '2026-10-22T00:05:00.000Z', correctsConfirmationId: original.id }, 201);
+  await f.ok('POST', `/doses/${morning.id}/corrections`, user.token, { takenAt: '2026-10-22T00:05:00.000Z', correctsConfirmationId: original.id }, 201);
 
   const chain = await f.ok('GET', `/doses/${morning.id}/confirmations`, user.token);
   assert.equal(chain.length, 2);
   assert.equal(chain[0].correctsConfirmationId, null);
   assert.equal(chain[1].correctsConfirmationId, original.id);
-  assert.ok(chain.every((c) => c.actorLabel === 'Bố'));
+  assert.equal(chain[0].actorLabel, 'Bố');
+  assert.equal(chain[1].actorLabel, user.displayName);
+  assert.equal(chain[1].actorRole, 'CAREGIVER');
   assert.equal((await f.req('GET', `/doses/${morning.id}/confirmations`, phone.deviceToken)).status, 401, 'history is for the caregiver');
 
   const listed = await f.ok('GET', `/patients/${patient.id}/doses?from=2026-10-22&to=2026-10-22`, user.token);
-  assert.equal(listed.find((d) => d.id === morning.id).lastConfirmation.actorLabel, 'Bố');
+  assert.equal(listed.find((d) => d.id === morning.id).lastConfirmation.actorLabel, user.displayName);
   const last = await f.ok('GET', '/device/doses/last-confirmed', helper.deviceToken);
-  assert.deepEqual([last.date, last.slot, last.takenAt, last.actorLabel, last.drugs], ['2026-10-22', 'MORNING', '2026-10-22T00:05:00.000Z', 'Bố', ['Glucophage 500mg']]);
+  assert.deepEqual([last.date, last.slot, last.takenAt, last.actorLabel, last.drugs], ['2026-10-22', 'MORNING', '2026-10-22T00:05:00.000Z', user.displayName, ['Glucophage 500mg']]);
 
   await f.ok('DELETE', `/patients/${patient.id}/devices/${me.deviceId}`, user.token, undefined, 204);
   assert.equal((await f.req('GET', '/device/me', helper.deviceToken)).status, 401);

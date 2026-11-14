@@ -21,9 +21,9 @@ import { href, ROUTES } from '../app/router.js';
 import { useNow } from '../app/hooks.js';
 import { CONFIRMED_STATUSES, SLOT_META } from '../domain/constants.js';
 import { checkConfirmable, groupDoses } from '../domain/rules.js';
-import { atTime, dayLabel, fmtTime, toDateKey, weekdayOf, fmtDateShort, MINUTE } from '../lib/time.js';
+import { dayLabel, fmtTime, toDateKey, weekdayOf, fmtDateShort, MINUTE } from '../lib/time.js';
 import { fmtNumber } from '../lib/text.js';
-import { confirmDoses, correctDoses, forgetPairing, pairPhone, playChime, usePhoneData } from './deviceClient.js';
+import { confirmDoses, forgetPairing, pairPhone, playChime, usePhoneData } from './deviceClient.js';
 import { updatePhone } from './phones.js';
 
 const DONE = [...CONFIRMED_STATUSES, 'QUEUED'];
@@ -32,7 +32,7 @@ const DONE = [...CONFIRMED_STATUSES, 'QUEUED'];
 function applyQueue(doses, queue) {
   if (!queue?.length) return doses;
   return doses.map((dose) => {
-    const items = queue.filter((q) => q.doseId === dose.id);
+    const items = queue.filter((q) => q.doseId === dose.id && !q.correctsConfirmationId);
     if (!items.length) return dose;
     const latest = items[items.length - 1];
     if (latest.correctsConfirmationId) {
@@ -45,6 +45,7 @@ function applyQueue(doses, queue) {
 /** Ai đã xác nhận, nói theo góc nhìn của người đang cầm máy. */
 function doneTitle(group, role) {
   const conf = group.lastConfirmation;
+  if (conf?.actorRole === 'CAREGIVER') return `${conf.actorLabel || 'Người chăm sóc'} đã đính chính giờ uống thành`;
   if (!conf?.actorRole || conf.actorRole === role) return role === 'DELEGATE' ? 'Đã xác nhận hộ lúc' : 'Đã uống lúc';
   return conf.actorRole === 'PATIENT' ? `${conf.actorLabel || 'Bệnh nhân'} đã uống lúc` : `${conf.actorLabel || 'Người nhà'} đã xác nhận lúc`;
 }
@@ -230,37 +231,6 @@ function RevokedScreen({ phone }) {
   );
 }
 
-function CorrectionSheet({ group, onCancel, onSave, nowMs }) {
-  const original = group.lastConfirmation?.takenAt;
-  const [date, setDate] = useState(original ? toDateKey(original) : group.date);
-  const [time, setTime] = useState(original ? fmtTime(original) : '');
-  const [error, setError] = useState('');
-  function save() {
-    const iso = atTime(date, time);
-    const check = checkConfirmable(group.doses.find((d) => d.lastConfirmation) || group.doses[0], { takenAt: iso, nowMs, correction: true });
-    if (!check.ok) {
-      setError(check.message);
-      return;
-    }
-    onSave(iso);
-  }
-  return (
-    <div className="dev-sheet" role="dialog" aria-label="Sửa giờ uống">
-      <h3 className="dev-h2">Sửa giờ đã uống</h3>
-      <p className="dev-text-sm">Chỉ sửa khi bấm nhầm giờ. Bản ghi cũ vẫn được giữ lại để đối chiếu.</p>
-      <input type="date" className="dev-time-input" value={date} onChange={(e) => setDate(e.target.value)} aria-label="Ngày uống đúng" />
-      <input type="time" className="dev-time-input" value={time} onChange={(e) => setTime(e.target.value)} aria-label="Giờ uống đúng" />
-      {error && <p className="dev-error">{error}</p>}
-      <button type="button" className="dev-btn dev-btn-confirm" onClick={save} disabled={!time || !date}>
-        LƯU GIỜ ĐÚNG
-      </button>
-      <button type="button" className="dev-btn dev-btn-ghost" onClick={onCancel}>
-        Thôi
-      </button>
-    </div>
-  );
-}
-
 function HomeScreen({ phone, data, nowMs, flash, reload }) {
   const role = data.profile.role;
   const isPatient = role === 'PATIENT';
@@ -268,7 +238,6 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
   const doses = applyQueue(data.doses, phone.queue);
   const groups = groupDoses(doses);
   const [justDone, setJustDone] = useState(null);
-  const [correcting, setCorrecting] = useState(null);
   const [ringing, setRinging] = useState(null);
   const [sending, setSending] = useState(false);
   const seen = useRef(null);
@@ -352,15 +321,6 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
     else if (err?.code === 'DOSE_CANCELLED') flash({ tone: 'warning', text: 'Cữ này đã được thay bằng đơn thuốc mới.' });
     else if (isNetworkError(err)) flash({ tone: 'danger', text: `${part}Không kết nối được máy chủ, hãy thử lại.` });
     else flash({ tone: 'danger', text: `${part}${err?.message || 'Chưa ghi nhận được, hãy thử lại.'}` });
-  }
-
-  async function doCorrect(group, iso) {
-    setCorrecting(null);
-    const res = await correctDoses(phone, group.doses, iso);
-    if (!res.queued) await reload();
-    const failed = res.results.filter((r) => !r.ok);
-    if (failed.length) flash({ tone: 'danger', text: failed[0].error?.message || 'Chưa sửa được.' });
-    else flash({ tone: 'success', text: res.queued ? `Đã sửa thành ${fmtTime(iso)}, sẽ gửi khi có mạng.` : `Đã sửa giờ uống thành ${fmtTime(iso)}.` });
   }
 
   // Thẻ chính: việc cần làm ngay (tối đa một thao tác cho mỗi cữ)
@@ -473,11 +433,7 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
           </div>
           {focus.group.status === 'QUEUED' && <div className="dev-queued">Đang mất mạng — sẽ tự gửi khi có mạng</div>}
           {focus.group.status === 'LATE_CONFIRMED' && <div className="dev-text-sm">Đã ghi là xác nhận muộn.</div>}
-          {focus.group.status !== 'QUEUED' && focus.group.lastConfirmation?.actorRole === role && (
-            <button type="button" className="dev-link" onClick={() => setCorrecting(focus.group)}>
-              Bấm nhầm giờ? Sửa giờ uống
-            </button>
-          )}
+          <p className="dev-text-sm">Nếu cần sửa giờ uống, hãy nhờ người chăm sóc kiểm tra và đính chính.</p>
           {justDone && (
             <button type="button" className="dev-btn dev-btn-secondary" onClick={() => setJustDone(null)}>
               XONG
@@ -552,7 +508,6 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
         </ul>
       )}
 
-      {correcting && <CorrectionSheet group={correcting} nowMs={nowMs} onCancel={() => setCorrecting(null)} onSave={(iso) => doCorrect(correcting, iso)} />}
 
       {ringingGroup && (
         <div className="dev-ring" role="alertdialog" aria-label="Đến giờ uống thuốc">

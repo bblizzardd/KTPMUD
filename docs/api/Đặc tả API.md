@@ -205,7 +205,7 @@ API được phân chia thành 11 nhóm chức năng chính:
   * **Mô tả:** Xác nhận đã uống thuốc "Một chạm" (FR-15):
     * Xác định người uống qua token thiết bị: vai trò `PATIENT` ghi nhận trạng thái `TAKEN` (Đã uống); vai trò `DELEGATE` ghi nhận `TAKEN_BY_DELEGATE` (Đã uống hộ).
     * Uống trong khoảng từ 60 phút trước tới 60 phút sau giờ hẹn, bao gồm hai mốc, được tính đúng giờ. Khoảng này có thể qua nửa đêm. Sau mốc +60 phút là `LATE_CONFIRMED` (Xác nhận muộn); quá mốc này chưa xác nhận là `MISSED`. Phân loại theo `takenAt`, kể cả khi gửi lại ngoại tuyến.
-    * **Tính bất biến:** Bản ghi xác nhận không được sửa hay xóa. Nếu người dùng ấn nhầm, thực hiện đính chính bằng cách gửi bản ghi mới có trường `correctsConfirmationId`.
+    * **Tính bất biến và quyền đính chính:** Bệnh nhân/người nhà không được sửa giờ uống. Chỉ CAREGIVER quản lý hồ sơ được gọi `POST /doses/:doseId/corrections`, truyền `takenAt` và `correctsConfirmationId` của bản ghi mới nhất. Trả `201`, ghi người đính chính và giữ bản gốc; gửi đính chính vào endpoint xác nhận bằng tài khoản bệnh nhân/thiết bị bị từ chối `403`.
   * **Security:** `deviceAuth`.
   * **Request Body:** `ConfirmationCreate` (tùy chọn).
   * **Mã trả về:** `201 Created`, `401`, `403`, `409`, `422`.

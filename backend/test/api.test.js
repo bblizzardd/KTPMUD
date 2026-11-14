@@ -153,6 +153,9 @@ test('patient accounts sign in on web/app, refresh their session and cannot acce
   await f.ok('POST', `/doses/${otherDose.id}/confirmations`, web.accessToken, {}, 403);
   const mine = doses.find(d => d.status === 'PENDING');
   const confirmation = await f.ok('POST', `/doses/${mine.id}/confirmations`, app.accessToken, {}, 201);
+  const attemptedCorrection = { takenAt: confirmation.takenAt, correctsConfirmationId: confirmation.id };
+  await f.ok('POST', `/doses/${mine.id}/confirmations`, app.accessToken, attemptedCorrection, 403);
+  await f.ok('POST', `/doses/${mine.id}/corrections`, app.accessToken, attemptedCorrection, 401);
   assert.equal(confirmation.actorRole, 'PATIENT');
   assert.equal(confirmation.actorId, account.id);
   const updated = await f.ok('GET', '/device/doses/today', web.accessToken);
@@ -310,7 +313,7 @@ test('prescriptions generate separate doses per item and supersede only future d
 });
 
 test('confirmation authorization, duplicate rejection and append-only correction chain', async t => {
-  const f = await fixture(t);
+  const f = await fixture(t, '2026-10-22T01:10:00.000Z');
   const owner = await f.user();
   const patient = await f.patient(owner);
   const anotherPatient = await f.patient(owner, { alias: 'Mẹ' });
@@ -325,11 +328,35 @@ test('confirmation authorization, duplicate rejection and append-only correction
   const first = await f.ok('POST', endpoint, paired.token, {}, 201);
   assert.equal(first.actorRole, 'PATIENT');
   await f.ok('POST', endpoint, paired.token, {}, 409);
-  const corrected = await f.ok('POST', endpoint, paired.token, { takenAt: '2026-10-22T00:05:00.000Z', correctsConfirmationId: first.id }, 201);
+  assert.equal(first.resultingStatus, 'LATE_CONFIRMED');
+  assert.equal(first.takenAt, '2026-10-22T01:10:00.000Z', 'late tap records the tap time');
+  const correctionEndpoint = `/doses/${mornings[0].id}/corrections`;
+  const patch = { takenAt: '2026-10-22T00:05:00.000Z', correctsConfirmationId: first.id };
+  await f.ok('POST', endpoint, paired.token, patch, 403);
+  await f.ok('POST', correctionEndpoint, paired.token, patch, 401);
+  const stranger = await f.user('stranger');
+  await f.ok('POST', correctionEndpoint, stranger.token, patch, 403);
+  await f.ok('POST', correctionEndpoint, owner.token, { correctsConfirmationId: first.id }, 400);
+  await f.ok('POST', correctionEndpoint, owner.token, { ...patch, takenAt: '2026-10-22T02:00:00.000Z' }, 422);
+  const delegate = await f.ok('POST', `/patients/${patient.id}/delegates`, owner.token, { alias: 'Mẹ', relation: 'Vợ' }, 201);
+  const helper = await f.device(owner, patient.id, 'DELEGATE', delegate.id);
+  await f.ok('POST', endpoint, helper.token, patch, 403);
+  await f.ok('POST', correctionEndpoint, helper.token, patch, 401);
+  const corrected = await f.ok('POST', correctionEndpoint, owner.token, patch, 201);
+  assert.equal(corrected.actorRole, 'CAREGIVER');
+  assert.equal(corrected.actorId, owner.id);
+  assert.equal(corrected.resultingStatus, 'TAKEN');
   assert.notEqual(corrected.id, first.id);
   assert.equal(corrected.takenAt, '2026-10-22T00:05:00.000Z');
-  await f.ok('POST', endpoint, paired.token, { correctsConfirmationId: first.id }, 409);
-  await f.ok('POST', `/doses/${mornings[1].id}/confirmations`, paired.token, { correctsConfirmationId: corrected.id }, 409);
+  await f.ok('POST', correctionEndpoint, owner.token, patch, 409);
+  await f.ok('POST', `/doses/${mornings[1].id}/corrections`, owner.token, { ...patch, correctsConfirmationId: corrected.id }, 409);
+  const helperFirst = await f.ok('POST', `/doses/${mornings[1].id}/confirmations`, helper.token, {}, 201);
+  const helperCorrection = await f.ok('POST', `/doses/${mornings[1].id}/corrections`, owner.token, { ...patch, correctsConfirmationId: helperFirst.id }, 201);
+  assert.equal(helperCorrection.resultingStatus, 'TAKEN_BY_DELEGATE');
+  const helperSecond = await f.ok('POST', `/doses/${mornings[1].id}/corrections`, owner.token, { ...patch, correctsConfirmationId: helperCorrection.id }, 201);
+  assert.equal(helperSecond.resultingStatus, 'TAKEN_BY_DELEGATE', 'successive edits retain the original confirmer role');
+  const audit = await f.ok('GET', `/patients/${patient.id}/audit-logs?actorRole=CAREGIVER`, owner.token);
+  assert.ok(audit.items.some(log => log.actionType === 'DOSE_CONFIRMATION_CORRECTED' && log.actorLabel === owner.displayName));
   assert.deepEqual(f.ctx.db.get('confirmations', first.id), first, 'correction does not overwrite the original event');
   assert.throws(() => f.ctx.db.update('confirmations', first.id, { takenAt: corrected.takenAt }), /append-only/);
   assert.deepEqual(f.ctx.db.get('confirmations', first.id), first);

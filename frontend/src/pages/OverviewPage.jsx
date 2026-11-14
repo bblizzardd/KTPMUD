@@ -31,7 +31,8 @@ export function confirmationText(group) {
   if (!c) return '';
   const actor = c.actorRole === 'PATIENT' ? c.actorLabel || 'Bệnh nhân' : `${c.actorLabel || 'Người nhà'} (người nhà)`;
   let text;
-  if (group.status === 'LATE_CONFIRMED') text = `${actor} xác nhận muộn: đã uống lúc ${fmtTime(c.takenAt)}`;
+  if (c.actorRole === 'CAREGIVER') text = `${actor} đính chính: đã uống lúc ${fmtTime(c.takenAt)}`;
+  else if (group.status === 'LATE_CONFIRMED') text = `${actor} xác nhận muộn: đã uống lúc ${fmtTime(c.takenAt)}`;
   else if (c.actorRole === 'PATIENT') text = `${actor} tự xác nhận đã uống lúc ${fmtTime(c.takenAt)}`;
   else text = `${actor} xác nhận hộ lúc ${fmtTime(c.takenAt)}`;
   if (Date.parse(c.recordedAt) - Date.parse(c.takenAt) > DELAYED_SYNC_MS && !c.correctsConfirmationId) {

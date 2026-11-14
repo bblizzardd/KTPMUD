@@ -194,8 +194,9 @@ export function serializeConfirmation(ctx, confirmation) {
   if (!confirmation) return null;
   const device = ctx.db.get('devices', confirmation.actorId);
   const account = ctx.db.get('patientAccounts', confirmation.actorId);
+  const caregiver = ctx.db.get('caregivers', confirmation.actorId);
   const fallback = confirmation.actorRole === 'PATIENT' ? ctx.db.get('patients', confirmation.patientId)?.alias : 'Người nhà';
-  return { ...confirmation, actorLabel: device?.ownerAlias || account?.displayName || fallback || '' };
+  return { ...confirmation, actorLabel: caregiver?.displayName || device?.ownerAlias || account?.displayName || fallback || '' };
 }
 
 export function serializeDose(ctx, dose) {
@@ -426,12 +427,14 @@ export function registerMedicationRoutes(router, ctx) {
     res.json(doses.map((dose) => serializeDose(ctx, dose)));
   });
 
-  router.post('/doses/:doseId/confirmations', ctx.device, (req, res) => {
+  function recordConfirmation(req, res, correction = false) {
     const doseId = parse(idSchema, req.params.doseId);
-    const input = parse(confirmationSchema, req.body ?? {});
+    const input = parse(correction ? confirmationSchema.extend({ takenAt: z.string().datetime({ offset: true }), correctsConfirmationId: idSchema }) : confirmationSchema, req.body ?? {});
+    if (!correction && input.correctsConfirmationId) throw new ApiError(403, 'CORRECTION_FORBIDDEN', 'Chỉ người chăm sóc quản lý hồ sơ được đính chính giờ uống');
     const existing = ctx.db.get('doses', doseId);
     if (!existing) throw new ApiError(404, 'DOSE_NOT_FOUND', 'Không tìm thấy cữ thuốc');
-    if (existing.patientId !== req.actor.patientId) throw new ApiError(403, 'FORBIDDEN', 'Thiết bị không có quyền trên cữ thuốc này');
+    if (correction) ctx.patientAccess(req, existing.patientId);
+    else if (existing.patientId !== req.actor.patientId) throw new ApiError(403, 'FORBIDDEN', 'Thiết bị không có quyền trên cữ thuốc này');
     req.auditContext = { patientId: existing.patientId, targetType: 'Dose', targetId: existing.id };
     tickMedication(ctx);
     const now = ctx.now();
@@ -457,9 +460,12 @@ export function registerMedicationRoutes(router, ctx) {
     } else if (dose.lastConfirmationId) {
       throw new ApiError(409, 'DOSE_ALREADY_CONFIRMED', 'Cữ thuốc này đã được xác nhận');
     }
+    // The editor is recorded as CAREGIVER; retain who made the original confirmation.
+    const original = correction ? ctx.db.list('confirmations', { doseId }).find(record => !record.correctsConfirmationId) : null;
+    const confirmedByRole = original?.actorRole || req.actor.role;
     const resultingStatus = takenAt.getTime() > scheduledMs + WINDOW_MS
       ? 'LATE_CONFIRMED'
-      : req.actor.role === 'DELEGATE' ? 'TAKEN_BY_DELEGATE' : 'TAKEN';
+      : confirmedByRole === 'DELEGATE' ? 'TAKEN_BY_DELEGATE' : 'TAKEN';
     const confirmation = ctx.db.transaction(() => {
       const created = ctx.db.insert('confirmations', {
         id: newId(), doseId, patientId: dose.patientId, actorRole: req.actor.role, actorId: req.actor.id,
@@ -471,7 +477,9 @@ export function registerMedicationRoutes(router, ctx) {
       return created;
     });
     res.status(201).json(confirmation);
-  });
+  }
+  router.post('/doses/:doseId/confirmations', ctx.device, (req, res) => recordConfirmation(req, res));
+  router.post('/doses/:doseId/corrections', ctx.caregiver, (req, res) => recordConfirmation(req, res, true));
 
   // Caregiver view of the append-only chain: original record and every correction.
   router.get('/doses/:doseId/confirmations', ctx.caregiver, (req, res) => {

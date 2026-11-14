@@ -2,7 +2,7 @@
 
 Tài liệu này giải thích toàn diện kiến trúc, cấu trúc thư mục, cơ sở dữ liệu, luồng hoạt động và chi tiết từng tệp mã nguồn của hệ thống **An Tâm v1.0** — *Hệ thống hỗ trợ người chăm sóc theo dõi điều trị ngoại trú cho bệnh nhân cao tuổi mắc đái tháo đường type 2*.
 
-Đã đối chiếu với mã nguồn ngày **13/11/2026**. Nếu mới đọc dự án, bắt đầu ở **mục 7** để biết thứ tự đọc và cách hiểu một file React, sau đó dùng **mục 8** để tìm file cần sửa. Các liên kết dùng đường dẫn tương đối để mở được khi chuyển dự án sang máy khác.
+Đã đối chiếu với mã nguồn ngày **15/11/2026**. Nếu mới đọc dự án, bắt đầu ở **mục 7** để biết thứ tự đọc và cách hiểu một file React, sau đó dùng **mục 8** để tìm file cần sửa. Các liên kết dùng đường dẫn tương đối để mở được khi chuyển dự án sang máy khác.
 
 ---
 
@@ -293,7 +293,7 @@ Tệp này cài đặt các nhóm API về định danh và phân quyền gia đ
        * Người thực hiện là `PATIENT` $\rightarrow$ `TAKEN` (Đã uống đúng giờ).
        * Người thực hiện là `DELEGATE` $\rightarrow$ `TAKEN_BY_DELEGATE` (Người nhà xác nhận hộ).
      * Nếu `takenAt > scheduledAt + 60 phút` $\rightarrow$ `LATE_CONFIRMED` (Xác nhận muộn).
-   * **Đính chính (`correctsConfirmationId`)**:
+   * **Đính chính (`POST /doses/:doseId/corrections`, `correctsConfirmationId`)**: Chỉ CAREGIVER quản lý hồ sơ được thực hiện ở Lịch cữ thuốc → lịch sử từng thuốc → Đính chính giờ uống. PATIENT và DELEGATE bị từ chối. Bản ghi mới có actorRole CAREGIVER và actorId của người sửa, giữ bản gốc. Trạng thái đúng giờ vẫn phân biệt người tự xác nhận/người nhà xác nhận hộ từ bản gốc.
      * Không sửa bản ghi cũ. Hệ thống kiểm tra `correctsConfirmationId` phải khớp với `dose.lastConfirmationId` hiện tại, sau đó chèn một bản ghi `Confirmation` mới nối vào bản ghi trước và cập nhật `lastConfirmationId` trên `Dose`.
      * Mọi yêu cầu `PATCH` hoặc `DELETE` vào `/confirmations/:id` đều bị chặn và trả về HTTP `405 CONFIRMATION_IMMUTABLE`.
 
@@ -418,7 +418,7 @@ Tệp `rules.js` chứa các hàm thuần phục vụ kiểm tra trước và xe
   * Điện thoại mô phỏng (`phone-1`, `phone-2`...) lưu trong `localStorage` với khóa `antam.v1.phones`. Tên trường thực tế là `token`, `online`, `cache`, `queue`, `acked` và `largeText`.
   * Điện thoại của tài khoản bệnh nhân (`account-<id>`) được tạo qua `ensureAccountPhone()` và lưu riêng trong `sessionStorage`, khóa `antam.v1.accountPhones`. `clearAccountPhones()` xóa phần này khi đăng xuất/đổi tài khoản, giữ lại các máy mô phỏng. `PatientPage.jsx` hỏi xác nhận nếu đăng xuất khi còn dữ liệu chưa gửi.
 * **[device/deviceClient.js](../frontend/src/device/deviceClient.js)**:
-  * **Lưu xác nhận ngoại tuyến (`confirmDoses`, `correctDoses`)**:
+  * **Lưu xác nhận ngoại tuyến (`confirmDoses`)**:
     * Nếu `phone.online === false`, lưu xác nhận kèm `takenAt` vào `queue`. `PatientPage.jsx` nghe sự kiện online/offline của trình duyệt; máy mô phỏng có công tắc đổi trạng thái.
     * `applyQueue()` trong **`DeviceApp.jsx`** ghép dữ liệu đang chờ gửi vào lịch hiển thị, tạo trạng thái giao diện `QUEUED` (không phải trạng thái dose lưu ở backend).
     * `setOnline(phone, true)` gọi `syncQueue(phone.id)` để gửi tuần tự hàng đợi. Server xét `takenAt` và các điều kiện xác nhận, nên xác nhận đúng giờ được đồng bộ hợp lệ vẫn có thể tính đúng giờ. Khi đồng bộ lỗi mạng, phần chưa gửi được giữ lại.
@@ -434,7 +434,7 @@ Tệp `rules.js` chứa các hàm thuần phục vụ kiểm tra trước và xe
 | :--- | :--- |
 | `shell/AppShell.jsx` | Khung bố cục chính của Người chăm sóc: Thanh bên (Sidebar), Bộ chuyển đổi hồ sơ bệnh nhân, Chuông cảnh báo WebSocket, Nút bật/tắt khung Điện thoại mô phỏng và Chế độ chú thích (Annotate). |
 | `pages/AuthPage.jsx` | Đăng nhập / Đăng ký cho cả Người chăm sóc và Bệnh nhân (có nhập mã liên kết 6 số khi đăng ký tài khoản Bệnh nhân và nút "Điền sẵn" tài khoản demo). |
-| `pages/PatientPage.jsx` | Giao diện dành riêng khi đăng nhập bằng tài khoản Bệnh nhân: xem lịch thuốc hôm nay, xác nhận đã uống, đính chính và hỗ trợ lưu tạm khi mất mạng. |
+| `pages/PatientPage.jsx` | Giao diện dành riêng khi đăng nhập bằng tài khoản Bệnh nhân: xem lịch thuốc hôm nay, xác nhận đã uống theo thời điểm bấm và hỗ trợ lưu tạm khi mất mạng; không được chọn lại giờ hoặc đính chính. |
 | `pages/OverviewPage.jsx` | Bảng điều khiển tổng quan: Tỷ lệ tuân thủ 7/30/90 ngày, biểu đồ cột theo ngày, cảnh báo cần chú ý, lịch cữ thuốc hôm nay và tóm tắt đơn thuốc đang dùng. |
 | `pages/DosesPage.jsx` | Tra cứu lịch cữ thuốc theo khoảng ngày và trạng thái; xem chuỗi xác nhận & đính chính của từng dose (mỗi dòng thuốc tại một giờ hẹn, không phải từng viên). |
 | `pages/PrescriptionsPage.jsx` | Danh sách đơn thuốc theo trạng thái (`ACTIVE`, `DRAFT`, `SUPERSEDED`, `EXPIRED`, `CANCELLED`). |

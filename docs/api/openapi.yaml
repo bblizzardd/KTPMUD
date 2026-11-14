@@ -439,7 +439,8 @@ paths:
       description: |
         Người thực hiện được suy ra từ token thiết bị: PATIENT cho ra trạng thái Đã uống,
         DELEGATE cho ra Đã uống (hộ). Xác nhận sau thời hạn cho ra Xác nhận muộn.
-        Bản ghi xác nhận không sửa được; đính chính bằng bản ghi mới (FR-15).
+        Bệnh nhân/người nhà không được đính chính; correctsConfirmationId khác null bị từ chối 403.
+        Chỉ CAREGIVER quản lý hồ sơ được thêm đính chính qua POST /doses/{doseId}/corrections.
       operationId: confirmDose
       security:
         - deviceAuth: []
@@ -457,6 +458,40 @@ paths:
               schema: { $ref: '#/components/schemas/Confirmation' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+
+  /doses/{doseId}/corrections:
+    parameters:
+      - name: doseId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      tags: [Doses]
+      summary: Người chăm sóc đính chính giờ uống của hồ sơ mình quản lý
+      operationId: correctDoseConfirmation
+      security:
+        - caregiverAuth: []
+      description: |
+        Thêm bản ghi CAREGIVER tham chiếu xác nhận mới nhất, giữ bản gốc và ghi người đính chính.
+        Kiểm tra thời gian như xác nhận (tối đa 72 giờ, không ở tương lai, từ 60 phút trước giờ hẹn).
+        Tính trạng thái theo giờ mới nhưng giữ phân biệt tự xác nhận/xác nhận hộ của bản gốc.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConfirmationCorrection' }
+      responses:
+        '201':
+          description: Đã thêm đính chính và cập nhật trạng thái cữ
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Confirmation' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
         '422': { $ref: '#/components/responses/Unprocessable' }
 
@@ -920,17 +955,25 @@ components:
           type: string
           format: uuid
           nullable: true
-          description: Dùng khi đính chính một xác nhận bấm nhầm
+          description: Endpoint xác nhận từ chối giá trị khác null với 403; đính chính cần endpoint corrections và tài khoản CAREGIVER.
+    ConfirmationCorrection:
+      type: object
+      additionalProperties: false
+      required: [takenAt, correctsConfirmationId]
+      properties:
+        takenAt: { type: string, format: date-time }
+        correctsConfirmationId: { type: string, format: uuid, description: ID của xác nhận mới nhất trong cữ }
     Confirmation:
       type: object
       properties:
         id: { type: string, format: uuid }
         doseId: { type: string, format: uuid }
-        actorRole: { $ref: '#/components/schemas/DeviceRole' }
+        actorRole: { type: string, enum: [PATIENT, DELEGATE, CAREGIVER] }
         actorId: { type: string, format: uuid }
         takenAt: { type: string, format: date-time }
         recordedAt: { type: string, format: date-time }
         resultingStatus: { $ref: '#/components/schemas/DoseStatus' }
+        correctsConfirmationId: { type: string, format: uuid, nullable: true }
     AdherenceSummary:
       type: object
       properties:

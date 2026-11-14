@@ -21,6 +21,8 @@ Bệnh nhân đăng ký lần đầu bằng mã PATIENT 6 số do người chăm
 
 ## Màn hình theo báo cáo
 
+Chỉ người chăm sóc quản lý hồ sơ được đính chính giờ uống: **Lịch cữ thuốc → mở lịch sử cữ → Đính chính giờ uống** ở từng thuốc. Bệnh nhân/người nhà chỉ bấm xác nhận với thời điểm bấm, không có ô chọn lại giờ. Lưu xác nhận khi offline vẫn giữ thời điểm bấm để đồng bộ; API đính chính dành riêng cho CAREGIVER.
+
 | Màn hình | Chức năng (BPC) | UC / FR |
 |---|---|---|
 | Đăng nhập / Đăng ký | 1.1 | UC-01, FR-01 |

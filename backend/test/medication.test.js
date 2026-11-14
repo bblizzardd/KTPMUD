@@ -126,7 +126,7 @@ test('confirmation includes both 60-minute boundaries, supports offline and corr
   const confirmed = await f.request('POST', `/doses/${dose.id}/confirmations`, { takenAt: early });
   assert.equal(confirmed.status, 201);
   assert.equal(confirmed.body.resultingStatus, 'TAKEN', 'Offline upload keeps the actual early takenAt');
-  const corrected = await f.request('POST', `/doses/${dose.id}/confirmations`, { takenAt: '2026-10-22T13:00:00.001Z', correctsConfirmationId: confirmed.body.id });
+  const corrected = await f.request('POST', `/doses/${dose.id}/corrections`, { takenAt: '2026-10-22T13:00:00.001Z', correctsConfirmationId: confirmed.body.id });
   assert.equal(corrected.status, 201);
   assert.equal(corrected.body.resultingStatus, 'LATE_CONFIRMED');
   assert.deepEqual(f.db.get('confirmations', confirmed.body.id), confirmed.body, 'Original confirmation is immutable');

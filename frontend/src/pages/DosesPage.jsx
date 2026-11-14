@@ -6,14 +6,51 @@ import { useNow } from '../app/hooks.js';
 import { useQuery } from '../app/query.js';
 import { replaceQuery } from '../app/router.js';
 import { DOSE_STATUS, SLOT_META } from '../domain/constants.js';
-import { DECISION_TABLE, groupDoses } from '../domain/rules.js';
-import { addDays, dayLabel, diffDays, fmtDate, fmtDateTime, fmtTime, isValidDateKey, toDateKey } from '../lib/time.js';
+import { DECISION_TABLE, groupDoses, checkConfirmable } from '../domain/rules.js';
+import { addDays, atTime, dayLabel, diffDays, fmtDate, fmtDateTime, fmtTime, isValidDateKey, isValidHHmm, toDateKey } from '../lib/time.js';
 import { fmtNumber, shortId } from '../lib/text.js';
-import { Badge, Card, DoseStatusBadge, EmptyState, Modal, PageHeader, PageStatus } from '../components/ui.jsx';
+import { Badge, Card, DoseStatusBadge, EmptyState, Field, Modal, PageHeader, PageStatus } from '../components/ui.jsx';
 import { confirmationText } from './OverviewPage.jsx';
 
 const STATUS_ORDER = ['PENDING', 'TAKEN', 'TAKEN_BY_DELEGATE', 'LATE_CONFIRMED', 'MISSED', 'SCHEDULED', 'CANCELLED'];
 const MAX_RANGE_DAYS = 120;
+const ACTOR_LABELS = { PATIENT: 'Bệnh nhân', DELEGATE: 'Người nhà', CAREGIVER: 'Người chăm sóc' };
+
+function CorrectionForm({ dose, latest, onClose }) {
+  const { call } = useApp();
+  const nowMs = useNow();
+  const [date, setDate] = useState(toDateKey(latest.takenAt));
+  const [time, setTime] = useState(fmtTime(latest.takenAt));
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  async function save(event) {
+    event.preventDefault();
+    if (busy) return;
+    if (!isValidDateKey(date) || !isValidHHmm(time)) { setError('Nhập ngày và giờ uống hợp lệ.'); return; }
+    const takenAt = atTime(date, time);
+    const check = checkConfirmable({ ...dose, lastConfirmation: latest }, { takenAt, nowMs, correction: true });
+    if (!check.ok) { setError(check.message); return; }
+    setBusy(true);
+    setError('');
+    const result = await call(() => api.correctDoseConfirmation(dose.id, { takenAt, correctsConfirmationId: latest.id }), {
+      success: 'Đã đính chính giờ uống', errorTitle: 'Chưa lưu được đính chính', refresh: patientKey(dose.patientId)
+    });
+    setBusy(false);
+    if (result.ok) onClose();
+    else setError(result.error?.message || 'Chưa lưu được đính chính.');
+  }
+  return (
+    <form className="stack" onSubmit={save}>
+      <p className="text-sm">Chỉ người chăm sóc được sửa giờ uống đã ghi nhận. Lịch sử sẽ giữ bản gốc và ghi tên người đính chính.</p>
+      <div className="form-grid">
+        <Field label="Ngày uống" htmlFor={`correct-date-${dose.id}`}><input id={`correct-date-${dose.id}`} className="input" type="date" value={date} max={toDateKey(nowMs)} onChange={e => setDate(e.target.value)} required disabled={busy} /></Field>
+        <Field label="Giờ uống thực tế" htmlFor={`correct-time-${dose.id}`}><input id={`correct-time-${dose.id}`} className="input" type="time" value={time} onChange={e => setTime(e.target.value)} required disabled={busy} /></Field>
+      </div>
+      {error && <p className="text-sm" role="alert">{error}</p>}
+      <div className="row"><button className="btn btn-primary" disabled={busy}>{busy ? 'Đang lưu…' : 'Lưu đính chính'}</button><button type="button" className="btn btn-secondary" disabled={busy} onClick={onClose}>Hủy</button></div>
+    </form>
+  );
+}
 
 function StatusGuide({ open, onClose }) {
   return (
@@ -69,6 +106,7 @@ function StatusGuide({ open, onClose }) {
 }
 
 function DoseRecords({ dose }) {
+  const [correcting, setCorrecting] = useState(false);
   const recordsQ = useQuery(patientKey(dose.patientId, `confirmations:${dose.id}`), () => api.listDoseConfirmations(dose.id));
   const records = recordsQ.data;
   return (
@@ -91,7 +129,7 @@ function DoseRecords({ dose }) {
             <li key={r.id}>
               <Badge tone={r.correctsConfirmationId ? 'warning' : 'neutral'}>{r.correctsConfirmationId ? 'Đính chính' : 'Bản ghi gốc'}</Badge>
               <span>
-                {r.actorLabel || (r.actorRole === 'PATIENT' ? 'Bệnh nhân' : 'Người nhà')} ({r.actorRole === 'PATIENT' ? 'bệnh nhân' : 'người nhà'}) · uống lúc <strong className="num">{fmtTime(r.takenAt)}</strong> · máy chủ ghi{' '}
+                {r.actorLabel || ACTOR_LABELS[r.actorRole]} ({ACTOR_LABELS[r.actorRole]}) · uống lúc <strong className="num">{fmtTime(r.takenAt)}</strong> · máy chủ ghi{' '}
                 <span className="num">{fmtDateTime(r.recordedAt)}</span> → {DOSE_STATUS[r.resultingStatus]?.label}
                 {r.correctsConfirmationId && <span className="muted"> · tham chiếu bản ghi #{shortId(r.correctsConfirmationId)}</span>}
               </span>
@@ -99,6 +137,10 @@ function DoseRecords({ dose }) {
             </li>
           ))}
         </ol>
+      )}
+      {records?.length > 0 && dose.status !== 'CANCELLED' && (
+        correcting ? <CorrectionForm key={records.at(-1).id} dose={dose} latest={records.at(-1)} onClose={() => setCorrecting(false)} />
+          : <button type="button" className="btn btn-secondary btn-sm" onClick={() => setCorrecting(true)}>Đính chính giờ uống</button>
       )}
     </div>
   );
@@ -110,7 +152,7 @@ function ConfirmationHistory({ group }) {
       {group.doses.map((dose) => (
         <DoseRecords key={dose.id} dose={dose} />
       ))}
-      <p className="fine-print">Bản ghi xác nhận chỉ được thêm, không sửa hay xóa; bấm nhầm được đính chính bằng bản ghi mới tham chiếu bản ghi cũ (BR-05).</p>
+      <p className="fine-print">Bệnh nhân và người nhà không được sửa giờ uống. Chỉ người chăm sóc quản lý hồ sơ được đính chính bằng bản ghi mới; bản gốc luôn được giữ lại.</p>
     </div>
   );
 }

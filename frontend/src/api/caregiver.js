@@ -78,6 +78,8 @@ export const cancelPrescription = (prescriptionId) => request(`/prescriptions/${
 // --- Cữ thuốc & tuân thủ (FR-09..FR-15, FR-19) ---
 export const listDoses = (patientId, { from, to, status } = {}) => request(`/patients/${patientId}/doses${qs({ from, to, status })}`);
 export const listDoseConfirmations = (doseId) => request(`/doses/${doseId}/confirmations`);
+export const correctDoseConfirmation = (doseId, { takenAt, correctsConfirmationId }) =>
+  request(`/doses/${doseId}/corrections`, { method: 'POST', body: { takenAt, correctsConfirmationId } });
 export const getAdherenceSummary = (patientId, days = 30) => request(`/patients/${patientId}/adherence/summary${qs({ days })}`);
 
 // --- Cảnh báo (FR-12) ---
