@@ -12,7 +12,6 @@ import {
   Signal,
   Type,
   Unlink,
-  Volume2,
   Wifi,
   WifiOff
 } from 'lucide-react';
@@ -241,28 +240,6 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
   const [ringing, setRinging] = useState(null);
   const [sending, setSending] = useState(false);
   const seen = useRef(null);
-  useEffect(() => () => window.speechSynthesis?.cancel(), []);
-
-  function speakSchedule() {
-    if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
-      flash({ tone: 'warning', text: 'Trình duyệt này chưa hỗ trợ đọc giọng nói. Bạn có thể xem lịch thuốc bên dưới.' });
-      return;
-    }
-    const remaining = groups.filter((group) => !DONE.includes(group.status) && group.status !== 'CANCELLED');
-    const schedule = remaining.map((group) => {
-      const medicines = group.doses.map((dose) => `${dose.drugDisplayName}, ${fmtNumber(dose.unitsPerDose)} ${dose.unit || 'viên'}${dose.instruction ? `, ${dose.instruction}` : ''}`).join('; ');
-      const status = group.status === 'MISSED' ? 'Đã quá giờ, chưa có xác nhận. Nếu chưa uống, hãy hỏi người thân hoặc bác sĩ trước khi uống bù.' : group.status === 'SCHEDULED' ? 'Chưa đến giờ uống.' : 'Đã đến giờ uống.';
-      return `${fmtTime(group.scheduledAt)}: ${medicines}. ${status}`;
-    }).join(' ');
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(`Chào ${alias}. ${groups.length === 0 ? 'Hôm nay không có lịch thuốc.' : remaining.length ? `Lịch thuốc chưa xác nhận hôm nay. ${schedule}` : 'Hôm nay đã ghi nhận tất cả các cữ thuốc.'}`);
-    utterance.lang = 'vi-VN';
-    utterance.rate = 0.85;
-    utterance.onerror = (event) => {
-      if (!['interrupted', 'canceled'].includes(event.error)) flash({ tone: 'warning', text: 'Chưa đọc được lịch thuốc. Vui lòng thử lại hoặc xem lịch bên dưới.' });
-    };
-    window.speechSynthesis.speak(utterance);
-  }
 
   const pending = groups.filter((g) => g.status === 'PENDING');
   const missed = groups.filter((g) => g.status === 'MISSED');
@@ -367,10 +344,6 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
           <Type size={22} />
         </button>
       </div>
-
-      <button type="button" className="dev-btn dev-read-schedule" onClick={speakSchedule}>
-        <Volume2 size={26} aria-hidden="true" /> Đọc lịch thuốc cho tôi
-      </button>
 
       {!isPatient && unresolved.length > 0 && (
         <div className="dev-alerts">

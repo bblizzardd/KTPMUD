@@ -791,6 +791,7 @@ components:
       type: object
       properties:
         alias: { type: string, maxLength: 50 }
+        birthYear: { type: integer, minimum: 1920, maximum: 2010 }
         reminderTimes:
           type: array
           items: { $ref: '#/components/schemas/ReminderTime' }
@@ -822,8 +823,11 @@ components:
       enum: [PATIENT, DELEGATE]
     PairingCode:
       type: object
+      description: Mã mới thay thế các mã chưa dùng cho cùng bệnh nhân/vai trò/người nhà; không thu hồi thiết bị đã ghép.
       properties:
         code: { type: string, example: '482913' }
+        codeId: { type: string, format: uuid }
+        createdAt: { type: string, format: date-time }
         role: { $ref: '#/components/schemas/DeviceRole' }
         expiresAt: { type: string, format: date-time }
     DevicePairRequest:

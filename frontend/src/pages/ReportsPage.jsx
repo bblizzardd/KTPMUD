@@ -36,7 +36,7 @@ export default function ReportsPage() {
     setRequesting(true);
     const res = await call(() => api.requestReport(patient.id, period), { errorTitle: 'Chưa tạo được báo cáo', refresh: key });
     setRequesting(false);
-    if (res.ok) toast({ tone: 'info', title: 'Đã nhận yêu cầu (202 Accepted)', message: 'Máy chủ đang dựng báo cáo ở chế độ nền, bạn có thể tiếp tục thao tác khác.' });
+    if (res.ok) toast({ tone: 'info', title: 'Đã nhận yêu cầu', message: 'Đang tạo báo cáo, bạn có thể tiếp tục thao tác khác.' });
   }
 
   return (
@@ -44,10 +44,9 @@ export default function ReportsPage() {
       <PageHeader
         title="Báo cáo PDF cho bác sĩ"
         subtitle={`Tổng hợp lịch sử ghi nhận uống thuốc của ${patient.alias}, phân biệt tự xác nhận, xác nhận hộ và xác nhận muộn, kèm chỉ số xét nghiệm.`}
-        req="UC-13 · FR-20 · BIZ-03"
       />
 
-      <Card title="Tạo báo cáo mới" req="POST /patients/{id}/reports">
+      <Card title="Tạo báo cáo mới">
         <div className="report-request">
           <div className="report-request-text">
             <Stethoscope size={28} className="tone-text-info" aria-hidden="true" />
@@ -64,7 +63,7 @@ export default function ReportsPage() {
         </div>
       </Card>
 
-      <Card title="Các báo cáo đã tạo" req="GET /reports/{reportId}">
+      <Card title="Các báo cáo đã tạo">
         {!probe.data ? (
           <PageStatus error={probe.error} onRetry={probe.reload} />
         ) : jobs.length === 0 ? (

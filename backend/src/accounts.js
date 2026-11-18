@@ -1,6 +1,6 @@
 import { randomInt } from 'node:crypto';
 import { z } from 'zod';
-import { ApiError, DEFAULT_REMINDERS, TIME_SLOTS, DOSE_WINDOW_MINUTES, newId, parse } from './common.js';
+import { ApiError, DEFAULT_REMINDERS, TIME_SLOTS, DOSE_WINDOW_MINUTES, idSchema, newId, parse } from './common.js';
 import { createTokenPair, encryptToken, hashPassword, hashToken, opaqueToken, verifyPassword } from './security.js';
 
 const text = max => z.string().trim().min(1).max(max);
@@ -9,7 +9,7 @@ const password = z.string().min(8).max(128);
 const reminders = z.array(z.object({ slot: z.enum(TIME_SLOTS), time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/) }).strict())
   .min(1).max(4).refine(items => new Set(items.map(item => item.slot)).size === items.length, 'Mỗi buổi chỉ được khai báo một lần');
 const patientCreate = z.object({ alias: text(50), birthYear: z.number().int().min(1920).max(2010), reminderTimes: reminders.optional() }).strict();
-const patientUpdate = z.object({ alias: text(50).optional(), reminderTimes: reminders.optional(), missedThresholdMinutes: z.literal(DOSE_WINDOW_MINUTES).optional() }).strict()
+const patientUpdate = z.object({ alias: text(50).optional(), birthYear: z.number().int().min(1920).max(2010).optional(), reminderTimes: reminders.optional(), missedThresholdMinutes: z.literal(DOSE_WINDOW_MINUTES).optional() }).strict()
   .refine(value => Object.keys(value).length > 0, 'Cần ít nhất một trường cập nhật');
 
 export function publicRateLimit(ctx, max = 20, windowMs = 60000) {
@@ -179,11 +179,23 @@ export function registerAccountRoutes(router, ctx) {
     let code;
     do { code = randomInt(0, 1000000).toString().padStart(6, '0'); } while (db.list('pairingCodes', { codeHash: hashToken(code) }).length);
     const expiresAt = new Date(+ctx.now() + ctx.config.pairingMinutes * 60000).toISOString();
-    db.transaction(() => {
-      const record = db.insert('pairingCodes', { id: newId(), patientId: patient.id, ...input, codeHash: hashToken(code), expiresAt, used: false });
+    const record = db.transaction(() => {
+      for (const previous of db.list('pairingCodes', { patientId: patient.id, role: input.role, used: false })) {
+        if ((previous.delegateId || null) === (input.delegateId || null)) {
+          db.update('pairingCodes', previous.id, { used: true, invalidatedAt: ctx.now().toISOString() });
+        }
+      }
+      const record = db.insert('pairingCodes', { id: newId(), patientId: patient.id, ...input, codeHash: hashToken(code), createdAt: ctx.now().toISOString(), expiresAt, used: false });
       ctx.audit({ patientId: patient.id, userId: req.actor.id, actionType: 'PAIRING_CODE_CREATED', targetType: 'PairingCode', targetId: record.id });
+      return record;
     });
-    res.status(201).json({ code, role: input.role, expiresAt });
+    res.status(201).json({ code, codeId: record.id, createdAt: record.createdAt, role: input.role, expiresAt });
+  });
+  router.get('/patients/:patientId/pairing-codes/:codeId', ctx.caregiver, (req, res) => {
+    const patient = ctx.patientAccess(req, req.params.patientId);
+    const record = db.get('pairingCodes', parse(idSchema, req.params.codeId));
+    if (!record || record.patientId !== patient.id) throw new ApiError(404, 'PAIRING_CODE_NOT_FOUND', 'Không tìm thấy mã liên kết');
+    res.json({ codeId: record.id, used: record.used, replaced: Boolean(record.invalidatedAt), expiresAt: record.expiresAt });
   });
   router.post('/devices/pair', publicRateLimit(ctx, 10), (req, res) => {
     const input = parse(z.object({ code: z.string().regex(/^\d{6}$/), pushToken: text(4096), platform: z.enum(['ANDROID', 'IOS']), deviceName: text(100).optional() }).strict(), req.body);
@@ -194,7 +206,7 @@ export function registerAccountRoutes(router, ctx) {
       if (!code || code.used || Date.parse(code.expiresAt) <= +ctx.now() || (code.role === 'DELEGATE' && !delegate?.active)) throw new ApiError(410, 'PAIRING_CODE_GONE', 'Mã đã hết hạn, đã dùng hoặc không hợp lệ');
       const patient = db.get('patients', code.patientId);
       db.update('pairingCodes', code.id, { used: true });
-      const device = db.insert('devices', { id: newId(), patientId: patient.id, role: code.role, delegateId: code.delegateId || null,
+      const device = db.insert('devices', { id: newId(), patientId: patient.id, role: code.role, delegateId: code.delegateId || null, pairingCodeId: code.id,
         ownerAlias: delegate?.alias || patient.alias, deviceName: input.deviceName || input.platform, platform: input.platform,
         tokenHash: hashToken(deviceToken), pushTokenEncrypted: encryptToken(input.pushToken, ctx.config.tokenEncryptionKey), active: true,
         pairedAt: ctx.now().toISOString(), expiresAt: new Date(+ctx.now() + ctx.config.deviceTokenDays * 86400_000).toISOString() });
@@ -215,7 +227,7 @@ export function registerAccountRoutes(router, ctx) {
     const device = db.get('devices', req.actor.id);
     const patient = db.get('patients', device.patientId);
     res.json({ deviceId: device.id, role: device.role, patientId: patient.id, patientAlias: patient.alias,
-      ownerAlias: device.ownerAlias, deviceName: device.deviceName, pairedAt: device.pairedAt, expiresAt: device.expiresAt });
+      ownerAlias: device.role === 'PATIENT' ? patient.alias : device.ownerAlias, deviceName: device.deviceName, pairedAt: device.pairedAt, expiresAt: device.expiresAt });
   });
   router.get('/patients/:patientId/devices', ctx.caregiver, (req, res) => {
     ctx.patientAccess(req, req.params.patientId);

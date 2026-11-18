@@ -14,5 +14,5 @@ try {
   console.error(`Không xóa được dữ liệu cũ (${error.code || error.message}). Hãy tắt máy chủ An Tâm rồi chạy lại.`);
   process.exit(1);
 }
-console.log('Đã xóa dữ liệu cũ, đồng hồ trở về giờ thực.');
+console.log('Đã xóa dữ liệu cũ. Đồng hồ mô phỏng bắt đầu lại lúc 06:00.');
 await import('./seed.js');

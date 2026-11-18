@@ -52,7 +52,6 @@ export default function AuditPage() {
       <PageHeader
         title="Nhật ký thao tác"
         subtitle={`Ai đã làm gì trên hồ sơ ${patient.alias} và lúc nào. Mọi thao tác ghi dữ liệu đều được ghi lại; nhật ký chỉ được thêm, không sửa hay xóa.`}
-        req="FR-18 · US-17 · NFR-06"
       />
 
       <Callout tone="neutral" icon={Lock}>

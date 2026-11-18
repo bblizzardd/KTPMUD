@@ -1,29 +1,21 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { z } from 'zod';
 import { ApiError, parse } from './common.js';
 import { tickMedication } from './medication.js';
 import { tickClinical } from './clinical.js';
 
-// Local demo/testing aid (ENABLE_DEV_TOOLS=true, never in production). The clock only
-// moves forward so scheduled → pending → missed transitions and append-only history stay valid.
+// Each local backend session starts at 06:00 Vietnam time. Skips only move forward
+// within that session; restarting the clock does not reset persisted business data.
 const MAX_ADVANCE_MINUTES = 14 * 24 * 60;
 
-export function createDevClock(config) {
-  const file = resolve(config.dataDir, 'dev-clock.json');
-  let offsetMs = 0;
-  try {
-    if (existsSync(file)) offsetMs = Math.max(0, Number(JSON.parse(readFileSync(file, 'utf8')).offsetMs) || 0);
-  } catch {
-    offsetMs = 0;
-  }
+export function createDevClock(config, realNow = Date.now) {
+  const startedAt = realNow();
+  const date = new Date(startedAt + 7 * 60 * 60_000).toISOString().slice(0, 10);
+  let offsetMs = Date.parse(`${date}T06:00:00+07:00`) - startedAt;
   return {
-    now: () => new Date(Date.now() + offsetMs),
+    now: () => new Date(realNow() + offsetMs),
     get offsetMs() { return offsetMs; },
     advance(ms) {
       offsetMs += ms;
-      mkdirSync(config.dataDir, { recursive: true });
-      writeFileSync(file, JSON.stringify({ offsetMs }));
     },
   };
 }

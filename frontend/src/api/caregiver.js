@@ -30,6 +30,7 @@ export const updatePatient = (patientId, body) => request(`/patients/${patientId
 
 // --- Thiết bị & người nhà (UC-03, UC-04) ---
 export const createPairingCode = (patientId, body) => request(`/patients/${patientId}/pairing-codes`, { method: 'POST', body });
+export const getPairingCodeStatus = (patientId, codeId) => request(`/patients/${patientId}/pairing-codes/${codeId}`);
 export const listDevices = (patientId) => request(`/patients/${patientId}/devices`);
 export const revokeDevice = (patientId, deviceId) => request(`/patients/${patientId}/devices/${deviceId}`, { method: 'DELETE' });
 export const listDelegates = (patientId) => request(`/patients/${patientId}/delegates`);
@@ -74,6 +75,7 @@ export const createPrescription = (patientId, form) => request(`/patients/${pati
 export const updatePrescription = (prescriptionId, form) => request(`/prescriptions/${prescriptionId}`, { method: 'PUT', body: toPrescriptionInput(form) });
 export const confirmPrescription = (prescriptionId) => request(`/prescriptions/${prescriptionId}/confirm`, { method: 'POST', body: {} });
 export const cancelPrescription = (prescriptionId) => request(`/prescriptions/${prescriptionId}/cancel`, { method: 'POST', body: {} });
+export const deletePrescription = (prescriptionId) => request(`/prescriptions/${prescriptionId}`, { method: 'DELETE' });
 
 // --- Cữ thuốc & tuân thủ (FR-09..FR-15, FR-19) ---
 export const listDoses = (patientId, { from, to, status } = {}) => request(`/patients/${patientId}/doses${qs({ from, to, status })}`);

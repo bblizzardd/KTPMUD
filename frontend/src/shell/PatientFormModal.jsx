@@ -43,7 +43,7 @@ export default function PatientFormModal({ open, mode = 'create', patient, onClo
     const body =
       mode === 'create'
         ? { alias: alias.trim(), birthYear: Number(birthYear), reminderTimes }
-        : { alias: alias.trim(), reminderTimes, missedThresholdMinutes: DEFAULT_MISSED_THRESHOLD };
+        : { alias: alias.trim(), birthYear: Number(birthYear), reminderTimes, missedThresholdMinutes: DEFAULT_MISSED_THRESHOLD };
     const problems = validatePatientInput(body, { partial: mode === 'edit' });
     if (problems.length) {
       setError({ message: problems[0].issue, details: problems });
@@ -74,12 +74,13 @@ export default function PatientFormModal({ open, mode = 'create', patient, onClo
   return (
     <Modal
       open={open}
+      busy={busy}
       onClose={onClose}
       title={mode === 'create' ? 'Thêm hồ sơ người thân' : `Sửa hồ sơ · ${patient?.alias}`}
-      subtitle={mode === 'create' ? 'Mỗi hồ sơ là một người bệnh bạn chăm sóc (BR-01).' : 'Giờ nhắc mới áp dụng cho đơn thuốc được xác nhận sau khi lưu.'}
+      subtitle={mode === 'create' ? 'Mỗi hồ sơ là một người bệnh bạn chăm sóc.' : 'Giờ nhắc mới áp dụng cho đơn thuốc được xác nhận sau khi lưu.'}
       footer={
         <>
-          <button type="button" className="btn btn-secondary" onClick={onClose}>
+          <button type="button" className="btn btn-secondary" onClick={onClose} disabled={busy}>
             Hủy
           </button>
           <button type="submit" form="patient-form" className="btn btn-primary" disabled={busy}>
@@ -99,10 +100,10 @@ export default function PatientFormModal({ open, mode = 'create', patient, onClo
           </Field>
           <Field
             label="Năm sinh"
-            required={mode === 'create'}
+            required
             htmlFor="pf-year"
             error={fieldError(error, 'birthYear')}
-            hint={mode === 'edit' ? 'Không đổi được sau khi tạo hồ sơ' : 'Từ 1920 đến 2010'}
+            hint="Từ 1920 đến 2010"
           >
             <input
               id="pf-year"
@@ -112,7 +113,6 @@ export default function PatientFormModal({ open, mode = 'create', patient, onClo
               min={1920}
               max={2010}
               value={birthYear}
-              readOnly={mode === 'edit'}
               onChange={(e) => setBirthYear(e.target.value)}
               placeholder="Ví dụ: 1954"
               aria-invalid={Boolean(fieldError(error, 'birthYear'))}
@@ -125,7 +125,7 @@ export default function PatientFormModal({ open, mode = 'create', patient, onClo
           <div className="grid-4">
             {SLOTS.map((slot) => (
               <Field key={slot} label={SLOT_META[slot].long} htmlFor={`pf-${slot}`}>
-                <input id={`pf-${slot}`} className="input" type="time" value={times[slot]} onChange={(e) => setTimes((t) => ({ ...t, [slot]: e.target.value }))} required />
+                <input id={`pf-${slot}`} className="input" type="text" placeholder="HH:mm" maxLength={5} pattern="([01][0-9]|2[0-3]):[0-5][0-9]" title="24h: 00:00 - 23:59" value={times[slot]} onChange={(e) => setTimes((t) => ({ ...t, [slot]: e.target.value }))} required />
               </Field>
             ))}
           </div>

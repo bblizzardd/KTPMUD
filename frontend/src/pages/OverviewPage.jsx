@@ -117,7 +117,7 @@ function SetupChecklist({ patient, hasDevice, activeRx, drafts, hasDelegate }) {
     }
   ];
   return (
-    <Card title={`Thiết lập theo dõi cho ${patient.alias}`} subtitle="Hoàn tất các bước dưới đây để bắt đầu nhắc thuốc." req="UC-02 · UC-03 · UC-04 · UC-05">
+    <Card title={`Thiết lập theo dõi cho ${patient.alias}`} subtitle="Hoàn tất các bước dưới đây để bắt đầu nhắc thuốc.">
       <ol className="checklist">
         {steps.map((s) => (
           <li key={s.title} className={s.done ? 'is-done' : ''}>
@@ -210,7 +210,6 @@ export default function OverviewPage() {
         eyebrow={`${weekdayOf(today)}, ${fmtDate(today)}`}
         title={`Quản lý đơn thuốc & sức khỏe cho ${patient.alias}`}
         subtitle="Theo dõi lịch uống thuốc và chăm sóc người thân từ xa."
-        req="UC-09 · FR-19 · US-04"
         actions={
           <><a className="btn btn-primary" href={href(ROUTES.prescriptionNew)}>
             <Plus size={19} aria-hidden="true" /> Thêm đơn thuốc mới
@@ -252,7 +251,6 @@ export default function OverviewPage() {
           className="ov-today"
           title="Lịch uống thuốc hôm nay"
           subtitle={todayGroups.length ? `${doneToday}/${todayGroups.length} buổi đã có xác nhận` : undefined}
-          req="FR-10 · FR-11 · FR-13"
           actions={
             <a className="btn btn-sm btn-ghost" href={href(ROUTES.doses)}>
               Lịch cữ thuốc <ArrowRight size={15} aria-hidden="true" />
@@ -282,7 +280,6 @@ export default function OverviewPage() {
         <Card
           className="ov-adherence"
           title="Tuân thủ"
-          req="FR-19 · TD-02"
           actions={<Segmented ariaLabel="Kỳ thống kê" value={summary.days} onChange={setDays} options={ADHERENCE_PERIODS.map((d) => ({ value: d, label: `${d} ngày` }))} />}
         >
           {summary.totalDoses === 0 ? (
@@ -318,7 +315,7 @@ export default function OverviewPage() {
       </Card>
 
       <div className="grid-3">
-        <Card title="Tái khám sắp tới" req="UC-12 · FR-17" actions={<a className="btn btn-sm btn-ghost" href={href(ROUTES.clinical)}>Chi tiết</a>}>
+        <Card title="Tái khám sắp tới" actions={<a className="btn btn-sm btn-ghost" href={href(ROUTES.clinical)}>Chi tiết</a>}>
           {nextVisit ? (
             <div className="mini">
               <CalendarClock size={22} className="mini-icon" aria-hidden="true" />
@@ -335,7 +332,7 @@ export default function OverviewPage() {
           )}
         </Card>
 
-        <Card title="Chỉ số gần nhất" req="UC-11 · FR-16" actions={<a className="btn btn-sm btn-ghost" href={href(ROUTES.clinical)}>Xu hướng</a>}>
+        <Card title="Chỉ số gần nhất" actions={<a className="btn btn-sm btn-ghost" href={href(ROUTES.clinical)}>Xu hướng</a>}>
           {latestLabs.length ? (
             <div className="stack-sm">
               {latestLabs.map((list) => {
@@ -363,7 +360,7 @@ export default function OverviewPage() {
           )}
         </Card>
 
-        <Card title="Đơn đang dùng" req="BR-02" actions={<a className="btn btn-sm btn-ghost" href={href(ROUTES.prescriptions)}>Đơn thuốc</a>}>
+        <Card title="Đơn đang dùng" actions={<a className="btn btn-sm btn-ghost" href={href(ROUTES.prescriptions)}>Đơn thuốc</a>}>
           {activeRx ? (
             <div className="stack-sm">
               <div className="muted text-sm">

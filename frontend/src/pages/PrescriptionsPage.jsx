@@ -7,6 +7,7 @@ import { href, ROUTES } from '../app/router.js';
 import { fmtDate, fmtDateTime, toDateKey } from '../lib/time.js';
 import { Callout, Card, EmptyState, PageHeader, PageStatus, RxStatusBadge } from '../components/ui.jsx';
 import { RxItemsTable } from './prescriptionParts.jsx';
+import DeletePrescriptionButton from '../components/DeletePrescriptionButton.jsx';
 
 /** Số cữ của một đơn trong khoảng hiệu lực (để báo "đã sinh / còn sắp tới"). */
 export function usePrescriptionDoses(rx) {
@@ -35,7 +36,6 @@ export default function PrescriptionsPage() {
       <PageHeader
         title="Đơn thuốc"
         subtitle="Nhập đơn tra cứu từ hệ thống số hóa của bệnh viện, xem lại rồi xác nhận. Lịch nhắc chỉ sinh từ đơn đã xác nhận."
-        req="UC-05 · UC-06 · FR-04..FR-08"
         actions={
           <a className="btn btn-primary" href={href(ROUTES.prescriptionNew)}>
             <FilePlus2 size={16} aria-hidden="true" /> Thêm đơn thuốc
@@ -79,6 +79,7 @@ export default function PrescriptionsPage() {
               <a className="btn btn-sm btn-primary" href={href(`${ROUTES.prescriptions}/${rx.id}`)}>
                 Xem lại & xác nhận <ArrowRight size={15} aria-hidden="true" />
               </a>
+              <DeletePrescriptionButton prescription={rx} />
             </>
           }
         >
@@ -108,13 +109,16 @@ export default function PrescriptionsPage() {
           }
           subtitle={`Kê ngày ${fmtDate(active.issuedDate)} · bắt đầu ${fmtDate(active.startDate)} · tái khám ${fmtDate(active.nextVisitDate)}${active.sourceNote ? ` · ${active.sourceNote}` : ''}`}
           actions={
+            <>
             <a className="btn btn-sm btn-ghost" href={href(`${ROUTES.prescriptions}/${active.id}`)}>
               Chi tiết <ArrowRight size={15} aria-hidden="true" />
             </a>
+            <DeletePrescriptionButton prescription={active} />
+            </>
           }
           footer={
             <>
-              {activeDoses ? `Đã sinh ${activeDoses.length} cữ thuốc, còn ${upcoming} cữ sắp tới. ` : ''}Muốn đổi thuốc: thêm đơn mới; khi xác nhận, đơn này chuyển sang Bị thay thế và các cữ tương lai bị hủy (BR-02, BR-03).
+              {activeDoses ? `Đã sinh ${activeDoses.length} cữ thuốc, còn ${upcoming} cữ sắp tới. ` : ''}Muốn đổi thuốc: thêm đơn mới; khi xác nhận, đơn này chuyển sang Bị thay thế và các cữ tương lai bị hủy.
             </>
           }
         >
@@ -150,6 +154,7 @@ export default function PrescriptionsPage() {
                       <a className="btn btn-sm btn-ghost" href={href(`${ROUTES.prescriptions}/${rx.id}`)}>
                         Xem
                       </a>
+                      <DeletePrescriptionButton prescription={rx} />
                     </td>
                   </tr>
                 ))}

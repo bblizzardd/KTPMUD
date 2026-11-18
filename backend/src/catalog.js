@@ -1,41 +1,58 @@
-// Development fixtures, not an authoritative medication database.
-export const DEMO_DRUGS = [
-  { id: '10000000-0000-4000-8000-000000000001', brandName: 'Glucophage 500mg', activeIngredients: [{ name: 'metformin', strength: '500 mg' }], dosageForm: 'Viên nén' },
-  { id: '10000000-0000-4000-8000-000000000002', brandName: 'Panfor SR 500mg', activeIngredients: [{ name: 'metformin', strength: '500 mg' }], dosageForm: 'Viên nén phóng thích kéo dài' },
-  { id: '10000000-0000-4000-8000-000000000003', brandName: 'Diamicron MR 30mg', activeIngredients: [{ name: 'gliclazide', strength: '30 mg' }], dosageForm: 'Viên nén giải phóng có kiểm soát' },
-  { id: '10000000-0000-4000-8000-000000000004', brandName: 'Jardiance 10mg', activeIngredients: [{ name: 'empagliflozin', strength: '10 mg' }], dosageForm: 'Viên nén' },
-  { id: '10000000-0000-4000-8000-000000000005', brandName: 'Janumet 50mg/500mg', activeIngredients: [{ name: 'sitagliptin', strength: '50 mg' }, { name: 'metformin', strength: '500 mg' }], dosageForm: 'Viên nén phối hợp' },
-  // Illustrative entries used by the web app demo (autocomplete, duplicate-ingredient checks).
-  ...[
-    ['0002', 'Glucophage 850mg', [['metformin', '850 mg']], 'Viên nén bao phim'],
-    ['0003', 'Glucophage XR 750mg', [['metformin', '750 mg']], 'Viên giải phóng kéo dài'],
-    ['0005', 'Panfor SR 1000mg', [['metformin', '1000 mg']], 'Viên giải phóng kéo dài'],
-    ['0006', 'Metformin 500mg', [['metformin', '500 mg']], 'Viên nén'],
-    ['0008', 'Diamicron MR 60mg', [['gliclazide', '60 mg']], 'Viên giải phóng có kiểm soát'],
-    ['0009', 'Amaryl 2mg', [['glimepiride', '2 mg']], 'Viên nén'],
-    ['0010', 'Januvia 50mg', [['sitagliptin', '50 mg']], 'Viên nén bao phim'],
-    ['0011', 'Januvia 100mg', [['sitagliptin', '100 mg']], 'Viên nén bao phim'],
-    ['0012', 'Janumet 50mg/850mg', [['sitagliptin', '50 mg'], ['metformin', '850 mg']], 'Viên nén bao phim'],
-    ['0013', 'Galvus 50mg', [['vildagliptin', '50 mg']], 'Viên nén'],
-    ['0014', 'Galvus Met 50mg/850mg', [['vildagliptin', '50 mg'], ['metformin', '850 mg']], 'Viên nén bao phim'],
-    ['0016', 'Forxiga 10mg', [['dapagliflozin', '10 mg']], 'Viên nén bao phim'],
-    ['0017', 'Coversyl 5mg', [['perindopril', '5 mg']], 'Viên nén bao phim'],
-    ['0018', 'Amlor 5mg', [['amlodipine', '5 mg']], 'Viên nang'],
-    ['0019', 'Crestor 10mg', [['rosuvastatin', '10 mg']], 'Viên nén bao phim'],
-    ['0020', 'Lipitor 20mg', [['atorvastatin', '20 mg']], 'Viên nén bao phim'],
-  ].map(([n, brandName, ingredients, dosageForm]) => ({
-    id: `6f1c2a10-${n}-4a01-9a01-00000000${n.padStart(4, '0')}`,
-    brandName, activeIngredients: ingredients.map(([name, strength]) => ({ name, strength })), dosageForm,
-  })),
-];
+import { readFileSync } from 'node:fs';
 
-export function seedCatalog(ctx) {
-  ctx.db.transaction(() => {
-    for (const drug of DEMO_DRUGS) {
-      if (!ctx.db.get('drugs', drug.id)) {
-        ctx.db.insert('drugs', { ...drug, demo: true, registrationNo: '' });
-        ctx.audit({ actionType: 'DEMO_CATALOG_SEEDED', targetType: 'Drug', targetId: drug.id });
-      }
+export const DEMO_DRUGS = JSON.parse(readFileSync(new URL('./drugs.json', import.meta.url), 'utf8'));
+
+function normalizeSearch(value) {
+  return String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'd').toLowerCase();
+}
+
+const CATALOG_BY_ID = new Map(DEMO_DRUGS.map((drug) => [drug.id, drug]));
+const SERIALIZED_ALL = DEMO_DRUGS.map((drug) => [drug.id, JSON.stringify(drug)]);
+const SERIALIZED_FIXTURES = SERIALIZED_ALL.slice(0, 21);
+
+const SEARCH_INDEX = [...DEMO_DRUGS]
+  .sort((a, b) => (a.brandName ?? '').localeCompare(b.brandName ?? '', 'vi'))
+  .map((drug) => ({
+    drug,
+    brand: normalizeSearch(drug.brandName),
+    ingredients: (drug.activeIngredients ?? []).map((item) => normalizeSearch(item.name)).join(' '),
+  }));
+
+export function getCatalogDrug(ctx, id) {
+  return ctx.db.get('drugs', id) ?? CATALOG_BY_ID.get(id);
+}
+
+export function searchCatalogDrugs(ctx, queryText, limit = 10) {
+  const term = normalizeSearch(queryText);
+  const buckets = [[], [], [], []];
+  for (let i = 0; i < SEARCH_INDEX.length; i += 1) {
+    const entry = SEARCH_INDEX[i];
+    const score = entry.brand === term ? 0
+      : entry.brand.startsWith(term) ? 1
+      : entry.brand.includes(term) ? 2
+      : entry.ingredients.includes(term) ? 3
+      : 4;
+    if (score < 4) buckets[score].push(entry.drug);
+  }
+  const results = [];
+  for (const bucket of buckets) {
+    for (const drug of bucket) {
+      results.push(drug);
+      if (results.length >= limit) return results;
     }
-  });
+  }
+  return results;
+}
+
+export function seedCatalog(ctx, ephemeral = false) {
+  const pairs = ephemeral ? SERIALIZED_FIXTURES : SERIALIZED_ALL;
+  const added = ctx.db.seedDrugs ? ctx.db.seedDrugs(pairs) : 0;
+  if (added > 0) {
+    ctx.audit({
+      actionType: 'DEMO_CATALOG_SEEDED',
+      targetType: 'Drug',
+      targetId: DEMO_DRUGS[0]?.id ?? null,
+      detail: `Đã nạp ${pairs.length} thuốc vào danh mục`,
+    });
+  }
 }

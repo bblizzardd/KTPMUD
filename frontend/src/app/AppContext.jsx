@@ -15,7 +15,6 @@ export function AppProvider({ children }) {
   const [session, setSession] = useState(getSession);
   const sessionRef = useRef(session);
   const [toasts, setToasts] = useState([]);
-  const [annotate, setAnnotate] = usePref('antam.v1.annotate', false);
   const [phoneOpen, setPhoneOpen] = usePref('antam.v1.phoneOpen', false);
   const [phoneId, setPhoneId] = usePref('antam.v1.phoneId', 'phone-1');
   const [selectedPatientId, setSelectedPatientId] = usePref('antam.v1.patient', null);
@@ -25,11 +24,11 @@ export function AppProvider({ children }) {
 
   useEffect(
     () =>
-      onSessionChange((next) => {
+      onSessionChange((next, { refreshed = false } = {}) => {
         const previous = sessionRef.current;
         sessionRef.current = next;
         setSession(next);
-        if (!next || previous?.accountId !== next.accountId || previous?.role !== next.role) {
+        if (!refreshed || !next || previous?.accountId !== next.accountId || previous?.role !== next.role) {
           clearQueries();
           clearAccountPhones();
           setPairingCodes({});
@@ -106,8 +105,6 @@ export function AppProvider({ children }) {
       toast,
       dismissToast,
       call,
-      annotate,
-      setAnnotate,
       phoneOpen,
       setPhoneOpen,
       phoneId,
@@ -116,7 +113,7 @@ export function AppProvider({ children }) {
       setPairingCodes
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [session, caregiver, meQ.error, patients, patientsQ.data, patient, toasts, annotate, phoneOpen, phoneId, pairingCodes]
+    [session, caregiver, meQ.error, patients, patientsQ.data, patient, toasts, phoneOpen, phoneId, pairingCodes]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

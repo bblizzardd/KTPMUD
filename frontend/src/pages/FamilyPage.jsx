@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { KeyRound, Pencil, ShieldCheck, Smartphone, UserMinus, UserPlus } from 'lucide-react';
 import * as api from '../api/caregiver.js';
 import { fieldError } from '../api/errors.js';
@@ -16,31 +16,37 @@ function PairingCard({ patient, delegates, devices }) {
   const nowMs = useNow(1_000);
   const [target, setTarget] = useState('PATIENT');
   const [busy, setBusy] = useState(false);
+  const generating = useRef(false);
   const active = delegates.filter((d) => d.active);
   const current = pairingCodes[patient.id];
   const remaining = current ? Date.parse(current.expiresAt) - nowMs : 0;
-  // Máy chủ chỉ lưu băm của mã: nhận biết mã đã dùng khi có thiết bị mới ghép sau lúc tạo mã.
+  const codeQ = useQuery(current?.codeId ? patientKey(patient.id, `pairing:${current.codeId}`) : null,
+    () => api.getPairingCodeStatus(patient.id, current.codeId), { refreshMs: 3000 });
+  // Match the exact code, not a device timestamp from a previous login or simulated clock.
   const pairedDevice = current
     ? devices
-        .filter((d) => d.role === current.role && (current.role === 'PATIENT' || d.delegateId === current.delegateId) && d.pairedAt >= current.createdAt)
+        .filter((d) => d.pairingCodeId === current.codeId)
         .sort((a, b) => b.pairedAt.localeCompare(a.pairedAt))[0]
     : null;
   const accountLinked = current?.role === 'PATIENT' && current.hadLoginAccount === false && patient.hasLoginAccount;
-  const valid = current && !pairedDevice && !accountLinked && remaining > 0;
+  const valid = current && !pairedDevice && !accountLinked && !codeQ.data?.used && remaining > 0;
   // Trong lúc mã còn hiệu lực, hỏi lại danh sách thiết bị để thấy ngay khi điện thoại ghép xong.
   useQuery(valid ? patientKey(patient.id, 'devices') : null, () => api.listDevices(patient.id), { refreshMs: 3000 });
   useQuery(valid && current.role === 'PATIENT' ? 'patients' : null, api.listPatients, { refreshMs: 3000 });
 
-  async function generate() {
-    const isPatient = target === 'PATIENT';
-    const body = isPatient ? { role: 'PATIENT' } : { role: 'DELEGATE', delegateId: target };
+  async function generate(forTarget = target) {
+    if (generating.current) return;
+    generating.current = true;
+    const isPatient = forTarget === 'PATIENT';
+    const body = isPatient ? { role: 'PATIENT' } : { role: 'DELEGATE', delegateId: forTarget };
     setBusy(true);
-    const createdAt = new Date(nowMs - 5_000).toISOString();
     const res = await call(() => api.createPairingCode(patient.id, body), { errorTitle: 'Chưa tạo được mã', refresh: patientKey(patient.id, 'audit') });
+    generating.current = false;
     setBusy(false);
     if (!res.ok) return;
-    const who = isPatient ? `điện thoại của ${patient.alias}` : `điện thoại của ${active.find((d) => d.id === target)?.alias} (người nhà)`;
-    setPairingCodes((map) => ({ ...map, [patient.id]: { ...res.result, ...body, createdAt, who, hadLoginAccount: Boolean(patient.hasLoginAccount) } }));
+    const who = isPatient ? `điện thoại của ${patient.alias}` : `điện thoại của ${active.find((d) => d.id === forTarget)?.alias} (người nhà)`;
+    setTarget(forTarget);
+    setPairingCodes((map) => ({ ...map, [patient.id]: { ...res.result, ...body, who, hadLoginAccount: Boolean(patient.hasLoginAccount) } }));
   }
 
   function openSimulator() {
@@ -52,7 +58,7 @@ function PairingCard({ patient, delegates, devices }) {
   const clear = () => setPairingCodes((map) => ({ ...map, [patient.id]: undefined }));
 
   return (
-    <Card title="Liên kết tài khoản & thiết bị" subtitle="Mã bệnh nhân dùng để liên kết tài khoản lúc đăng ký lần đầu, hoặc ghép thiết bị. Sau khi đăng ký, bệnh nhân đăng nhập bằng email/mật khẩu trên web và app." req="UC-03 · FR-02 · US-14">
+    <Card title="Liên kết tài khoản & thiết bị" subtitle="Mã bệnh nhân dùng để liên kết tài khoản lúc đăng ký lần đầu, hoặc ghép thiết bị. Sau khi đăng ký, bệnh nhân đăng nhập bằng email/mật khẩu trên web và app.">
       {valid ? (
         <div className="pair-active">
           <div className="pair-code" aria-live="polite">
@@ -74,7 +80,7 @@ function PairingCard({ patient, delegates, devices }) {
           <ol className="pair-steps">
             {current.role === 'PATIENT' && !patient.hasLoginAccount && <li>Tạo tài khoản: chọn Bệnh nhân → Đăng ký trên web hoặc app, rồi nhập mã này cùng email và mật khẩu.</li>}
             <li>Hoặc chọn “Ghép thiết bị bằng mã 6 số”, nhập mã rồi bấm “Ghép nối”.</li>
-            <li>Mã chỉ dùng được một lần và hết hạn sau {PAIRING_CODE_TTL_MINUTES} phút. Máy chủ chỉ lưu bản băm của mã.</li>
+            <li>Mã chỉ dùng được một lần và hết hạn sau {PAIRING_CODE_TTL_MINUTES} phút.</li>
           </ol>
           <div className="row">
             <button type="button" className="btn btn-secondary" onClick={openSimulator}>
@@ -82,6 +88,9 @@ function PairingCard({ patient, delegates, devices }) {
             </button>
             <button type="button" className="btn btn-ghost" onClick={clear}>
               Đóng mã
+            </button>
+            <button type="button" className="btn btn-primary" onClick={() => generate(current.role === 'PATIENT' ? 'PATIENT' : current.delegateId)} disabled={busy}>
+              {busy ? <Spinner /> : <KeyRound size={16} aria-hidden="true" />} Tạo lại mã
             </button>
           </div>
         </div>
@@ -94,8 +103,8 @@ function PairingCard({ patient, delegates, devices }) {
             </Callout>
           )}
           {current && !pairedDevice && !accountLinked && (
-            <Callout tone="warning" title="Mã đã hết hạn" actions={<button type="button" className="btn btn-sm btn-secondary" onClick={clear}>Đóng</button>}>
-              Mã cho {current.who} không còn dùng được (mã ghép nối hết hạn trả về lỗi 410). Hãy tạo mã mới.
+            <Callout tone="warning" title={codeQ.data?.replaced ? 'Mã đã được thay thế' : codeQ.data?.used ? 'Mã đã được sử dụng' : 'Mã đã hết hạn'} actions={<button type="button" className="btn btn-sm btn-secondary" onClick={clear}>Đóng</button>}>
+              Mã cho {current.who} không còn dùng được. Hãy tạo mã mới.
             </Callout>
           )}
           <div className="pair-form">
@@ -109,8 +118,8 @@ function PairingCard({ patient, delegates, devices }) {
                 ))}
               </select>
             </Field>
-            <button type="button" className="btn btn-primary" onClick={generate} disabled={busy}>
-              {busy ? <Spinner /> : <KeyRound size={16} aria-hidden="true" />} Tạo mã 6 số
+            <button type="button" className="btn btn-primary" onClick={() => generate()} disabled={busy}>
+              {busy ? <Spinner /> : <KeyRound size={16} aria-hidden="true" />} {current ? 'Tạo lại mã' : 'Tạo mã 6 số'}
             </button>
           </div>
           {active.length === 0 && <p className="muted text-sm">Muốn ghép điện thoại cho người nhà, hãy ủy quyền người nhà ở mục bên dưới trước.</p>}
@@ -172,11 +181,10 @@ export default function FamilyPage() {
 
   return (
     <>
-      <PageHeader title="Hồ sơ & thiết bị" subtitle={`Hồ sơ ${patient.alias}, điện thoại đã ghép nối và người nhà được ủy quyền xác nhận hộ.`} req="UC-02 · UC-03 · UC-04" />
+      <PageHeader title="Hồ sơ & thiết bị" subtitle={`Hồ sơ ${patient.alias}, điện thoại đã ghép nối và người nhà được ủy quyền xác nhận hộ.`} />
 
       <Card
         title="Hồ sơ bệnh nhân"
-        req="FR-01 · BR-07 · NFR-05"
         actions={
           <button type="button" className="btn btn-sm btn-secondary" onClick={() => setEditing(true)}>
             <Pencil size={15} aria-hidden="true" /> Sửa hồ sơ & giờ nhắc
@@ -225,7 +233,7 @@ export default function FamilyPage() {
 
       <PairingCard patient={patient} delegates={delegates} devices={devices} />
 
-      <Card title={`Thiết bị đã ghép nối (${devices.filter((d) => d.active).length} đang hoạt động)`} subtitle="Thu hồi khi mất máy hoặc đổi máy: thiết bị bị thu hồi không nhận nhắc và không xác nhận được nữa." req="NFR-04 · NFR-10">
+      <Card title={`Thiết bị đã ghép nối (${devices.filter((d) => d.active).length} đang hoạt động)`} subtitle="Thu hồi khi mất máy hoặc đổi máy: thiết bị bị thu hồi không nhận nhắc và không xác nhận được nữa.">
         {devices.length === 0 ? (
           <EmptyState icon={Smartphone} title="Chưa ghép điện thoại nào">
             Tạo mã ở mục Ghép nối điện thoại rồi nhập trên điện thoại của {patient.alias}.
@@ -248,7 +256,7 @@ export default function FamilyPage() {
                     <td>
                       <div className="strong">{d.deviceName}</div>
                       <div className="muted text-xs">
-                        {d.platform === 'IOS' ? 'iOS' : 'Android'} · token lưu dạng băm, push token mã hóa AES-256-GCM
+                        {d.platform === 'IOS' ? 'iOS' : 'Android'}
                       </div>
                     </td>
                     <td>{d.role === 'PATIENT' ? <Badge tone="success">Bệnh nhân · {patient.alias}</Badge> : <Badge tone="delegate">Người nhà · {delegateName(d.delegateId)}</Badge>}</td>
@@ -279,7 +287,7 @@ export default function FamilyPage() {
         )}
       </Card>
 
-      <Card title="Người nhà được ủy quyền" subtitle={`Người sống cùng ${patient.alias} có thể xác nhận hộ khi ${patient.alias} quên bấm và nhận cảnh báo khi bỏ lỡ cữ.`} req="UC-04 · FR-03 · US-06 · US-11 · US-12">
+      <Card title="Người nhà được ủy quyền" subtitle={`Người sống cùng ${patient.alias} có thể xác nhận hộ khi ${patient.alias} quên bấm và nhận cảnh báo khi bỏ lỡ cữ.`}>
         <div className="stack">
           {delegates.length === 0 ? (
             <p className="muted">Chưa ủy quyền người nhà nào. Khi bỏ lỡ cữ, chỉ bạn nhận được cảnh báo.</p>
@@ -339,7 +347,7 @@ export default function FamilyPage() {
         }}
       >
         <p>
-          {revokeDev?.deviceName} sẽ không nhận nhắc nhở và không xác nhận được nữa (máy chủ trả mã 401). Muốn dùng lại phải ghép nối bằng mã mới.
+          {revokeDev?.deviceName} sẽ không nhận nhắc nhở và không xác nhận được nữa. Muốn dùng lại phải ghép nối bằng mã mới.
         </p>
       </ConfirmDialog>
 

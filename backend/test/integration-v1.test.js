@@ -64,6 +64,152 @@ const prescription = (overrides = {}) => ({
   ...overrides,
 });
 
+test('pairing codes can be regenerated after login and only replace unused codes for the same target', async t => {
+  const f = await fixture(t);
+  const user = await f.owner();
+  const other = await f.owner();
+  const patient = await f.ok('POST', '/patients', user.token, { alias: 'Bo', birthYear: 1954 }, 201);
+  const root = `/patients/${patient.id}/pairing-codes`;
+  const create = body => f.ok('POST', root, user.token, body || { role: 'PATIENT' }, 201);
+  const pair = code => f.req('POST', '/devices/pair', undefined, { code, pushToken: 'test', platform: 'ANDROID' });
+  const first = await create();
+  const paired = await pair(first.code);
+  assert.equal(paired.status, 200);
+  const delegate = await f.ok('POST', `/patients/${patient.id}/delegates`, user.token, { alias: 'Me', relation: 'Vo' }, 201);
+  const helperCode = await create({ role: 'DELEGATE', delegateId: delegate.id });
+  const old = await create();
+  user.token = (await f.ok('POST', '/auth/login', undefined, { email: user.email, password: PASSWORD })).accessToken;
+  const fresh = await create();
+  assert.notEqual(fresh.code, old.code);
+  assert.equal((await pair(old.code)).status, 410);
+  assert.equal((await f.ok('GET', `${root}/${old.codeId}`, user.token)).replaced, true);
+  assert.equal((await f.req('GET', `${root}/${fresh.codeId}`, other.token)).status, 403);
+  const status = await f.ok('GET', `${root}/${fresh.codeId}`, user.token);
+  assert.equal(status.used, false);
+  assert.equal(status.code, undefined);
+  assert.equal(status.codeHash, undefined);
+  assert.equal((await pair(helperCode.code)).status, 200);
+  assert.equal((await pair(fresh.code)).status, 200);
+  assert.equal((await f.ok('GET', `${root}/${fresh.codeId}`, user.token)).used, true);
+  const devices = await f.ok('GET', `/patients/${patient.id}/devices`, user.token);
+  assert.equal(devices.filter(d => d.pairingCodeId === fresh.codeId).length, 1);
+  assert.equal((await f.req('GET', '/device/me', paired.body.deviceToken)).status, 200);
+  // A used code or an expired code does not prevent generating another one.
+  const expiring = await create();
+  f.time('2026-10-22T00:16:00Z');
+  assert.equal((await pair(expiring.code)).status, 410);
+  assert.equal((await pair((await create()).code)).status, 200);
+});
+
+test('owner can edit name, birth year and reminders without rewriting existing dose history', async t => {
+  const f = await fixture(t);
+  const user = await f.owner();
+  const other = await f.owner();
+  const patient = await f.ok('POST', '/patients', user.token, { alias: 'Bo', birthYear: 1954 }, 201);
+  const device = await f.pair(user, patient.id);
+  const rx = await f.ok('POST', `/patients/${patient.id}/prescriptions`, user.token, prescription(), 201);
+  await f.ok('POST', `/prescriptions/${rx.id}/confirm`, user.token, {}, 202);
+  const before = f.ctx.db.list('doses', { prescriptionId: rx.id });
+  const patch = { alias: 'Ba', birthYear: 1956, reminderTimes: [
+    { slot: 'MORNING', time: '08:00' }, { slot: 'NOON', time: '12:00' },
+    { slot: 'AFTERNOON', time: '16:00' }, { slot: 'EVENING', time: '20:00' },
+  ] };
+  const endpoint = `/patients/${patient.id}`;
+  assert.equal((await f.req('PATCH', endpoint, other.token, patch)).status, 403);
+  assert.equal((await f.req('PATCH', endpoint, device.deviceToken, patch)).status, 401);
+  for (const birthYear of [1919, 2011, 1954.5]) assert.equal((await f.req('PATCH', endpoint, user.token, { birthYear })).status, 400);
+  const updated = await f.ok('PATCH', endpoint, user.token, patch);
+  assert.equal(updated.birthYear, 1956);
+  assert.equal(updated.alias, 'Ba');
+  assert.deepEqual((await f.ok('GET', endpoint, user.token)).reminderTimes, patch.reminderTimes);
+  assert.deepEqual(f.ctx.db.list('doses', { prescriptionId: rx.id }), before);
+  const profile = await f.ok('GET', '/device/me', device.deviceToken);
+  assert.equal(profile.patientAlias, 'Ba');
+  assert.equal(profile.ownerAlias, 'Ba');
+  assert.ok(f.ctx.db.list('auditLogs', { patientId: patient.id, actionType: 'PATIENT_UPDATED' }).length);
+});
+
+test('delete prescription enforces ownership, hides drafts and blocks further mutations', async t => {
+  const f = await fixture(t);
+  const user = await f.owner();
+  const other = await f.owner();
+  const patient = await f.ok('POST', '/patients', user.token, { alias: 'Bo', birthYear: 1954 }, 201);
+  const device = await f.pair(user, patient.id);
+  const rx = await f.ok('POST', `/patients/${patient.id}/prescriptions`, user.token, prescription(), 201);
+  const endpoint = `/prescriptions/${rx.id}`;
+  assert.equal((await f.req('DELETE', endpoint)).status, 401);
+  assert.equal((await f.req('DELETE', endpoint, device.deviceToken)).status, 401);
+  assert.equal((await f.req('DELETE', endpoint, other.token)).status, 403);
+  assert.equal(f.ctx.db.get('prescriptions', rx.id).deletedAt, undefined);
+  await f.ok('DELETE', endpoint, user.token, undefined, 204);
+  assert.deepEqual(await f.ok('GET', `/patients/${patient.id}/prescriptions`, user.token), []);
+  assert.deepEqual(await f.ok('GET', `/patients/${patient.id}/prescriptions?status=CANCELLED`, user.token), []);
+  for (const [method, suffix, body] of [['GET', ''], ['DELETE', ''], ['PUT', '', prescription()], ['POST', '/confirm', {}], ['POST', '/cancel', {}]]) {
+    assert.equal((await f.req(method, endpoint + suffix, user.token, body)).status, 404);
+  }
+  const deleted = f.ctx.db.get('prescriptions', rx.id);
+  assert.equal(deleted.statusBeforeDeletion, 'DRAFT');
+  assert.equal(deleted.deletedBy, user.id);
+  assert.equal(f.ctx.db.list('auditLogs', { targetId: rx.id, actionType: 'PRESCRIPTION_DELETED' }).length, 1);
+});
+
+test('deleting an active prescription stops reminders, preserves history and permits a new active prescription', async t => {
+  const f = await fixture(t);
+  const user = await f.owner();
+  const patient = await f.ok('POST', '/patients', user.token, { alias: 'Bo', birthYear: 1954 }, 201);
+  const device = await f.pair(user, patient.id);
+  const form = prescription();
+  form.items[0].slots = ['MORNING', 'NOON', 'AFTERNOON', 'EVENING'];
+  const rx = await f.ok('POST', `/patients/${patient.id}/prescriptions`, user.token, form, 201);
+  await f.ok('POST', `/prescriptions/${rx.id}/confirm`, user.token, {}, 202);
+  const morning = f.ctx.db.list('doses', { prescriptionId: rx.id }).find(d => d.date === '2026-10-22' && d.slot === 'MORNING');
+  const confirmation = await f.ok('POST', `/doses/${morning.id}/confirmations`, device.deviceToken, {}, 201);
+  f.time('2026-10-22T08:10:00Z'); // 15:10 Vietnam: noon missed, afternoon pending.
+  user.token = (await f.ok('POST', '/auth/login', undefined, { email: user.email, password: PASSWORD })).accessToken;
+  tickMedication(f.ctx);
+  const before = f.ctx.db.list('doses', { prescriptionId: rx.id });
+  assert.ok(before.some(d => d.status === 'PENDING'));
+  assert.ok(before.some(d => d.status === 'MISSED'));
+  const alertsBefore = f.ctx.db.list('alerts', { patientId: patient.id }).length;
+  await f.ok('DELETE', `/prescriptions/${rx.id}`, user.token, undefined, 204);
+  const after = f.ctx.db.list('doses', { prescriptionId: rx.id });
+  for (const original of before) {
+    const actual = after.find(d => d.id === original.id);
+    if (['SCHEDULED', 'PENDING'].includes(original.status)) assert.equal(actual.status, 'CANCELLED');
+    else assert.deepEqual(actual, original);
+  }
+  assert.ok(f.ctx.db.get('confirmations', confirmation.id));
+  const visible = await f.ok('GET', '/device/doses/today', device.deviceToken);
+  assert.deepEqual(visible.map(d => d.id), [morning.id]);
+  const missed = after.find(d => d.status === 'MISSED');
+  assert.equal((await f.req('POST', `/doses/${missed.id}/confirmations`, device.deviceToken, {})).status, 409);
+  // Previously recorded doses can still be corrected by the owner.
+  await f.ok('POST', `/doses/${morning.id}/corrections`, user.token, { takenAt: confirmation.takenAt, correctsConfirmationId: confirmation.id }, 201);
+  f.time('2026-10-22T16:30:00Z');
+  tickMedication(f.ctx);
+  assert.equal(f.ctx.db.list('alerts', { patientId: patient.id }).length, alertsBefore);
+  user.token = (await f.ok('POST', '/auth/login', undefined, { email: user.email, password: PASSWORD })).accessToken;
+  const next = await f.ok('POST', `/patients/${patient.id}/prescriptions`, user.token, prescription(), 201);
+  await f.ok('POST', `/prescriptions/${next.id}/confirm`, user.token, {}, 202);
+  assert.equal(f.ctx.db.get('prescriptions', next.id).status, 'ACTIVE');
+});
+
+test('prescription deletion rolls back dose cancellation if audit fails', async t => {
+  const f = await fixture(t);
+  const user = await f.owner();
+  const patient = await f.ok('POST', '/patients', user.token, { alias: 'Bo', birthYear: 1954 }, 201);
+  const rx = await f.ok('POST', `/patients/${patient.id}/prescriptions`, user.token, prescription(), 201);
+  await f.ok('POST', `/prescriptions/${rx.id}/confirm`, user.token, {}, 202);
+  const before = f.ctx.db.list('doses', { prescriptionId: rx.id });
+  const audit = f.ctx.audit;
+  f.ctx.audit = event => { if (event.actionType === 'PRESCRIPTION_DELETED') throw new Error('test failure'); return audit(event); };
+  assert.equal((await f.req('DELETE', `/prescriptions/${rx.id}`, user.token)).status, 500);
+  f.ctx.audit = audit;
+  assert.equal(f.ctx.db.get('prescriptions', rx.id).deletedAt, undefined);
+  assert.equal(f.ctx.db.get('prescriptions', rx.id).status, 'ACTIVE');
+  assert.deepEqual(f.ctx.db.list('doses', { prescriptionId: rx.id }), before);
+});
+
 test('same-origin browser requests pass CORS; foreign origins are still rejected', async (t) => {
   const f = await fixture(t);
   const sameOrigin = await f.req('POST', '/auth/register', undefined, { email: 'a@example.test', password: PASSWORD, displayName: 'A' }, { origin: f.base });
@@ -209,12 +355,35 @@ test('dev clock: disabled by default, forward-only when enabled, runs the schedu
   assert.equal((await f.req('GET', '/health')).body.devTools, true);
   assert.equal((await f.req('GET', '/dev/clock')).status, 401, 'requires a signed-in caregiver');
   const before = await f.ok('GET', '/dev/clock', user.token);
-  assert.equal(before.offsetMs, 0);
-  const back = await f.req('POST', '/dev/clock', user.token, { to: new Date(Date.now() - 60_000).toISOString() });
+  assert.equal(new Date(Date.parse(before.now) + 7 * 3600_000).toISOString().slice(11, 16), '06:00');
+  const back = await f.req('POST', '/dev/clock', user.token, { to: new Date(Date.parse(before.now) - 60_000).toISOString() });
   assert.equal(back.status, 422);
   assert.equal(back.body.code, 'CLOCK_BACKWARDS');
   assert.equal((await f.req('POST', '/dev/clock', user.token, { advanceMinutes: 30, to: new Date().toISOString() })).status, 400);
   const after = await f.ok('POST', '/dev/clock', user.token, { advanceMinutes: 90 });
-  assert.ok(after.offsetMs >= 90 * 60_000);
+  assert.ok(after.offsetMs - before.offsetMs >= 90 * 60_000);
   assert.ok(Date.parse(after.now) - Date.parse(before.now) >= 90 * 60_000);
+});
+
+test('skip past a dose deadline marks it missed and sends one alert', async t => {
+  const f = await fixture(t, { realClock: true, config: { devTools: true } });
+  const user = await f.owner();
+  const date = new Date(+f.ctx.now() + 7 * 3600_000).toISOString().slice(0, 10);
+  const patient = await f.ok('POST', '/patients', user.token, { alias: 'Bo', birthYear: 1954 }, 201);
+  const rx = await f.ok('POST', `/patients/${patient.id}/prescriptions`, user.token, prescription({ issuedDate: date, startDate: date, nextVisitDate: date }), 201);
+  await f.ok('POST', `/prescriptions/${rx.id}/confirm`, user.token, undefined, 202);
+  const endpoint = `/patients/${patient.id}/doses?from=${date}&to=${date}`;
+  const morning = (await f.ok('GET', endpoint, user.token)).find(d => d.slot === 'MORNING');
+  assert.equal(morning.status, 'SCHEDULED');
+  await f.ok('POST', '/dev/clock', user.token, { to: morning.scheduledAt });
+  // A large skip expires access tokens; log in again as the browser refresh flow does.
+  const login = async () => (await f.ok('POST', '/auth/login', undefined, { email: user.email, password: PASSWORD })).accessToken;
+  user.token = await login();
+  assert.equal((await f.ok('GET', endpoint, user.token)).find(d => d.id === morning.id).status, 'PENDING');
+  await f.ok('POST', '/dev/clock', user.token, { to: new Date(Date.parse(morning.deadlineAt) + 60_000).toISOString() });
+  user.token = await login();
+  assert.equal((await f.ok('GET', endpoint, user.token)).find(d => d.id === morning.id).status, 'MISSED');
+  tickMedication(f.ctx);
+  const alerts = await f.ok('GET', `/patients/${patient.id}/alerts`, user.token);
+  assert.equal(alerts.filter(a => a.type === 'DOSE_MISSED').length, 1);
 });

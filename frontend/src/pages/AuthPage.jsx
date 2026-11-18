@@ -188,7 +188,6 @@ export default function AuthPage({ mode = 'login', surface = 'web', initialRole 
               <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={busy}>
                 {busy && <Spinner />} Tạo tài khoản
               </button>
-              <p className="fine-print">Mật khẩu chỉ lưu dạng băm trên máy chủ. Không nhập thông tin định danh thật của người bệnh.</p>
             </form>
           )}
 

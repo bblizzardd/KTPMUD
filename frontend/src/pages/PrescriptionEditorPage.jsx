@@ -89,7 +89,7 @@ function Editor({ prescriptionId, existing = null, loadError = null }) {
   }
   if (existing && existing.status !== 'DRAFT') {
     return (
-      <Callout tone="warning" title="Chỉ sửa được đơn ở trạng thái Nháp (FR-06)" actions={<a className="btn btn-sm btn-secondary" href={href(`${ROUTES.prescriptions}/${existing.id}`)}>Xem đơn</a>}>
+      <Callout tone="warning" title="Chỉ sửa được đơn ở trạng thái Nháp" actions={<a className="btn btn-sm btn-secondary" href={href(`${ROUTES.prescriptions}/${existing.id}`)}>Xem đơn</a>}>
         Đơn đang dùng không sửa trực tiếp. Muốn đổi thuốc, hãy thêm đơn mới; khi xác nhận, đơn cũ chuyển sang Bị thay thế.
       </Callout>
     );
@@ -171,7 +171,6 @@ function Editor({ prescriptionId, existing = null, loadError = null }) {
         }
         title={existing ? 'Sửa đơn nháp' : `Thêm đơn thuốc cho ${patient.alias}`}
         subtitle="Nhập đúng như đơn tra cứu trên hệ thống số hóa của bệnh viện. Đơn được lưu ở trạng thái Nháp; lịch nhắc chỉ sinh sau khi bạn xác nhận."
-        req="UC-05 · FR-04 · FR-05 · BR-04"
       />
 
       {restored && (
@@ -191,7 +190,7 @@ function Editor({ prescriptionId, existing = null, loadError = null }) {
 
       {serverError && !serverError.details?.length && <Callout tone="danger">{serverError.message}</Callout>}
 
-      <Card title="Thông tin đơn" req="FR-04">
+      <Card title="Thông tin đơn">
         <div className="form-grid">
           <Field label="Ngày kê đơn" required htmlFor="rx-issued" error={err('issuedDate')}>
             <input id="rx-issued" className="input" type="date" max={today} value={form.issuedDate} onChange={(e) => set({ issuedDate: e.target.value })} aria-invalid={Boolean(err('issuedDate'))} />
@@ -224,7 +223,6 @@ function Editor({ prescriptionId, existing = null, loadError = null }) {
       <Card
         title={`Thuốc trong đơn (${form.items.length})`}
         subtitle="Gõ từ 2 ký tự để chọn từ danh mục; nếu không có, giữ đúng tên ghi trên đơn."
-        req="FR-05 · FR-08"
       >
         <div className="stack">
           {duplicates.length > 0 && (
@@ -283,7 +281,7 @@ function Editor({ prescriptionId, existing = null, loadError = null }) {
                   <div className="grid-2" style={{ marginTop: 12 }}>
                     {item.slots.map(slot => (
                       <Field key={slot} label={`Giờ uống ${SLOT_META[slot].label.toLowerCase()}`} htmlFor={`rx-time-${i}-${slot}`} error={err(`items[${i}].times.${slot}`)}>
-                        <input id={`rx-time-${i}-${slot}`} className="input" type="time" required value={item.times?.[slot] ?? reminderTimeOf(patient, slot)} onChange={e => setItem(i, { times: { ...item.times, [slot]: e.target.value } })} aria-invalid={Boolean(err(`items[${i}].times.${slot}`))} />
+                        <input id={`rx-time-${i}-${slot}`} className="input" type="text" placeholder="HH:mm" maxLength={5} pattern="([01][0-9]|2[0-3]):[0-5][0-9]" title="24h: 00:00 - 23:59" required value={item.times?.[slot] ?? reminderTimeOf(patient, slot)} onChange={e => setItem(i, { times: { ...item.times, [slot]: e.target.value } })} aria-invalid={Boolean(err(`items[${i}].times.${slot}`))} />
                       </Field>
                     ))}
                   </div>

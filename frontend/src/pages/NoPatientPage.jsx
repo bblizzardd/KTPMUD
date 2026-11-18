@@ -8,7 +8,7 @@ export default function NoPatientPage() {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <PageHeader title="Chào mừng đến với An Tâm" subtitle="Bắt đầu bằng việc tạo hồ sơ cho người thân bạn chăm sóc." req="UC-02 · US-13" />
+      <PageHeader title="Chào mừng đến với An Tâm" subtitle="Bắt đầu bằng việc tạo hồ sơ cho người thân bạn chăm sóc." />
       <Card>
         <EmptyState
           icon={Users}

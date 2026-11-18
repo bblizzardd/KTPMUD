@@ -16,6 +16,7 @@ import {
   Menu,
   Monitor,
   Pill,
+  Pencil,
   Plus,
   Smartphone,
   Users
@@ -28,8 +29,8 @@ import { invalidate, invalidateAll, useQuery } from '../app/query.js';
 import { useAlertSocket } from '../app/realtime.js';
 import { href, navigate, ROUTES } from '../app/router.js';
 import { ALERT_TYPES } from '../domain/constants.js';
-import { addDays, ageFromBirthYear, dayLabel, fmtDuration, fmtRelative, fmtTime, toDateKey } from '../lib/time.js';
-import { EmptyState, Req, Spinner, Toasts, initials } from '../components/ui.jsx';
+import { addDays, ageFromBirthYear, dayLabel, fmtRelative, fmtTime, toDateKey } from '../lib/time.js';
+import { EmptyState, Spinner, Toasts, initials } from '../components/ui.jsx';
 import PatientFormModal from './PatientFormModal.jsx';
 import PhoneDock from '../device/PhoneDock.jsx';
 import DemoPanel from '../demo/DemoPanel.jsx';
@@ -170,6 +171,7 @@ function PatientSwitcher({ route }) {
   const { patients, patient, selectPatient } = useApp();
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState(false);
   const ref = useRef(null);
   const now = useNow(60_000);
   useOnClickOutside(ref, () => setOpen(false), open);
@@ -186,6 +188,7 @@ function PatientSwitcher({ route }) {
 
   return (
     <div className="patient-switcher" ref={ref}>
+      <div className="row">
       <button type="button" className="patient-switcher-btn" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
         <span className="avatar">{initials(patient.alias)}</span>
         <div style={{ minWidth: 0 }}>
@@ -196,6 +199,10 @@ function PatientSwitcher({ route }) {
         </div>
         <ChevronDown size={16} className="muted" aria-hidden="true" />
       </button>
+      <button type="button" className="btn btn-sm btn-secondary" onClick={() => { setOpen(false); setEditing(true); }}>
+        <Pencil size={15} aria-hidden="true" /> Sửa hồ sơ
+      </button>
+      </div>
       {open && (
         <div className="menu" role="menu" style={{ left: 0, top: 'calc(100% + 6px)', minWidth: 300 }}>
           <div className="menu-label">Hồ sơ bạn đang chăm sóc</div>
@@ -228,6 +235,7 @@ function PatientSwitcher({ route }) {
         </div>
       )}
       <PatientFormModal open={creating} mode="create" onClose={() => setCreating(false)} onSaved={() => navigate(ROUTES.overview)} />
+      <PatientFormModal key={`edit-${patient.id}`} open={editing} mode="edit" patient={patient} onClose={() => setEditing(false)} />
     </div>
   );
 }
@@ -276,7 +284,6 @@ function AlertsButton() {
         <div className="alerts-panel" role="dialog" aria-label={`Cảnh báo của ${patient.alias}`}>
           <div className="alerts-panel-head">
             <strong>Cảnh báo · {patient.alias}</strong>
-            <Req ids="FR-12 · US-03" />
             <span className="spacer" />
             {unread > 0 && (
               <button type="button" className="link-btn text-sm" onClick={() => call(() => api.markAlertsRead(patient.id), { silent: true, refresh })}>
@@ -314,7 +321,6 @@ function AlertsButton() {
               })
             )}
           </div>
-          <div className="alerts-panel-foot">Cảnh báo mới được máy chủ đẩy ngay lên trang qua kênh WSS /ws/alerts.</div>
         </div>
       )}
     </div>
@@ -356,11 +362,10 @@ function AccountMenu() {
 
 function SimulatedClock() {
   const now = useNow(10_000);
-  const offset = clock.offsetMs();
-  if (!clock.devTools() || offset < 60_000) return null;
+  if (!clock.devTools()) return null;
   const label = dayLabel(toDateKey(new Date(now)), Date.now());
   return (
-    <span className="time-chip" title={`Máy chủ đang chạy nhanh ${fmtDuration(offset / 60_000)} so với giờ thực (công cụ kiểm thử)`}>
+    <span className="time-chip" title="Giờ mô phỏng (24h)">
       <FastForward size={14} aria-hidden="true" />
       <span className="label">Giờ mô phỏng</span>
       <span className="num">

@@ -30,14 +30,7 @@ export function RxStatusBadge({ status, size }) {
   );
 }
 
-/** Nhãn mã yêu cầu (UC/FR/BR...) chỉ hiện khi bật chế độ chú thích trong công cụ demo. */
-export function Req({ ids }) {
-  const { annotate } = useApp();
-  if (!annotate || !ids) return null;
-  return <span className="req">{ids}</span>;
-}
-
-export function PageHeader({ title, subtitle, actions, back, eyebrow, req, badge }) {
+export function PageHeader({ title, subtitle, actions, back, eyebrow, badge }) {
   return (
     <header className="page-header">
       <div className="page-header-text">
@@ -46,7 +39,6 @@ export function PageHeader({ title, subtitle, actions, back, eyebrow, req, badge
         <h1 className="page-title">
           {title}
           {badge}
-          <Req ids={req} />
         </h1>
         {subtitle && <p className="page-subtitle">{subtitle}</p>}
       </div>
@@ -55,7 +47,7 @@ export function PageHeader({ title, subtitle, actions, back, eyebrow, req, badge
   );
 }
 
-export function Card({ title, subtitle, actions, children, footer, className = '', bodyClassName = '', req, id }) {
+export function Card({ title, subtitle, actions, children, footer, className = '', bodyClassName = '', id }) {
   const titleId = useId();
   return (
     <section className={`card ${className}`} id={id} aria-labelledby={title ? titleId : undefined}>
@@ -65,7 +57,6 @@ export function Card({ title, subtitle, actions, children, footer, className = '
             {title && (
               <h2 className="card-title" id={titleId}>
                 {title}
-                <Req ids={req} />
               </h2>
             )}
             {subtitle && <p className="card-subtitle">{subtitle}</p>}

@@ -102,8 +102,6 @@ h1, h2, h3, h4 { font-weight: 800; }
 .dev-card-done { background: #fff; border: 2px solid #34d399; }
 .dev-btn-confirm { background: #047857; border: 3px solid #6ee7b7; box-shadow: 0 5px 12px #064e3b22; }
 .dev-btn-confirm:hover { background: #065f46; }
-.dev-read-schedule { background: #fbbf24; color: #022c22; font-size: var(--dev-fs); min-height: 64px; box-shadow: 0 3px 8px #92400e18; }
-.dev-read-schedule:hover { background: #fcd34d; }
 .dev-section-title { color: #064e3b; font-weight: 800; }
 .dev-med-icon { color: #047857; }
 .dev-med-name { font-weight: 800; }

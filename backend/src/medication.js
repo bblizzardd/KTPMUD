@@ -3,6 +3,7 @@ import {
   ApiError, parse, dateSchema, idSchema, localDate, shiftDate, newId,
   TIME_SLOTS, DOSE_STATUSES, PRESCRIPTION_STATUSES, DOSE_WINDOW_MINUTES,
 } from './common.js';
+import { getCatalogDrug, searchCatalogDrugs } from './catalog.js';
 
 const DEFAULT_TIMES = { MORNING: '07:00', NOON: '11:30', AFTERNOON: '15:00', EVENING: '19:00' };
 const SYSTEM_ID = '00000000-0000-4000-8000-000000000000';
@@ -55,6 +56,7 @@ function getPrescription(ctx, req, id) {
   const prescription = ctx.db.get('prescriptions', prescriptionId);
   if (!prescription) throw new ApiError(404, 'PRESCRIPTION_NOT_FOUND', 'Không tìm thấy đơn thuốc');
   ctx.patientAccess(req, prescription.patientId);
+  if (prescription.deletedAt) throw new ApiError(404, 'PRESCRIPTION_NOT_FOUND', 'Đơn thuốc đã bị xóa');
   req.auditContext = { patientId: prescription.patientId, targetType: 'Prescription', targetId: prescription.id };
   return prescription;
 }
@@ -82,7 +84,7 @@ function medicationWarnings(ctx, items) {
   const duplicate = new Set();
   for (const item of items) {
     if (!item.drugId) continue;
-    const drug = ctx.db.get('drugs', item.drugId);
+    const drug = getCatalogDrug(ctx, item.drugId);
     if (!drug) throw new ApiError(422, 'DRUG_NOT_FOUND', 'Thuốc được chọn không có trong danh mục');
     // Only catalogue-backed ingredients can be checked. Raw names remain unchanged.
     for (const ingredient of drug.activeIngredients ?? []) {
@@ -286,18 +288,11 @@ export function registerMedicationRoutes(router, ctx) {
       q: z.string().trim().min(2).max(200),
       limit: z.coerce.number().int().min(1).max(20).default(10),
     }).strict(), req.query);
-    const term = normalizeSearch(query.q);
-    const matches = ctx.db.list('drugs').map((drug) => {
-      const brand = normalizeSearch(drug.brandName ?? '');
-      const ingredients = (drug.activeIngredients ?? []).map((item) => normalizeSearch(item.name ?? '')).join(' ');
-      return { drug, score: brand === term ? 0 : brand.startsWith(term) ? 1 : brand.includes(term) ? 2 : ingredients.includes(term) ? 3 : 4 };
-    }).filter((item) => item.score < 4)
-      .sort((a, b) => a.score - b.score || a.drug.brandName.localeCompare(b.drug.brandName, 'vi'));
-    res.json(matches.slice(0, query.limit).map((item) => item.drug));
+    res.json(searchCatalogDrugs(ctx, query.q, query.limit));
   });
 
   router.get('/drugs/:drugId', ctx.caregiver, (req, res) => {
-    const drug = ctx.db.get('drugs', parse(idSchema, req.params.drugId));
+    const drug = getCatalogDrug(ctx, parse(idSchema, req.params.drugId));
     if (!drug) throw new ApiError(404, 'DRUG_NOT_FOUND', 'Không tìm thấy thuốc trong danh mục');
     res.json(drug);
   });
@@ -308,7 +303,7 @@ export function registerMedicationRoutes(router, ctx) {
     const query = parse(z.object({ status: z.enum(PRESCRIPTION_STATUSES).optional() }).strict(), req.query);
     tickMedication(ctx);
     const prescriptions = ctx.db.list('prescriptions', { patientId })
-      .filter((item) => !query.status || item.status === query.status)
+      .filter((item) => !item.deletedAt && (!query.status || item.status === query.status))
       .sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? ''));
     res.json(prescriptions.map(serializePrescription));
   });
@@ -333,6 +328,25 @@ export function registerMedicationRoutes(router, ctx) {
     getPrescription(ctx, req, req.params.prescriptionId);
     tickMedication(ctx);
     res.json(serializePrescription(getPrescription(ctx, req, req.params.prescriptionId)));
+  });
+
+  router.delete('/prescriptions/:prescriptionId', ctx.caregiver, (req, res) => {
+    const prescription = getPrescription(ctx, req, req.params.prescriptionId);
+    const deletedAt = ctx.now().toISOString();
+    ctx.db.transaction(() => {
+      ctx.db.update('prescriptions', prescription.id, {
+        status: 'CANCELLED', deletedAt, deletedBy: req.actor.id,
+        statusBeforeDeletion: prescription.status, updatedAt: deletedAt,
+      });
+      for (const dose of ctx.db.list('doses', { prescriptionId: prescription.id })) {
+        if (['SCHEDULED', 'PENDING'].includes(dose.status)) {
+          ctx.db.update('doses', dose.id, { status: 'CANCELLED', cancellationReason: 'PRESCRIPTION_DELETED' });
+          audit(ctx, req, prescription.patientId, 'DOSE_CANCELLED', 'Dose', dose.id);
+        }
+      }
+      audit(ctx, req, prescription.patientId, 'PRESCRIPTION_DELETED', 'Prescription', prescription.id);
+    });
+    res.status(204).end();
   });
 
   router.put('/prescriptions/:prescriptionId', ctx.caregiver, (req, res) => {
@@ -422,6 +436,7 @@ export function registerMedicationRoutes(router, ctx) {
     const today = localDate(ctx.now());
     const nowMs = +ctx.now();
     const doses = ctx.db.list('doses', { patientId: req.actor.patientId })
+      .filter(dose => dose.lastConfirmationId || !ctx.db.get('prescriptions', dose.prescriptionId)?.deletedAt)
       .filter(dose => dose.date === today || Math.abs(Date.parse(dose.scheduledAt) - nowMs) <= WINDOW_MS)
       .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt) || a.id.localeCompare(b.id));
     res.json(doses.map((dose) => serializeDose(ctx, dose)));
@@ -436,6 +451,9 @@ export function registerMedicationRoutes(router, ctx) {
     if (correction) ctx.patientAccess(req, existing.patientId);
     else if (existing.patientId !== req.actor.patientId) throw new ApiError(403, 'FORBIDDEN', 'Thiết bị không có quyền trên cữ thuốc này');
     req.auditContext = { patientId: existing.patientId, targetType: 'Dose', targetId: existing.id };
+    if (!correction && ctx.db.get('prescriptions', existing.prescriptionId)?.deletedAt) {
+      throw new ApiError(409, 'DOSE_CANCELLED', 'Đơn thuốc đã bị xóa, không thể xác nhận cữ này');
+    }
     tickMedication(ctx);
     const now = ctx.now();
     const takenAt = input.takenAt ? new Date(input.takenAt) : now;

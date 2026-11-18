@@ -51,6 +51,6 @@ Chuông cảnh báo trên thanh trên nhận sự kiện qua WebSocket `/ws/aler
 
 ## Lưu ý
 
-- Ngày giờ hiển thị theo giờ máy chủ. Khi Backend bật `ENABLE_DEV_TOOLS=true`, "Công cụ kiểm thử" tua được đồng hồ máy chủ và thanh trên hiện chip "Giờ mô phỏng".
+- Ngày giờ nhập/hiển thị theo dạng 24h (HH:mm), múi giờ Việt Nam. Backend local bắt đầu lúc 06:00 mỗi lần khởi động; bảng "Mô phỏng thời gian" có "Skip quá giờ", "Tới cữ tiếp theo", "+15 phút" và "+1 giờ". Thanh trên hiển thị giờ mô phỏng kể cả khi chậm hơn giờ thực. Giao diện không hiển thị mã yêu cầu UC/FR/BR.
 - Một cữ trên giao diện gom các thuốc cùng buổi. Mỗi thuốc vẫn là một cữ riêng trên máy chủ: bấm "Đã uống" gửi một xác nhận cho từng thuốc và báo lỗi riêng nếu có.
 - Máy điện thoại thật sẽ nhận nhắc bằng FCM/APNs. Backend chưa gửi push, nên ứng dụng mô phỏng hỏi lại máy chủ mỗi 10 giây rồi tự đổ chuông khi đến giờ.

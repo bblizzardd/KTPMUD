@@ -230,7 +230,6 @@ export default function ClinicalPage() {
       <PageHeader
         title="Chỉ số & tái khám"
         subtitle={`Theo dõi xu hướng HbA1c, đường huyết của ${patient.alias} qua các đợt khám và lịch hẹn tái khám.`}
-        req="UC-11 · UC-12 · FR-16 · FR-17"
         actions={
           <>
             <button type="button" className="btn btn-secondary" onClick={() => setApptOpen(true)}>
@@ -247,7 +246,6 @@ export default function ClinicalPage() {
         <Card
           title="Xu hướng"
           subtitle={latest.length ? `Gần nhất: ${fmtNumber(latest[0].value)} ${latest[0].unit} ngày ${fmtDate(latest[0].testedDate)}${delta !== null ? ` · ${delta > 0 ? 'tăng' : delta < 0 ? 'giảm' : 'không đổi'} ${fmtNumber(Math.abs(Math.round(delta * 10) / 10))} so với lần trước` : ''}` : undefined}
-          req="US-15"
           actions={<Segmented ariaLabel="Loại chỉ số" value={chartType} onChange={setChartType} options={CHART_TYPES.map((t) => ({ value: t, label: LAB_TYPES[t].label }))} />}
         >
           {points.length ? (
@@ -260,7 +258,7 @@ export default function ClinicalPage() {
           <p className="fine-print">Ứng dụng chỉ hiển thị số liệu và xu hướng; mục tiêu điều trị do bác sĩ quyết định cho từng người bệnh.</p>
         </Card>
 
-        <Card title="Lịch tái khám" req="FR-17 · US-16">
+        <Card title="Lịch tái khám">
           {upcoming.length === 0 ? (
             <EmptyState icon={CalendarClock} title="Chưa có lịch hẹn sắp tới" action={<button type="button" className="btn btn-sm btn-secondary" onClick={() => setApptOpen(true)}>Thêm lịch</button>} />
           ) : (
@@ -314,7 +312,7 @@ export default function ClinicalPage() {
         </Card>
       </div>
 
-      <Card title={`Kết quả xét nghiệm (${labs.length})`} req="FR-16">
+      <Card title={`Kết quả xét nghiệm (${labs.length})`}>
         {labs.length === 0 ? (
           <EmptyState icon={Activity} title="Chưa có kết quả nào" />
         ) : (

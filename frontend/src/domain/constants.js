@@ -24,27 +24,27 @@ export const DOSE_STATUS = {
   TAKEN: {
     label: 'Đã uống',
     tone: 'success',
-    desc: 'Bệnh nhân tự xác nhận trong thời hạn (R1).'
+    desc: 'Bệnh nhân tự xác nhận trong thời hạn.'
   },
   TAKEN_BY_DELEGATE: {
     label: 'Đã uống (hộ)',
     tone: 'delegate',
-    desc: 'Người nhà được ủy quyền xác nhận hộ trong thời hạn (R2).'
+    desc: 'Người nhà được ủy quyền xác nhận hộ trong thời hạn.'
   },
   LATE_CONFIRMED: {
     label: 'Xác nhận muộn',
     tone: 'warning',
-    desc: 'Xác nhận sau thời hạn, ghi mốc giờ thực tế (R3).'
+    desc: 'Xác nhận sau thời hạn, ghi mốc giờ thực tế.'
   },
   MISSED: {
     label: 'Bỏ lỡ',
     tone: 'danger',
-    desc: 'Hết thời hạn mà chưa có xác nhận; đã cảnh báo người chăm sóc và người nhà (R5).'
+    desc: 'Hết thời hạn mà chưa có xác nhận; đã cảnh báo người chăm sóc và người nhà.'
   },
   CANCELLED: {
     label: 'Đã hủy',
     tone: 'muted',
-    desc: 'Cữ tương lai của đơn cũ bị hủy khi đơn mới được xác nhận (BR-03).'
+    desc: 'Cữ bị hủy khi đơn thuốc được thay thế hoặc xóa.'
   }
 };
 
@@ -54,7 +54,7 @@ export const DUE_STATUSES = ['TAKEN', 'TAKEN_BY_DELEGATE', 'LATE_CONFIRMED', 'MI
 // PrescriptionStatus — Hình 5: Biểu đồ chuyển trạng thái của đơn thuốc
 export const RX_STATUS = {
   DRAFT: { label: 'Nháp', tone: 'warning', desc: 'Đang nhập, còn sửa được; chưa sinh cữ thuốc.' },
-  ACTIVE: { label: 'Hiệu lực', tone: 'success', desc: 'Đơn đang áp dụng; mỗi bệnh nhân chỉ có tối đa một đơn Hiệu lực (BR-02).' },
+  ACTIVE: { label: 'Hiệu lực', tone: 'success', desc: 'Đơn đang áp dụng; mỗi bệnh nhân chỉ có tối đa một đơn Hiệu lực.' },
   SUPERSEDED: { label: 'Bị thay thế', tone: 'neutral', desc: 'Đã có đơn mới được xác nhận; các cữ tương lai đã hủy.' },
   EXPIRED: { label: 'Hết hạn', tone: 'neutral', desc: 'Đã qua ngày tái khám.' },
   CANCELLED: { label: 'Đã hủy', tone: 'muted', desc: 'Đơn nháp bị hủy, không sinh cữ.' }
@@ -111,7 +111,7 @@ export const REPORT_STATUS = {
 
 export const DOSE_UNITS = ['viên', 'gói', 'ml', 'đơn vị'];
 
-// Nhãn tiếng Việt cho Action Type mà Backend ghi vào nhật ký (FR-18)
+// Nhãn tiếng Việt cho Action Type mà Backend ghi vào nhật ký
 export const AUDIT_ACTIONS = {
   ACCOUNT_REGISTERED: 'Đăng ký tài khoản',
   LOGIN: 'Đăng nhập',
@@ -128,6 +128,7 @@ export const AUDIT_ACTIONS = {
   PRESCRIPTION_CONFIRMED: 'Xác nhận đơn',
   PRESCRIPTION_SUPERSEDED: 'Đơn bị thay thế',
   PRESCRIPTION_CANCELLED: 'Hủy đơn nháp',
+  PRESCRIPTION_DELETED: 'Xóa đơn thuốc',
   PRESCRIPTION_EXPIRED: 'Đơn hết hạn',
   DOSES_GENERATED: 'Sinh lịch cữ thuốc',
   DOSE_CANCELLED: 'Hủy cữ của đơn cũ',

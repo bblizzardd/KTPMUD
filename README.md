@@ -12,7 +12,7 @@ Gồm hai phần chạy chung trên một cổng:
 
 ## Chạy để kiểm thử
 
-Cần **Node.js 24 trở lên**. Trên Windows chỉ cần nhấp đúp **`AnTam.cmd`**: tệp này cài thư viện nếu thiếu, tạo cấu hình chạy thử, dựng giao diện, tạo dữ liệu mẫu lần đầu, rồi mở http://127.0.0.1:8080.
+Cần **Node.js 22 trở lên**. Trên Windows chỉ cần nhấp đúp **`AnTam.cmd`**: tệp này cài thư viện nếu thiếu, tạo cấu hình chạy thử, dựng giao diện, tạo dữ liệu mẫu lần đầu, rồi mở http://127.0.0.1:8080.
 
 Tài khoản demo: `demo@antam.vn` / `AnTam@2026` (trang đăng nhập có nút "Điền sẵn").
 
@@ -45,12 +45,12 @@ Phát triển giao diện có tải lại nóng: giữ `npm start` ở `backend`
 
 1. **Tổng quan / Lịch cữ thuốc**: dữ liệu mẫu có 45 ngày lịch sử của "Bố", gồm tự xác nhận, xác nhận hộ, xác nhận muộn, bỏ lỡ và một lần đính chính.
 2. **Ghép điện thoại** (Hồ sơ & thiết bị → Tạo mã 6 số → "Nhập mã trên điện thoại mô phỏng"). Máy cũ trong dữ liệu mẫu đã bị thu hồi nên phải ghép máy mới.
-3. **Nhắc thuốc**: mở "Công cụ kiểm thử" (góc trái dưới) → "Tới giờ cữ kế tiếp" → điện thoại đổ chuông → bấm ĐÃ UỐNG. Thử "Mất mạng" trước khi bấm để xem lưu tạm rồi gửi lại.
-4. **Bỏ lỡ và cảnh báo**: ghép thêm máy cho người nhà "Mẹ", bấm "Cho cữ đang chờ quá hạn". Chuông cảnh báo trên Web App và máy người nhà cùng báo; người nhà có thể xác nhận muộn.
+3. **Nhắc thuốc**: mở "Mô phỏng thời gian" (góc trái dưới) → "Tới cữ tiếp theo" → điện thoại đổ chuông → bấm ĐÃ UỐNG. Thử "Mất mạng" trước khi bấm để xem lưu tạm rồi gửi lại.
+4. **Bỏ lỡ và cảnh báo**: ghép thêm máy cho người nhà "Mẹ", bấm "Skip quá giờ" để tua tới một phút sau hạn xác nhận của cữ chưa uống gần nhất. Chuông cảnh báo trên Web App và máy người nhà cùng báo; người nhà có thể xác nhận muộn.
 5. **Đơn thuốc**: hồ sơ "Mẹ" có đơn nháp trùng hoạt chất metformin. Xem lại, đánh dấu đã hỏi bác sĩ rồi xác nhận. Thêm đơn mới cho "Bố" để thấy đơn cũ chuyển sang Bị thay thế.
-6. **Báo cáo PDF**, **Chỉ số & tái khám**, **Nhật ký thao tác** (thử "Thử xóa nhật ký" → máy chủ trả 405).
+6. **Báo cáo PDF**, **Chỉ số & tái khám**, **Nhật ký thao tác**.
 
-Đồng hồ máy chủ chỉ tua tiến. Muốn về giờ thực và dữ liệu mẫu ban đầu: tắt máy chủ, chạy `npm run reset-demo` trong `backend`.
+Mỗi lần khởi động backend ở chế độ mô phỏng, đồng hồ bắt đầu lúc **06:00 ngày hiện tại tại Việt Nam (UTC+07)**, sau đó chạy theo thời gian thực và các lần tua tiến. Không lưu độ lệch giữa các lần khởi động. Khởi động lại không xóa hồ sơ, đơn thuốc, xác nhận hoặc trạng thái cữ đã lưu; muốn chạy lại toàn bộ kịch bản từ dữ liệu mẫu, tắt máy chủ rồi chạy `npm run reset-demo` trong `backend` (lệnh này xóa dữ liệu demo hiện tại). Giờ nhập và hiển thị thống nhất dạng **HH:mm, 24h**. Mô phỏng bật mặc định khi chạy local, có thể tắt bằng `ENABLE_DEV_TOOLS=false`; môi trường production dùng giờ thực.
 
 ## Kiểm thử tự động
 

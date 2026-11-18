@@ -31,7 +31,7 @@ npm run reset-demo   # tắt server trước: xóa database, PDF và đồng h�
 
 Dữ liệu mẫu đều là dữ liệu **giả**: hai hồ sơ "Bố" và "Mẹ", người nhà được ủy quyền, đơn cũ đã bị thay thế và đơn đang hiệu lực, 45 ngày lịch sử cữ thuốc kèm xác nhận (có một lần đính chính), cảnh báo, xét nghiệm, lịch hẹn, và một đơn nháp trùng hoạt chất. Lịch sử được ghi thẳng vào cơ sở dữ liệu vì API cố ý không nhận xác nhận lùi ngày. Các máy đã tạo ra lịch sử được đánh dấu đã thu hồi; muốn tiếp tục từ hôm nay thì ghép điện thoại mới trên Web App. Email/mật khẩu demo được in ra terminal; có thể đặt trước `DEMO_EMAIL` và `DEMO_PASSWORD` trong `.env`. Chạy lại không ghi đè tài khoản có sẵn. Server không tự tạo tài khoản mặc định khi khởi động.
 
-`ENABLE_DEV_TOOLS=true` (không có tác dụng khi `NODE_ENV=production`) bật `GET/POST /api/v1/dev/clock`. Công cụ này tua đồng hồ server về phía trước rồi chạy ngay bộ lập lịch, để kiểm thử nhắc nhở, bỏ lỡ và cảnh báo mà không phải chờ. Độ lệch lưu ở `data/dev-clock.json`; `reset-demo` đưa đồng hồ về giờ thực.
+Mô phỏng thời gian bật mặc định khi chạy local với database lưu trên đĩa; đặt `ENABLE_DEV_TOOLS=false` để tắt. `NODE_ENV=production` dùng giờ thực. Các API `GET/POST /api/v1/dev/clock` yêu cầu tài khoản người chăm sóc. Mỗi lần backend khởi động, giờ mô phỏng bắt đầu tại 06:00 ngày hiện tại ở Việt Nam (UTC+07), không đọc/ghi độ lệch cũ trong `dev-clock.json`. Tua tiến chạy ngay bộ lập lịch để kiểm tra nhắc thuốc, bỏ lỡ và cảnh báo. Đặt lại đồng hồ không xóa hay hoàn tác dữ liệu nghiệp vụ đã lưu.
 
 ## Phần đã triển khai
 

@@ -5,12 +5,13 @@ import { useDrugInfo } from '../api/drugs.js';
 import { patientKey, useApp } from '../app/AppContext.jsx';
 import { useNow } from '../app/hooks.js';
 import { combine, useQuery } from '../app/query.js';
-import { href, ROUTES } from '../app/router.js';
+import { href, navigate, ROUTES } from '../app/router.js';
 import { detectDuplicateIngredients, dosesToCancelOnSupersede, planDoses, validatePrescriptionInput } from '../domain/rules.js';
 import { fmtDate, fmtDateTime, toDateKey } from '../lib/time.js';
 import { Callout, Card, ConfirmDialog, PageHeader, PageStatus, RxStatusBadge, Spinner } from '../components/ui.jsx';
 import { RxItemsTable, RxLifecycle } from './prescriptionParts.jsx';
 import { usePrescriptionDoses } from './PrescriptionsPage.jsx';
+import DeletePrescriptionButton from '../components/DeletePrescriptionButton.jsx';
 
 /** Bước 5 của UC-06: xem trước tác động của việc xác nhận, theo đúng quy ước sinh/hủy cữ của Backend. */
 function useConfirmPreview(rx, patient, list, nowMs) {
@@ -119,9 +120,9 @@ export default function PrescriptionDetailPage({ prescriptionId }) {
         title={`Đơn kê ngày ${fmtDate(rx.issuedDate)}`}
         badge={<RxStatusBadge status={rx.status} size="lg" />}
         subtitle={rx.status === 'DRAFT' ? 'Xem lại toàn bộ đơn, đối chiếu với đơn gốc rồi xác nhận để sinh lịch nhắc.' : rx.sourceNote}
-        req="UC-06 · FR-06 · FR-07"
         actions={
-          rx.status === 'DRAFT' && (
+          <>
+          {rx.status === 'DRAFT' && (
             <>
               <button type="button" className="btn btn-danger-ghost" onClick={() => setAskCancel(true)}>
                 <Trash2 size={16} aria-hidden="true" /> Hủy đơn nháp
@@ -130,7 +131,9 @@ export default function PrescriptionDetailPage({ prescriptionId }) {
                 <Pencil size={16} aria-hidden="true" /> Sửa đơn
               </a>
             </>
-          )
+          )}
+          <DeletePrescriptionButton prescription={rx} disabled={busy} onDeleted={() => navigate(ROUTES.prescriptions)} />
+          </>
         }
       />
 
@@ -187,7 +190,7 @@ export default function PrescriptionDetailPage({ prescriptionId }) {
         </dl>
       </Card>
 
-      <Card title={`Thuốc trong đơn (${rx.items.length})`} req="FR-08 · BR-04">
+      <Card title={`Thuốc trong đơn (${rx.items.length})`}>
         <div className="stack">
           {hasWarnings && (
             <Callout tone="warning" icon={AlertTriangle} title="Cảnh báo trùng hoạt chất">
@@ -214,7 +217,7 @@ export default function PrescriptionDetailPage({ prescriptionId }) {
             </p>
           ) : (
             <p>
-              Đã sinh <strong>{doses.length}</strong> cữ thuốc tới hết ngày tái khám {fmtDate(rx.nextVisitDate)}; còn <strong>{doses.filter((d) => d.status === 'SCHEDULED').length}</strong> cữ chưa đến giờ. Muốn đổi thuốc, hãy thêm đơn mới (BR-02).
+              Đã sinh <strong>{doses.length}</strong> cữ thuốc tới hết ngày tái khám {fmtDate(rx.nextVisitDate)}; còn <strong>{doses.filter((d) => d.status === 'SCHEDULED').length}</strong> cữ chưa đến giờ. Muốn đổi thuốc, hãy thêm đơn mới.
             </p>
           )}
         </Card>
@@ -227,7 +230,7 @@ export default function PrescriptionDetailPage({ prescriptionId }) {
       )}
 
       {preview && (
-        <Card title="Kiểm tra trước khi xác nhận" subtitle="Bước 5–6 của UC-06: sau khi xác nhận, đơn không sửa được nữa." req="UC-06 · BR-02 · BR-03">
+        <Card title="Kiểm tra trước khi xác nhận" subtitle="Sau khi xác nhận, đơn không sửa được nữa.">
           <div className="stack">
             {preview.missing.length > 0 ? (
               <Callout tone="danger" title="Đơn còn thiếu hoặc sai thông tin bắt buộc" actions={<a className="btn btn-sm btn-secondary" href={href(`${ROUTES.prescriptions}/${rx.id}/sua`)}>Sửa đơn</a>}>
@@ -291,7 +294,7 @@ export default function PrescriptionDetailPage({ prescriptionId }) {
             {!preview.hasAppointmentOnVisit && preview.missing.length === 0 && rx.nextVisitDate >= today && (
               <label className="checkbox">
                 <input type="checkbox" checked={addVisit} onChange={(e) => setAddVisit(e.target.checked)} />
-                <span>Thêm lịch tái khám ngày {fmtDate(rx.nextVisitDate)} và nhắc trước 2 ngày (UC-12).</span>
+                <span>Thêm lịch tái khám ngày {fmtDate(rx.nextVisitDate)} và nhắc trước 2 ngày.</span>
               </label>
             )}
 

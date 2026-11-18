@@ -12,6 +12,60 @@ servers:
   - url: http://127.0.0.1:8080/api/v1
 
 paths:
+  /patients/{patientId}/pairing-codes/{codeId}:
+    parameters:
+      - $ref: '../../docs/api/openapi.yaml#/components/parameters/PatientId'
+      - name: codeId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Devices]
+      summary: Kiểm tra mã liên kết đã dùng hay đã được thay thế
+      operationId: getPairingCodeStatus
+      security:
+        - caregiverAuth: []
+      responses:
+        '200':
+          description: Trạng thái mã, không trả mã 6 số hoặc bản băm
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  codeId: { type: string, format: uuid }
+                  used: { type: boolean }
+                  replaced: { type: boolean }
+                  expiresAt: { type: string, format: date-time }
+        '401': { $ref: '../../docs/api/openapi.yaml#/components/responses/Unauthorized' }
+        '403': { description: Hồ sơ không thuộc người chăm sóc }
+        '404': { $ref: '../../docs/api/openapi.yaml#/components/responses/NotFound' }
+
+  /prescriptions/{prescriptionId}:
+    parameters:
+      - name: prescriptionId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    delete:
+      tags: [Prescriptions]
+      summary: Xóa đơn thuốc khỏi danh sách và dừng các cữ chưa hoàn tất
+      description: |
+        Chỉ người chăm sóc sở hữu hồ sơ được xóa. Xóa mềm ở mọi trạng thái:
+        lưu deletedAt/deletedBy/statusBeforeDeletion, đổi trạng thái nội bộ sang CANCELLED.
+        Các cữ SCHEDULED/PENDING chuyển CANCELLED trong cùng giao dịch.
+        Giữ nguyên xác nhận, cữ MISSED, nhật ký và lịch tái khám.
+        Đơn bị loại khỏi danh sách; GET/PUT/confirm/cancel và DELETE lặp lại trả 404.
+        Không nhận xác nhận mới cho cữ của đơn đã xóa; vẫn cho phép đính chính lịch sử.
+      operationId: deletePrescription
+      security:
+        - caregiverAuth: []
+      responses:
+        '204': { description: Đã xóa đơn thuốc }
+        '401': { $ref: '../../docs/api/openapi.yaml#/components/responses/Unauthorized' }
+        '403': { description: Hồ sơ không thuộc người chăm sóc }
+        '404': { $ref: '../../docs/api/openapi.yaml#/components/responses/NotFound' }
+
   /auth/me:
     get:
       tags: [Auth]

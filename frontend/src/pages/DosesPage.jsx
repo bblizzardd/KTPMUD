@@ -44,7 +44,7 @@ function CorrectionForm({ dose, latest, onClose }) {
       <p className="text-sm">Chỉ người chăm sóc được sửa giờ uống đã ghi nhận. Lịch sử sẽ giữ bản gốc và ghi tên người đính chính.</p>
       <div className="form-grid">
         <Field label="Ngày uống" htmlFor={`correct-date-${dose.id}`}><input id={`correct-date-${dose.id}`} className="input" type="date" value={date} max={toDateKey(nowMs)} onChange={e => setDate(e.target.value)} required disabled={busy} /></Field>
-        <Field label="Giờ uống thực tế" htmlFor={`correct-time-${dose.id}`}><input id={`correct-time-${dose.id}`} className="input" type="time" value={time} onChange={e => setTime(e.target.value)} required disabled={busy} /></Field>
+        <Field label="Giờ uống thực tế" htmlFor={`correct-time-${dose.id}`}><input id={`correct-time-${dose.id}`} className="input" type="text" placeholder="HH:mm" maxLength={5} pattern="([01][0-9]|2[0-3]):[0-5][0-9]" title="24h: 00:00 - 23:59" value={time} onChange={e => setTime(e.target.value)} required disabled={busy} /></Field>
       </div>
       {error && <p className="text-sm" role="alert">{error}</p>}
       <div className="row"><button className="btn btn-primary" disabled={busy}>{busy ? 'Đang lưu…' : 'Lưu đính chính'}</button><button type="button" className="btn btn-secondary" disabled={busy} onClick={onClose}>Hủy</button></div>
@@ -54,7 +54,7 @@ function CorrectionForm({ dose, latest, onClose }) {
 
 function StatusGuide({ open, onClose }) {
   return (
-    <Modal open={open} onClose={onClose} size="lg" title="Trạng thái cữ thuốc" subtitle="Theo biểu đồ chuyển trạng thái (Hình 4) và bảng quyết định (Bảng 6) trong đặc tả.">
+    <Modal open={open} onClose={onClose} size="lg" title="Trạng thái cữ thuốc" subtitle="Ý nghĩa các trạng thái và thời hạn xác nhận.">
       <div className="stack">
         <ul className="status-guide">
           {STATUS_ORDER.map((s) => (
@@ -203,7 +203,6 @@ export default function DosesPage({ route }) {
       <PageHeader
         title="Lịch cữ thuốc"
         subtitle={`Từng cữ thuốc của ${patient.alias}: giờ nhắc, hạn xác nhận, ai xác nhận và lúc nào.`}
-        req="FR-09 · FR-13 · FR-14 · FR-15"
         actions={
           <button type="button" className="btn btn-secondary" onClick={() => setGuide(true)}>
             <HelpCircle size={16} aria-hidden="true" /> Giải thích trạng thái
@@ -285,7 +284,7 @@ export default function DosesPage({ route }) {
                             ))}
                           </span>
                           <span className="dose-info">
-                            {info || (g.status === 'MISSED' ? `Quá hạn ${fmtTime(g.deadlineAt)} chưa có xác nhận` : g.status === 'PENDING' ? `Hạn xác nhận ${fmtTime(g.deadlineAt)}` : g.status === 'CANCELLED' ? 'Hủy do đơn thuốc được thay thế' : `Nhắc lúc ${fmtTime(g.scheduledAt)}`)}
+                            {info || (g.status === 'MISSED' ? `Quá hạn ${fmtTime(g.deadlineAt)} chưa có xác nhận` : g.status === 'PENDING' ? `Hạn xác nhận ${fmtTime(g.deadlineAt)}` : g.status === 'CANCELLED' ? 'Hủy do đơn thuốc đã được thay thế hoặc xóa' : `Nhắc lúc ${fmtTime(g.scheduledAt)}`)}
                           </span>
                           <span className="dose-status">
                             <DoseStatusBadge status={g.status} />

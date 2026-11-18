@@ -24,7 +24,7 @@ export async function createApp(options = {}) {
   ctx.dummyPasswordHash = await hashPassword('unused-timing-equalizer');
   applyMedicationTimingPolicy(ctx);
   buildSecurity(ctx);
-  seedCatalog(ctx);
+  seedCatalog(ctx, options.databasePath === ':memory:');
   const app = express();
   app.disable('x-powered-by');
   app.use((req, res, next) => {

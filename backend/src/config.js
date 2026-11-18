@@ -38,7 +38,7 @@ export function getConfig(overrides = {}, ephemeral = false) {
     // Built web app served on the same origin as the API (An Tâm v1.0 single-port mode).
     frontendDir: resolve(process.env.FRONTEND_DIST || fileURLToPath(new URL('../../frontend/dist', import.meta.url))),
     // Demo clock controls for local testing only; never available in production.
-    devTools: process.env.ENABLE_DEV_TOOLS === 'true' && process.env.NODE_ENV !== 'production',
+    devTools: (process.env.ENABLE_DEV_TOOLS === 'true' || (!ephemeral && process.env.ENABLE_DEV_TOOLS !== 'false')) && process.env.NODE_ENV !== 'production',
     dataDir,
     accessTokenSeconds: 900, refreshTokenDays: 30, deviceTokenDays: 90, pairingMinutes: 5,
     schedulerIntervalMs: 15000, logErrors: true,

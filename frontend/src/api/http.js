@@ -29,7 +29,7 @@ function writeSession(next, refreshed = false) {
   } catch {
     // Trình duyệt chặn lưu trữ: phiên vẫn dùng được trong bộ nhớ.
   }
-  listeners.forEach((fn) => fn(next));
+  listeners.forEach((fn) => fn(next, { refreshed }));
 }
 
 export function getSession() {

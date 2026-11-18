@@ -1,11 +1,24 @@
 // Kiểm thử lớp gọi API (src/api/http.js) với fetch giả lập. Chạy: npm test
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { clearSession, getSession, request, setTokens } from '../src/api/http.js';
+import { clearSession, getSession, onSessionChange, request, setTokens } from '../src/api/http.js';
 import { fieldError, isNetworkError } from '../src/api/errors.js';
 import { login, toPrescriptionInput } from '../src/api/caregiver.js';
 import { ACCOUNT_SESSION, listTodayDoses } from '../src/api/device.js';
 import { href, ROUTES } from '../src/app/router.js';
+
+test('new logins reset pairing UI while token refresh keeps the current pairing session', () => {
+  clearSession();
+  const events = [];
+  const off = onSessionChange((session, meta) => events.push({ accountId: session?.accountId, refreshed: meta.refreshed }));
+  try {
+    setTokens({ accessToken: 'first', refreshToken: 'r1', accountId: 'same-owner' });
+    setTokens({ accessToken: 'refresh', refreshToken: 'r2', accountId: 'same-owner' }, true);
+    setTokens({ accessToken: 'new-login', refreshToken: 'r3', accountId: 'same-owner' });
+    assert.deepEqual(events.map(e => e.refreshed), [false, true, false]);
+    assert.ok(events.every(e => e.accountId === 'same-owner'));
+  } finally { off(); clearSession(); }
+});
 
 test('giữ giao diện app khi chuyển màn hình và cho phép chuyển về web', () => {
   const previous = globalThis.window;

@@ -41,7 +41,7 @@ function run(directory, args, env = process.env) {
 
 try {
   if (!['start', 'dev', 'build'].includes(mode)) throw new Error('Dùng npm start, npm run dev hoặc npm run build.');
-  if (Number(process.versions.node.split('.')[0]) < 24) throw new Error('An Tâm cần Node.js 24 trở lên.');
+  if (Number(process.versions.node.split('.')[0]) < 22) throw new Error('An Tâm cần Node.js 22 trở lên.');
   const required = ['frontend/node_modules/vite/bin/vite.js'];
   if (mode !== 'build') required.push('backend/node_modules/express/package.json');
   if (required.some((file) => !existsSync(new URL(file, root)))) {

@@ -94,6 +94,15 @@ export function openDatabase(filename) {
         return result;
       } catch (error) { sql.exec('ROLLBACK'); throw error; }
     },
+    seedDrugs(pairs) {
+      const currentCount = sql.prepare('SELECT COUNT(*) AS n FROM drugs').get().n;
+      if (currentCount >= pairs.length) return 0;
+      const stmt = sql.prepare('INSERT OR REPLACE INTO drugs (id, data) VALUES (?, ?)');
+      return db.transaction(() => {
+        for (const [id, json] of pairs) stmt.run(id, json);
+        return pairs.length - currentCount;
+      });
+    },
     close: () => sql.close(),
   };
   return db;
