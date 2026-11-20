@@ -41,7 +41,8 @@ export function decideConfirmedStatus({ actorRole, takenAt, deadlineAt }) {
 
 /** R4–R5: trạng thái khi chưa có xác nhận. */
 export function decideUnconfirmedStatus(dose, nowMs) {
-  if (dose.status !== 'PENDING') return dose.status;
+  if (dose.status === 'SCHEDULED' && nowMs < Date.parse(dose.scheduledAt)) return 'SCHEDULED';
+  if (dose.status !== 'PENDING' && dose.status !== 'SCHEDULED') return dose.status;
   return nowMs > Date.parse(dose.deadlineAt) ? 'MISSED' : 'PENDING';
 }
 
@@ -234,7 +235,7 @@ export function dosesToCancelOnSupersede(doses, oldPrescriptionId, confirmMs) {
 // Gom cữ theo buổi để hiển thị: một thao tác cho mỗi cữ (BIZ-04)
 // ---------------------------------------------------------------------------
 
-const GROUP_PRIORITY = ['PENDING', 'MISSED', 'SCHEDULED', 'LATE_CONFIRMED', 'TAKEN_BY_DELEGATE', 'TAKEN', 'CANCELLED'];
+const GROUP_PRIORITY = ['PENDING', 'MISSED', 'SCHEDULED', 'QUEUED', 'LATE_CONFIRMED', 'TAKEN_BY_DELEGATE', 'TAKEN', 'CANCELLED'];
 
 export function aggregateStatus(statuses) {
   const active = statuses.filter((s) => s !== 'CANCELLED');

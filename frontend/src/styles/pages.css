@@ -924,6 +924,17 @@
   align-items: start;
 }
 
+.clinical-grid .card-actions,
+.clinical-grid .segmented {
+  max-width: 100%;
+}
+
+.clinical-grid .segmented button {
+  white-space: normal;
+  line-height: 1.4;
+  padding: 8px 10px;
+}
+
 @media (max-width: 1100px) {
   .clinical-grid {
     grid-template-columns: minmax(0, 1fr);

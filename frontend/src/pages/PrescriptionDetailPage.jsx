@@ -119,7 +119,6 @@ export default function PrescriptionDetailPage({ prescriptionId }) {
         }
         title={`Đơn kê ngày ${fmtDate(rx.issuedDate)}`}
         badge={<RxStatusBadge status={rx.status} size="lg" />}
-        subtitle={rx.status === 'DRAFT' ? 'Xem lại toàn bộ đơn, đối chiếu với đơn gốc rồi xác nhận để sinh lịch nhắc.' : rx.sourceNote}
         actions={
           <>
           {rx.status === 'DRAFT' && (
@@ -217,7 +216,7 @@ export default function PrescriptionDetailPage({ prescriptionId }) {
             </p>
           ) : (
             <p>
-              Đã sinh <strong>{doses.length}</strong> cữ thuốc tới hết ngày tái khám {fmtDate(rx.nextVisitDate)}; còn <strong>{doses.filter((d) => d.status === 'SCHEDULED').length}</strong> cữ chưa đến giờ. Muốn đổi thuốc, hãy thêm đơn mới.
+              <strong>{doses.length}</strong> cữ thuốc tới hết ngày tái khám {fmtDate(rx.nextVisitDate)}, còn <strong>{doses.filter((d) => d.status === 'SCHEDULED').length}</strong> cữ chưa đến giờ.
             </p>
           )}
         </Card>
@@ -243,7 +242,7 @@ export default function PrescriptionDetailPage({ prescriptionId }) {
             ) : (
               <ul className="impact">
                 <li>
-                  <CheckCircle2 size={18} className="tone-text-success" aria-hidden="true" /> Đủ các trường bắt buộc: ngày kê, ngày bắt đầu, ngày tái khám, tên thuốc, liều mỗi lần, buổi uống.
+                  <CheckCircle2 size={18} className="tone-text-success" aria-hidden="true" /> Đã đủ thông tin đơn thuốc.
                 </li>
                 <li>
                   {preview.activePrescription ? (
@@ -277,8 +276,7 @@ export default function PrescriptionDetailPage({ prescriptionId }) {
                   <li>
                     <Clock size={18} className="tone-text-warning" aria-hidden="true" />
                     <span>
-                      <strong>{preview.pastCount}</strong> cữ có giờ nhắc đã qua (tính từ ngày bắt đầu) cũng được ghi vào lịch. Cữ nào quá hạn mà không được xác nhận muộn trong ngày sẽ chuyển sang Bỏ lỡ và gửi cảnh báo. Nếu{' '}
-                      {patient.alias} chưa bắt đầu uống theo đơn này, hãy sửa ngày bắt đầu.
+                      <strong>{preview.pastCount}</strong> cữ đã qua giờ nhắc. Kiểm tra ngày bắt đầu trước khi xác nhận.
                     </span>
                   </li>
                 )}
@@ -288,7 +286,7 @@ export default function PrescriptionDetailPage({ prescriptionId }) {
             {hasWarnings && preview.missing.length === 0 && (
               <label className="checkbox">
                 <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} />
-                <span>Tôi đã kiểm tra lại cảnh báo trùng hoạt chất với bác sĩ hoặc dược sĩ và vẫn muốn áp dụng đơn đúng như bác sĩ kê.</span>
+                <span>Tôi đã hỏi bác sĩ hoặc dược sĩ về các thuốc trùng hoạt chất.</span>
               </label>
             )}
             {!preview.hasAppointmentOnVisit && preview.missing.length === 0 && rx.nextVisitDate >= today && (
@@ -312,7 +310,7 @@ export default function PrescriptionDetailPage({ prescriptionId }) {
         <p>
           Đơn kê ngày {fmtDate(preview?.activePrescription?.issuedDate)} sẽ chuyển sang Bị thay thế và {preview?.cancelCount ?? 0} cữ chưa đến giờ của đơn đó bị hủy. Lịch nhắc mới bắt đầu theo đơn này.
         </p>
-        <p className="muted text-sm">Thao tác được ghi vào nhật ký và không hoàn tác được.</p>
+        <p className="muted text-sm">Không thể hoàn tác.</p>
       </ConfirmDialog>
       <ConfirmDialog open={askCancel} title="Hủy đơn nháp?" tone="danger" confirmLabel="Hủy đơn nháp" cancelLabel="Giữ lại" onCancel={() => setAskCancel(false)} onConfirm={cancelNow}>
         <p>Đơn chuyển sang Đã hủy và không sinh cữ thuốc. Đơn vẫn được giữ trong lịch sử để đối chiếu.</p>

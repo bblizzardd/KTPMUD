@@ -110,9 +110,9 @@ function useAutoRefresh(patientId) {
 }
 
 const LINK_STATUS = {
-  live: { tone: 'success', text: 'Đã kết nối máy chủ · cảnh báo thời gian thực' },
+  live: { tone: 'success', text: 'Đã kết nối' },
   connecting: { tone: 'warning', text: 'Đang kết nối máy chủ…' },
-  offline: { tone: 'danger', text: 'Mất kết nối thời gian thực · đang thử lại' }
+  offline: { tone: 'danger', text: 'Đang kết nối lại…' }
 };
 
 function Sidebar({ route, linkStatus }) {
@@ -297,9 +297,7 @@ function AlertsButton() {
                 <Spinner /> Đang tải cảnh báo…
               </div>
             ) : alerts.length === 0 ? (
-              <EmptyState icon={Bell} title="Chưa có cảnh báo">
-                Khi {patient.alias} bỏ lỡ một cữ thuốc hoặc sắp đến lịch tái khám, cảnh báo sẽ hiện ở đây.
-              </EmptyState>
+              <EmptyState icon={Bell} title="Chưa có cảnh báo" />
             ) : (
               alerts.slice(0, 40).map((alert) => {
                 const meta = ALERT_ICON[alert.type] || ALERT_ICON.VISIT_UPCOMING;
@@ -392,7 +390,7 @@ export default function AppShell({ route, children }) {
           </button>
           <a className="topbar-brand" href={href(ROUTES.overview)} aria-label="An Tâm · Tổng quan">
             <span className="logo-mark"><Pill size={27} aria-hidden="true" /></span>
-            <span><strong>AN TÂM</strong><small>Chăm sóc người thân, an tâm mỗi ngày</small></span>
+            <span><strong>AN TÂM</strong></span>
           </a>
           <span className="role-badge">Người thân</span>
           <div className="topbar-right">
@@ -411,7 +409,7 @@ export default function AppShell({ route, children }) {
       <Sidebar route={route} linkStatus={linkStatus} />
       <div className="sidebar-backdrop" onClick={() => setNavOpen(false)} aria-hidden="true" />
       <div className="main">
-        <div className="patient-toolbar"><PatientSwitcher route={route} /><span>Theo dõi sức khỏe người thân</span></div>
+        <div className="patient-toolbar"><PatientSwitcher route={route} /></div>
         <div className="content-area">
           <main className="page" id="main">
             {children}

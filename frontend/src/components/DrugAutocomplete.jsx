@@ -130,7 +130,7 @@ export default function DrugAutocomplete({ value, onChange, error, inputId }) {
         <ul className="ac-list" id={listId} role="listbox">
           {failure && (
             <li className="ac-note" role="presentation">
-              Danh mục thuốc đang không phản hồi. Bạn vẫn có thể giữ tên tự do; dòng thuốc sẽ được đánh dấu để liên kết danh mục sau.
+              Chưa tải được danh mục. Bạn vẫn có thể nhập tên trên đơn.
             </li>
           )}
           {options.map((opt, i) => (

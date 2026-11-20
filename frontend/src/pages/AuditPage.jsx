@@ -1,5 +1,5 @@
 import { Fragment, useState } from 'react';
-import { ChevronLeft, ChevronRight, History, Lock, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, History, Search } from 'lucide-react';
 import * as api from '../api/caregiver.js';
 import { patientKey, useApp } from '../app/AppContext.jsx';
 import { useDebounced } from '../app/hooks.js';
@@ -7,7 +7,7 @@ import { useQuery } from '../app/query.js';
 import { AUDIT_ACTIONS, ERROR_CODES, ROLE_META } from '../domain/constants.js';
 import { fmtDate, fmtTimeSec } from '../lib/time.js';
 import { shortId } from '../lib/text.js';
-import { Badge, Callout, Card, EmptyState, PageHeader, PageStatus } from '../components/ui.jsx';
+import { Badge, Card, EmptyState, PageHeader, PageStatus } from '../components/ui.jsx';
 
 const ROLE_TONE = { CAREGIVER: 'primary', PATIENT: 'success', DELEGATE: 'delegate', SYSTEM: 'neutral' };
 const PAGE_SIZE = 20;
@@ -51,12 +51,8 @@ export default function AuditPage() {
     <>
       <PageHeader
         title="Nhật ký thao tác"
-        subtitle={`Ai đã làm gì trên hồ sơ ${patient.alias} và lúc nào. Mọi thao tác ghi dữ liệu đều được ghi lại; nhật ký chỉ được thêm, không sửa hay xóa.`}
       />
 
-      <Callout tone="neutral" icon={Lock}>
-        Mỗi dòng có đủ cấu trúc [Timestamp, User UUID, Action Type, Status]. Kể cả các lần bị từ chối (ví dụ bấm xác nhận lặp, sửa đơn đã áp dụng) cũng được ghi với trạng thái Thất bại kèm mã lỗi.
-      </Callout>
 
       <Card>
         <div className="filters-row">
@@ -106,7 +102,6 @@ export default function AuditPage() {
                   <th>Người thực hiện</th>
                   <th>Thao tác</th>
                   <th>Trạng thái</th>
-                  <th>Chi tiết</th>
                 </tr>
               </thead>
               <tbody>
@@ -134,32 +129,30 @@ export default function AuditPage() {
                       </td>
                       <td>
                         <div>{AUDIT_ACTIONS[log.actionType] || log.actionType}</div>
-                        <code className="faint">{log.actionType}</code>
                       </td>
                       <td>
                         <Badge tone={log.status === 'SUCCESS' ? 'success' : 'danger'}>{log.status === 'SUCCESS' ? 'Thành công' : 'Thất bại'}</Badge>
                       </td>
-                      <td className="text-sm audit-detail">{auditDetail(log)}</td>
                     </tr>
                     {openId === log.id && (
                       <tr className="audit-raw">
-                        <td colSpan={5}>
+                        <td colSpan={4}>
                           <dl className="kv kv-mono">
                             <div>
-                              <dt>Timestamp</dt>
+                              <dt>Thời điểm</dt>
                               <dd>{log.timestamp}</dd>
                             </div>
                             <div>
-                              <dt>User UUID</dt>
+                              <dt>Mã người thực hiện</dt>
                               <dd>{log.userId}</dd>
                             </div>
                             <div>
-                              <dt>Action Type</dt>
+                              <dt>Mã thao tác</dt>
                               <dd>{log.actionType}</dd>
                             </div>
                             <div>
-                              <dt>Status</dt>
-                              <dd>{log.status}</dd>
+                              <dt>Chi tiết</dt>
+                              <dd>{auditDetail(log) || '—'}</dd>
                             </div>
                             <div>
                               <dt>Đối tượng</dt>

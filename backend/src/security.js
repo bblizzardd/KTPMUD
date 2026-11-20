@@ -65,11 +65,11 @@ export function buildSecurity(ctx) {
   ctx.authenticateCaregiver = token => authenticateAccount(token, 'CAREGIVER');
   ctx.account = async (req, res, next) => { req.actor = await authenticateAccount(bearer(req)); next(); };
   ctx.caregiver = async (req, res, next) => { req.actor = await ctx.authenticateCaregiver(bearer(req)); next(); };
-  ctx.device = async (req, res, next) => {
+  async function authenticateDeviceOrAccount(req, next, requiredAccountRole) {
     const raw = bearer(req);
     if (raw.split('.').length === 3) {
-      req.actor = await authenticateAccount(raw, 'PATIENT');
-      req.auditContext = { patientId: req.actor.patientId, targetType: 'Patient', targetId: req.actor.patientId };
+      req.actor = await authenticateAccount(raw, requiredAccountRole);
+      if (req.actor.patientId) req.auditContext = { patientId: req.actor.patientId, targetType: 'Patient', targetId: req.actor.patientId };
       next();
       return;
     }
@@ -81,7 +81,9 @@ export function buildSecurity(ctx) {
     req.actor = { id: token.id, role: token.role, patientId: token.patientId, delegateId: token.delegateId || null };
     req.auditContext = { patientId: token.patientId, targetType: 'Device', targetId: token.id };
     next();
-  };
+  }
+  ctx.device = (req, res, next) => authenticateDeviceOrAccount(req, next, 'PATIENT');
+  ctx.confirmationActor = (req, res, next) => authenticateDeviceOrAccount(req, next);
   ctx.patientAccess = (req, patientId) => {
     const patient = ctx.db.get('patients', patientId);
     if (!patient) throw new ApiError(404, 'PATIENT_NOT_FOUND', 'Không tìm thấy hồ sơ');

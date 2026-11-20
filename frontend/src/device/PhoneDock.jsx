@@ -86,7 +86,6 @@ export default function PhoneDock({ onClose }) {
       <div className="phone-dock-head">
         <div>
           <strong>Điện thoại mô phỏng</strong>
-          <span>Đăng nhập bệnh nhân / người chăm sóc, hoặc ghép thiết bị bằng mã</span>
         </div>
         <button type="button" className="btn btn-ghost btn-icon btn-sm" onClick={onClose} aria-label="Đóng điện thoại mô phỏng">
           <X size={18} />

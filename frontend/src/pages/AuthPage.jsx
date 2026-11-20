@@ -18,7 +18,7 @@ function PasswordInput({ id, value, onChange, autoComplete, invalid }) {
   const [show, setShow] = useState(false);
   return (
     <div className="input-with-action">
-      <input id={id} className="input" type={show ? 'text' : 'password'} value={value} onChange={onChange} autoComplete={autoComplete} aria-invalid={invalid} />
+      <input id={id} className="input" type={show ? 'text' : 'password'} value={value} onChange={onChange} autoComplete={autoComplete} enterKeyHint={autoComplete === 'current-password' ? 'go' : undefined} aria-invalid={invalid} />
       <button type="button" onClick={() => setShow((v) => !v)} aria-label={show ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}>
         {show ? <EyeOff size={17} /> : <Eye size={17} />}
       </button>
@@ -34,7 +34,8 @@ export default function AuthPage({ mode = 'login', surface = 'web', initialRole 
   const [role, setRole] = useState(initialRole === 'PATIENT' ? 'PATIENT' : 'CAREGIVER');
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [showForm, setShowForm] = useState(mode === 'register' || Boolean(initialRole));
+  const [showForm, setShowForm] = useState(() => mode === 'register' || Boolean(initialRole) || surface === 'app'
+    || window.matchMedia('(max-width: 640px), (max-width: 940px) and (max-height: 480px)').matches);
   const roleLabel = role === 'PATIENT' ? 'bệnh nhân' : 'người chăm sóc';
 
   function chooseRole(next) {
@@ -103,31 +104,27 @@ export default function AuthPage({ mode = 'login', surface = 'web', initialRole 
         <div className="auth-card">
           <div className="welcome-heading">
             <span className="welcome-logo"><Pill size={38} aria-hidden="true" /></span>
-            <h1>Chào mừng đến với An Tâm</h1>
-            <p>Ứng dụng theo dõi uống thuốc & chăm sóc sức khỏe cho người cao tuổi</p>
+            <h1><span className="welcome-prefix">Chào mừng đến với </span>An Tâm</h1>
             <div className="auth-surfaces" aria-label="Chọn giao diện">
-              <a href={href(ROUTES.login, { surface: 'web', role })} aria-current={surface === 'web' ? 'page' : undefined}>Giao diện web</a>
-              <a href={href(ROUTES.login, { surface: 'app', role })} aria-current={surface === 'app' ? 'page' : undefined}>Giao diện app</a>
+              <a href={href(ROUTES.login, { surface: 'web', role })} aria-label="Giao diện web" aria-current={surface === 'web' ? 'page' : undefined}><span className="surface-prefix">Giao diện </span>web</a>
+              <a href={href(ROUTES.login, { surface: 'app', role })} aria-label="Giao diện app" aria-current={surface === 'app' ? 'page' : undefined}><span className="surface-prefix">Giao diện </span>app</a>
             </div>
           </div>
-          <p className="role-prompt">Vui lòng chọn vai trò để tiếp tục:</p>
+          <p className="role-prompt">Chọn vai trò</p>
           <div className="role-options">
             <button type="button" className="role-option role-patient" aria-pressed={showForm && role === 'PATIENT'} aria-controls="account-auth" onClick={() => chooseRole('PATIENT')} disabled={busy}>
               <span className="role-icon"><HeartPulse size={26} aria-hidden="true" /></span>
-              <strong>Tôi là Bệnh Nhân</strong>
-              <span>Giao diện chữ to, đơn giản, nhắc giờ uống thuốc rõ ràng.</span>
+              <strong><span className="role-prefix">Tôi là </span>Bệnh nhân</strong>
               <span className="role-action">Đăng nhập bệnh nhân <ArrowRight size={16} aria-hidden="true" /></span>
             </button>
             <button type="button" className="role-option role-caregiver" aria-pressed={showForm && role === 'CAREGIVER'} aria-controls="account-auth" onClick={() => chooseRole('CAREGIVER')} disabled={busy}>
               <span className="role-icon"><ShieldCheck size={26} aria-hidden="true" /></span>
-              <strong>Tôi là Người Chăm Sóc</strong>
-              <span>Xem tiến độ uống thuốc từ xa, thêm & quản lý đơn thuốc.</span>
+              <strong><span className="role-prefix">Tôi là </span>Người chăm sóc</strong>
               <span className="role-action">Đăng nhập người chăm sóc <ArrowRight size={16} aria-hidden="true" /></span>
             </button>
           </div>
           {showForm && <section id="account-auth" className="caregiver-auth" aria-label={`Tài khoản ${roleLabel}`}>
           <h2>{tab === 'login' ? `Đăng nhập ${roleLabel}` : `Tạo tài khoản ${roleLabel}`}</h2>
-          <p className="muted text-sm">Dùng cùng tài khoản trên web và app.</p>
           <Segmented
             ariaLabel="Đăng nhập hoặc đăng ký"
             value={tab}
@@ -158,7 +155,7 @@ export default function AuthPage({ mode = 'login', surface = 'web', initialRole 
               {DEMO_ACCOUNT && role === 'CAREGIVER' && (
                 <div className="demo-hint">
                   <span>
-                    Tài khoản demo: <span className="mono">{DEMO_ACCOUNT.email}</span> / <span className="mono">{DEMO_ACCOUNT.password}</span>
+                    Tài khoản demo
                   </span>
                   <button type="button" className="btn btn-sm btn-secondary" onClick={() => setLogin({ ...DEMO_ACCOUNT })}>
                     Điền sẵn
@@ -171,7 +168,7 @@ export default function AuthPage({ mode = 'login', surface = 'web', initialRole 
               <Field label="Tên hiển thị" required htmlFor="reg-name" error={fe('displayName')} hint={role === 'PATIENT' ? 'Ví dụ: Bố, Mẹ' : 'Ví dụ: Bình (con trai)'}>
                 <input id="reg-name" className="input" maxLength={100} autoComplete="nickname" value={reg.displayName} onChange={(e) => setReg((f) => ({ ...f, displayName: e.target.value }))} aria-invalid={Boolean(fe('displayName'))} />
               </Field>
-              {role === 'PATIENT' && <Field label="Mã liên kết hồ sơ" required htmlFor="reg-pairing" error={fe('pairingCode')} hint="Chỉ cần khi tạo tài khoản lần đầu. Người chăm sóc lấy mã bệnh nhân tại Hồ sơ & thiết bị → Tạo mã 6 số.">
+              {role === 'PATIENT' && <Field label="Mã liên kết hồ sơ" required htmlFor="reg-pairing" error={fe('pairingCode')} hint="Dùng mã 6 số do người chăm sóc cung cấp.">
                 <input id="reg-pairing" className="input" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={reg.pairingCode} onChange={e => setReg(f => ({ ...f, pairingCode: e.target.value.replace(/\D/g, '').slice(0, 6) }))} aria-invalid={Boolean(fe('pairingCode'))} />
               </Field>}
               <Field label="Email" required htmlFor="reg-email" error={fe('email')}>
@@ -195,7 +192,7 @@ export default function AuthPage({ mode = 'login', surface = 'web', initialRole 
           <div className="auth-device-link">
             <Smartphone size={18} aria-hidden="true" />
             <span>
-              Cách kết nối bổ sung: <a href={href(ROUTES.device, { pairing: '1', surface })}>Ghép thiết bị bằng mã 6 số <ArrowRight size={14} aria-hidden="true" /></a>
+              <a href={href(ROUTES.device, { pairing: '1', surface })}>Ghép thiết bị bằng mã 6 số <ArrowRight size={14} aria-hidden="true" /></a>
             </span>
           </div>
         </div>

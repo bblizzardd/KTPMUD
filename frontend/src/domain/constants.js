@@ -29,7 +29,7 @@ export const DOSE_STATUS = {
   TAKEN_BY_DELEGATE: {
     label: 'Đã uống (hộ)',
     tone: 'delegate',
-    desc: 'Người nhà được ủy quyền xác nhận hộ trong thời hạn.'
+    desc: 'Người chăm sóc hoặc người nhà được ủy quyền xác nhận hộ trong thời hạn.'
   },
   LATE_CONFIRMED: {
     label: 'Xác nhận muộn',

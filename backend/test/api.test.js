@@ -146,6 +146,9 @@ test('patient accounts sign in on web/app, refresh their session and cannot acce
   assert.equal((await f.ok('GET', '/device/me', app.accessToken)).patientId, patient.id);
   const doses = await f.ok('GET', '/device/doses/today', web.accessToken);
   assert.ok(doses.length > 0 && doses.every(d => d.patientId === patient.id));
+  const schedule = await f.ok('GET', '/device/doses/schedule', app.accessToken);
+  assert.ok(schedule.doses.some(d => d.date > schedule.fromDate));
+  assert.ok(schedule.doses.every(d => d.patientId === patient.id));
   await f.ok('GET', '/patients', web.accessToken, undefined, 401);
   await f.ok('POST', `/patients/${patient.id}/prescriptions`, web.accessToken, prescription(), 401);
   await f.ok('GET', '/device/doses/today', owner.token, undefined, 401);
@@ -323,10 +326,11 @@ test('confirmation authorization, duplicate rejection and append-only correction
   const doses = await f.ok('GET', '/device/doses/today', paired.token);
   const mornings = doses.filter(dose => dose.scheduledAt === '2026-10-22T00:00:00.000Z');
   const endpoint = `/doses/${mornings[0].id}/confirmations`;
-  await f.ok('POST', endpoint, owner.token, {}, 401);
+  await f.ok('POST', endpoint, undefined, {}, 401);
   await f.ok('POST', endpoint, otherDevice.token, {}, 403);
   const first = await f.ok('POST', endpoint, paired.token, {}, 201);
   assert.equal(first.actorRole, 'PATIENT');
+  await f.ok('POST', endpoint, owner.token, {}, 409);
   await f.ok('POST', endpoint, paired.token, {}, 409);
   assert.equal(first.resultingStatus, 'LATE_CONFIRMED');
   assert.equal(first.takenAt, '2026-10-22T01:10:00.000Z', 'late tap records the tap time');
@@ -398,10 +402,13 @@ test('scheduler marks missed doses once and day queries respect Vietnam midnight
   const paired = await f.device(owner, patient.id);
   await activePrescription(f, owner, patient, prescription({ issuedDate: '2026-10-21', startDate: '2026-10-21' }));
   const before = await f.ok('GET', '/device/doses/today', paired.token);
+  const cached = await f.ok('GET', '/device/doses/schedule', paired.token);
+  assert.deepEqual([cached.fromDate, cached.toDate], ['2026-10-21', '2026-10-27']);
   assert.equal(before.length, 3);
   assert.ok(before.every(dose => dose.scheduledAt.startsWith('2026-10-21')));
   await f.time('2026-10-21T17:00:00.000Z');
   const after = await f.ok('GET', '/device/doses/today', paired.token);
+  assert.deepEqual(cached.doses.filter(d => d.date === '2026-10-22').map(d => d.id), after.map(d => d.id));
   assert.equal(after.length, 3);
   assert.ok(after.every(dose => dose.scheduledAt.startsWith('2026-10-22')));
   assert.deepEqual((await f.ok('GET', `/patients/${patient.id}/doses?from=2026-10-22&to=2026-10-22`, owner.token)).map(dose => dose.id).sort(), after.map(dose => dose.id).sort());

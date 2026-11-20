@@ -4,7 +4,7 @@ import * as api from '../api/caregiver.js';
 import { patientKey, useApp } from '../app/AppContext.jsx';
 import { useQuery } from '../app/query.js';
 import { href, ROUTES } from '../app/router.js';
-import { fmtDate, fmtDateTime } from '../lib/time.js';
+import { fmtDate } from '../lib/time.js';
 import { Callout, PageStatus } from '../components/ui.jsx';
 import { saveReportPdf } from './ReportsPage.jsx';
 
@@ -49,7 +49,7 @@ export default function ReportViewPage({ reportId }) {
           <ArrowLeft size={15} aria-hidden="true" /> Báo cáo PDF
         </a>
         <span className="muted text-sm">
-          Báo cáo {job.periodDays} ngày{job.fromDate ? ` · ${fmtDate(job.fromDate)} – ${fmtDate(job.toDate)}` : ''} · dựng lúc {fmtDateTime(job.completedAt || job.createdAt)}
+          Báo cáo {job.periodDays} ngày{job.fromDate ? ` · ${fmtDate(job.fromDate)} – ${fmtDate(job.toDate)}` : ''}
         </span>
         <span className="spacer" />
         {file.url && (

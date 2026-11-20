@@ -46,6 +46,7 @@ async function fixture(t, initialTime = '2026-10-22T00:00:00.000Z') {
     patientAccess: (req, id) => db.get('patients', id),
   };
   const app = express();
+  ctx.confirmationActor = ctx.device;
   app.use(express.json());
   const router = express.Router();
   registerMedicationRoutes(router, ctx);

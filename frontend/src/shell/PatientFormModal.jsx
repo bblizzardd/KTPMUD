@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { ShieldCheck } from 'lucide-react';
 import * as api from '../api/caregiver.js';
 import { useApp } from '../app/AppContext.jsx';
 import { Callout, Field, Modal, Spinner } from '../components/ui.jsx';
@@ -77,7 +76,7 @@ export default function PatientFormModal({ open, mode = 'create', patient, onClo
       busy={busy}
       onClose={onClose}
       title={mode === 'create' ? 'Thêm hồ sơ người thân' : `Sửa hồ sơ · ${patient?.alias}`}
-      subtitle={mode === 'create' ? 'Mỗi hồ sơ là một người bệnh bạn chăm sóc.' : 'Giờ nhắc mới áp dụng cho đơn thuốc được xác nhận sau khi lưu.'}
+      subtitle={mode === 'edit' ? 'Giờ nhắc mới áp dụng cho các đơn xác nhận sau khi lưu.' : undefined}
       footer={
         <>
           <button type="button" className="btn btn-secondary" onClick={onClose} disabled={busy}>
@@ -90,12 +89,9 @@ export default function PatientFormModal({ open, mode = 'create', patient, onClo
       }
     >
       <form id="patient-form" className="stack" onSubmit={submit} noValidate>
-        <Callout tone="neutral" icon={ShieldCheck}>
-          Chỉ nhập tên gọi trong gia đình (ví dụ “Bố”, “Mẹ”) và năm sinh. Không nhập họ tên thật, số CCCD hay số thẻ BHYT.
-        </Callout>
         {error && !error.details?.length && <Callout tone="danger">{error.message}</Callout>}
         <div className="form-grid">
-          <Field label="Tên gọi trong gia đình" required htmlFor="pf-alias" error={fieldError(error, 'alias')} hint="Tối đa 50 ký tự">
+          <Field label="Tên gọi trong gia đình" required htmlFor="pf-alias" error={fieldError(error, 'alias')}>
             <input id="pf-alias" className="input" value={alias} maxLength={50} onChange={(e) => setAlias(e.target.value)} placeholder="Ví dụ: Bố" aria-invalid={Boolean(fieldError(error, 'alias'))} data-autofocus />
           </Field>
           <Field
@@ -129,12 +125,9 @@ export default function PatientFormModal({ open, mode = 'create', patient, onClo
               </Field>
             ))}
           </div>
-          {timeError ? <span className="field-error">{timeError}</span> : <span className="field-hint">Đơn thuốc chỉ dùng những buổi có thuốc; giờ các buổi phải tăng dần trong ngày.</span>}
+          {timeError ? <span className="field-error">{timeError}</span> : <span className="field-hint">Nhập giờ theo thứ tự từ sáng đến tối.</span>}
         </fieldset>
 
-        <Callout tone="info" title="Khoảng đúng giờ: ±60 phút">
-          Uống sớm hoặc muộn tối đa 60 phút so với giờ hẹn được tính đúng giờ. Sau giờ hẹn hơn 60 phút chưa xác nhận sẽ tính bỏ lỡ. Bạn có thể tự chọn giờ riêng cho từng thuốc khi nhập đơn.
-        </Callout>
       </form>
     </Modal>
   );

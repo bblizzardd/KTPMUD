@@ -66,7 +66,6 @@ function LabModal({ open, onClose }) {
       open={open}
       onClose={onClose}
       title="Ghi chỉ số xét nghiệm"
-      subtitle="Nhập theo phiếu kết quả sau mỗi đợt khám hoặc lần đo tại nhà."
       footer={
         <>
           <button type="button" className="btn btn-secondary" onClick={onClose}>
@@ -105,7 +104,7 @@ function LabModal({ open, onClose }) {
             <input id="lab-unit" className="input" value={form.unit} maxLength={20} readOnly={form.testType !== 'OTHER'} onChange={(e) => setForm((f) => ({ ...f, unit: e.target.value }))} />
           </Field>
         </div>
-        <Field label="Ghi chú" htmlFor="lab-note" error={fe('note')} hint={form.testType === 'OTHER' ? 'Bắt buộc: ghi tên chỉ số, ví dụ "Cholesterol toàn phần".' : 'Ví dụ: lấy máu lúc đói tại BV Hữu Nghị'}>
+        <Field label="Ghi chú" htmlFor="lab-note" error={fe('note')} hint={form.testType === 'OTHER' ? 'Nhập tên chỉ số.' : undefined}>
           <input id="lab-note" className="input" maxLength={200} value={form.note} onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))} />
         </Field>
       </form>
@@ -160,7 +159,6 @@ function AppointmentModal({ open, onClose, appointments }) {
       open={open}
       onClose={onClose}
       title="Thêm lịch tái khám"
-      subtitle="Hệ thống nhắc bạn trước ngày hẹn để kịp sắp xếp đưa người thân đi khám (US-16)."
       footer={
         <>
           <button type="button" className="btn btn-secondary" onClick={onClose}>
@@ -182,7 +180,7 @@ function AppointmentModal({ open, onClose, appointments }) {
             <input id="appt-remind" className="input" type="number" min={0} max={14} value={form.remindDaysBefore} onChange={(e) => setForm((f) => ({ ...f, remindDaysBefore: e.target.value }))} />
           </Field>
         </div>
-        <Field label="Ghi chú chuẩn bị" htmlFor="appt-note" error={fe('note')} hint="Ví dụ: nhịn ăn sáng để lấy máu; mang báo cáo 30 ngày">
+        <Field label="Ghi chú chuẩn bị" htmlFor="appt-note" error={fe('note')}>
           <input id="appt-note" className="input" maxLength={200} value={form.note} onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))} />
         </Field>
       </form>
@@ -229,7 +227,6 @@ export default function ClinicalPage() {
     <>
       <PageHeader
         title="Chỉ số & tái khám"
-        subtitle={`Theo dõi xu hướng HbA1c, đường huyết của ${patient.alias} qua các đợt khám và lịch hẹn tái khám.`}
         actions={
           <>
             <button type="button" className="btn btn-secondary" onClick={() => setApptOpen(true)}>
@@ -255,7 +252,6 @@ export default function ClinicalPage() {
               Ghi chỉ số sau mỗi đợt khám để thấy xu hướng.
             </EmptyState>
           )}
-          <p className="fine-print">Ứng dụng chỉ hiển thị số liệu và xu hướng; mục tiêu điều trị do bác sĩ quyết định cho từng người bệnh.</p>
         </Card>
 
         <Card title="Lịch tái khám">

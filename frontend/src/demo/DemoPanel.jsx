@@ -1,7 +1,7 @@
 ﻿import { useRef, useState } from 'react';
 import { BellRing, Clock, FastForward, X } from 'lucide-react';
 import * as api from '../api/caregiver.js';
-import { clock, syncClock } from '../app/clock.js';
+import { clock, notifyClockAdvance, syncClock } from '../app/clock.js';
 import { useApp } from '../app/AppContext.jsx';
 import { useNow, usePref } from '../app/hooks.js';
 import { invalidateAll } from '../app/query.js';
@@ -36,6 +36,7 @@ export default function DemoPanel() {
         body = { to: new Date(Math.max(clock.now() + 1000, Date.parse(dose[field]) + (target === 'NEXT' ? 1000 : 60_000))).toISOString() };
       }
       const result = await call(() => api.advanceDevClock(body), { errorTitle: 'Không tua được thời gian' });
+      if (result.ok) notifyClockAdvance();
       await syncClock();
       invalidateAll();
       if (result.ok) toast({ title: `Đã tua tới ${fmtTime(result.result.now)}` });

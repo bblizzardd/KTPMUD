@@ -253,6 +253,34 @@ test('drug lookup by id, prescription timestamps and supersededBy link', async (
   assert.ok(old.updatedAt >= old.createdAt);
 });
 
+test('caregivers can confirm their own patient’s dose once and keep the original attribution after correction', async t => {
+  const f = await fixture(t);
+  const user = await f.owner('Lan');
+  const other = await f.owner();
+  const patient = await f.ok('POST', '/patients', user.token, { alias: 'Bố', birthYear: 1954 }, 201);
+  const draft = await f.ok('POST', `/patients/${patient.id}/prescriptions`, user.token, prescription(), 201);
+  await f.ok('POST', `/prescriptions/${draft.id}/confirm`, user.token, undefined, 202);
+  const doses = await f.ok('GET', `/patients/${patient.id}/doses?from=2026-10-22&to=2026-10-22`, user.token);
+  const [morning, evening] = doses;
+  const path = `/doses/${morning.id}/confirmations`;
+  await f.ok('POST', path, other.token, {}, 403);
+  await f.ok('GET', '/device/doses/today', user.token, undefined, 401);
+  const original = await f.ok('POST', path, user.token, {}, 201);
+  assert.deepEqual([original.actorRole, original.actorId, original.resultingStatus], ['CAREGIVER', user.id, 'TAKEN_BY_DELEGATE']);
+  await f.ok('POST', path, user.token, {}, 409);
+  const corrected = await f.ok('POST', `/doses/${morning.id}/corrections`, user.token, {
+    takenAt: '2026-10-22T00:05:00.000Z', correctsConfirmationId: original.id
+  }, 201);
+  assert.equal(corrected.resultingStatus, 'TAKEN_BY_DELEGATE');
+  const history = await f.ok('GET', path, user.token);
+  assert.deepEqual(history.map(c => [c.actorLabel, c.correctsConfirmationId]), [['Lan', null], ['Lan', original.id]]);
+  const eveningPath = `/doses/${evening.id}/confirmations`;
+  await f.ok('POST', eveningPath, user.token, {}, 422);
+  f.time('2026-10-22T13:10:00.000Z');
+  const freshToken = (await f.ok('POST', '/auth/login', undefined, { email: user.email, password: PASSWORD })).accessToken;
+  assert.equal((await f.ok('POST', eveningPath, freshToken, {}, 201)).resultingStatus, 'LATE_CONFIRMED');
+});
+
 test('device profile, labelled confirmations, correction history and last confirmed dose', async (t) => {
   const f = await fixture(t);
   const user = await f.owner();
@@ -285,6 +313,10 @@ test('device profile, labelled confirmations, correction history and last confir
   assert.equal(listed.find((d) => d.id === morning.id).lastConfirmation.actorLabel, user.displayName);
   const last = await f.ok('GET', '/device/doses/last-confirmed', helper.deviceToken);
   assert.deepEqual([last.date, last.slot, last.takenAt, last.actorLabel, last.drugs], ['2026-10-22', 'MORNING', '2026-10-22T00:05:00.000Z', user.displayName, ['Glucophage 500mg']]);
+
+  f.time('2026-10-21T23:00:00.000Z');
+  assert.equal(await f.ok('GET', '/device/doses/last-confirmed', helper.deviceToken), null, 'a restarted demo clock must not show a future confirmation as the last intake');
+  f.time('2026-10-22T00:10:00.000Z');
 
   await f.ok('DELETE', `/patients/${patient.id}/devices/${me.deviceId}`, user.token, undefined, 204);
   assert.equal((await f.req('GET', '/device/me', helper.deviceToken)).status, 401);

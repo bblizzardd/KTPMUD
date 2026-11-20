@@ -38,7 +38,11 @@ test('Bảng 6 — R4, R5: chưa xác nhận thì giữ Đang chờ hoặc chuy�
   const dose = { status: 'PENDING', deadlineAt: '2026-10-22T02:00:00.000Z' };
   assert.equal(decideUnconfirmedStatus(dose, Date.parse('2026-10-22T01:59:00.000Z')), 'PENDING');
   assert.equal(decideUnconfirmedStatus(dose, Date.parse('2026-10-22T02:01:00.000Z')), 'MISSED');
-  assert.equal(decideUnconfirmedStatus({ ...dose, status: 'SCHEDULED' }, Date.parse('2026-10-23T00:00:00.000Z')), 'SCHEDULED');
+  const scheduled = { ...dose, status: 'SCHEDULED', scheduledAt: '2026-10-22T01:00:00.000Z' };
+  assert.equal(decideUnconfirmedStatus(scheduled, Date.parse(scheduled.scheduledAt) - 1), 'SCHEDULED');
+  assert.equal(decideUnconfirmedStatus(scheduled, Date.parse(scheduled.scheduledAt)), 'PENDING');
+  assert.equal(decideUnconfirmedStatus(scheduled, Date.parse(scheduled.deadlineAt)), 'PENDING');
+  assert.equal(decideUnconfirmedStatus(scheduled, Date.parse(scheduled.deadlineAt) + 1), 'MISSED');
 });
 
 test('UC-07: điều kiện ghi xác nhận giống Backend (409, 422, cùng ngày của cữ)', () => {

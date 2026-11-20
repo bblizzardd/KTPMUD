@@ -29,16 +29,15 @@ const DELAYED_SYNC_MS = 5 * MINUTE;
 export function confirmationText(group) {
   const c = group.lastConfirmation;
   if (!c) return '';
-  const actor = c.actorRole === 'PATIENT' ? c.actorLabel || 'Bệnh nhân' : `${c.actorLabel || 'Người nhà'} (người nhà)`;
+  const actor = c.actorLabel || ({ PATIENT: 'Bệnh nhân', CAREGIVER: 'Người chăm sóc', DELEGATE: 'Người nhà' })[c.actorRole];
   let text;
-  if (c.actorRole === 'CAREGIVER') text = `${actor} đính chính: đã uống lúc ${fmtTime(c.takenAt)}`;
+  if (c.correctsConfirmationId) text = `${actor} đính chính giờ uống thành ${fmtTime(c.takenAt)}`;
   else if (group.status === 'LATE_CONFIRMED') text = `${actor} xác nhận muộn: đã uống lúc ${fmtTime(c.takenAt)}`;
   else if (c.actorRole === 'PATIENT') text = `${actor} tự xác nhận đã uống lúc ${fmtTime(c.takenAt)}`;
   else text = `${actor} xác nhận hộ lúc ${fmtTime(c.takenAt)}`;
   if (Date.parse(c.recordedAt) - Date.parse(c.takenAt) > DELAYED_SYNC_MS && !c.correctsConfirmationId) {
-    text += ` · máy chủ nhận lúc ${fmtTime(c.recordedAt)} (gửi lại khi có mạng)`;
+    text += ` · đồng bộ lúc ${fmtTime(c.recordedAt)}`;
   }
-  if (c.correctsConfirmationId) text += ' · đã đính chính giờ uống';
   return text;
 }
 
@@ -95,36 +94,32 @@ export function TodayTimeline({ groups, patient, nowMs, hasDevice, hasDelegate }
 
 function SetupChecklist({ patient, hasDevice, activeRx, drafts, hasDelegate }) {
   const steps = [
-    { done: true, title: `Tạo hồ sơ ${patient.alias}`, text: 'Hồ sơ chỉ gồm tên gọi trong gia đình và năm sinh.' },
+    { done: true, title: `Tạo hồ sơ ${patient.alias}` },
     {
       done: hasDevice,
       title: `Ghép điện thoại của ${patient.alias}`,
-      text: 'Tạo mã 6 số dùng một lần, nhập trên điện thoại; không cần mật khẩu.',
       action: { label: 'Tạo mã ghép nối', to: ROUTES.family, icon: Smartphone }
     },
     {
       done: Boolean(activeRx),
       title: 'Nhập và xác nhận đơn thuốc',
-      text: drafts.length ? `Có ${drafts.length} đơn nháp đang chờ bạn xem lại và xác nhận.` : 'Tra cứu đơn trên hệ thống số hóa của bệnh viện rồi nhập lại; lịch nhắc sinh sau khi xác nhận.',
       action: drafts.length ? { label: 'Xem đơn nháp', to: `${ROUTES.prescriptions}/${drafts[0].id}`, icon: Pill } : { label: 'Thêm đơn thuốc', to: ROUTES.prescriptionNew, icon: Pill }
     },
     {
       done: hasDelegate,
       optional: true,
       title: 'Ủy quyền người nhà sống cùng (không bắt buộc)',
-      text: 'Người nhà có thể xác nhận hộ và nhận cảnh báo khi bỏ lỡ cữ.',
       action: { label: 'Ủy quyền', to: ROUTES.family, icon: UserPlus }
     }
   ];
   return (
-    <Card title={`Thiết lập theo dõi cho ${patient.alias}`} subtitle="Hoàn tất các bước dưới đây để bắt đầu nhắc thuốc.">
+    <Card title={`Thiết lập theo dõi cho ${patient.alias}`}>
       <ol className="checklist">
         {steps.map((s) => (
           <li key={s.title} className={s.done ? 'is-done' : ''}>
             {s.done ? <CheckCircle2 size={22} className="tone-text-success" aria-hidden="true" /> : <Circle size={22} className="faint" aria-hidden="true" />}
             <div className="checklist-text">
               <strong>{s.title}</strong>
-              <span>{s.text}</span>
             </div>
             {!s.done && s.action && (
               <a className={`btn btn-sm ${s.optional ? 'btn-secondary' : 'btn-primary'}`} href={href(s.action.to)}>
@@ -208,8 +203,7 @@ export default function OverviewPage() {
     <>
       <PageHeader
         eyebrow={`${weekdayOf(today)}, ${fmtDate(today)}`}
-        title={`Quản lý đơn thuốc & sức khỏe cho ${patient.alias}`}
-        subtitle="Theo dõi lịch uống thuốc và chăm sóc người thân từ xa."
+        title={`Tổng quan · ${patient.alias}`}
         actions={
           <><a className="btn btn-primary" href={href(ROUTES.prescriptionNew)}>
             <Plus size={19} aria-hidden="true" /> Thêm đơn thuốc mới
@@ -240,7 +234,7 @@ export default function OverviewPage() {
             </>
           }
         >
-          Hệ thống đã gửi cảnh báo tới bạn{hasDelegate ? ' và người nhà được ủy quyền' : ''}. Gọi nhắc {patient.alias}; nếu {patient.alias} đã uống mà quên bấm, có thể xác nhận muộn trên điện thoại trong ngày.
+          Kiểm tra với {patient.alias} trước khi xác nhận hộ.
         </Callout>
       )}
 
@@ -261,8 +255,7 @@ export default function OverviewPage() {
             <span className="last-taken-label">Lần uống gần nhất</span>
             {lastTaken ? (
               <span>
-                <strong className="num">{fmtTime(lastTaken.lastConfirmation.takenAt)}</strong> {dayLabel(lastTaken.date, nowMs).toLowerCase()} · {SLOT_META[lastTaken.slot].long.toLowerCase()} ·{' '}
-                {lastTaken.lastConfirmation.actorRole === 'PATIENT' ? `${lastTaken.lastConfirmation.actorLabel || patient.alias} tự xác nhận` : `${lastTaken.lastConfirmation.actorLabel || 'Người nhà'} xác nhận hộ`}
+                <strong>{dayLabel(lastTaken.date, nowMs)}</strong> · {SLOT_META[lastTaken.slot].long} · {confirmationText(lastTaken)}
               </span>
             ) : (
               <span className="muted">Chưa có xác nhận trong 2 ngày gần đây</span>
@@ -302,15 +295,12 @@ export default function OverviewPage() {
                 </div>
               </div>
               <StatusBreakdown summary={summary} />
-              <p className="fine-print">
-                Mỗi thuốc trong một buổi tính là một cữ. Tỷ lệ đúng hạn = (tự xác nhận + xác nhận hộ) / cữ đã có kết quả; cữ đang chờ, chưa đến giờ và đã hủy không nằm trong mẫu số. Cách tính xác nhận muộn đang chờ chốt (TD-02). Dữ liệu tự xác nhận không chứng minh việc đã uống thuốc.
-              </p>
             </div>
           )}
         </Card>
       </div>
 
-      <Card title="Diễn biến theo ngày" subtitle={`${summary.days} ngày gần nhất · rê chuột lên cột để xem chi tiết`}>
+      <Card title="Diễn biến theo ngày" subtitle={`${summary.days} ngày gần nhất`}>
         <DailyBars daily={summary.daily} today={today} />
       </Card>
 

@@ -170,7 +170,6 @@ function Editor({ prescriptionId, existing = null, loadError = null }) {
           </a>
         }
         title={existing ? 'Sửa đơn nháp' : `Thêm đơn thuốc cho ${patient.alias}`}
-        subtitle="Nhập đúng như đơn tra cứu trên hệ thống số hóa của bệnh viện. Đơn được lưu ở trạng thái Nháp; lịch nhắc chỉ sinh sau khi bạn xác nhận."
       />
 
       {restored && (
@@ -222,7 +221,7 @@ function Editor({ prescriptionId, existing = null, loadError = null }) {
 
       <Card
         title={`Thuốc trong đơn (${form.items.length})`}
-        subtitle="Gõ từ 2 ký tự để chọn từ danh mục; nếu không có, giữ đúng tên ghi trên đơn."
+        subtitle="Tìm thuốc hoặc nhập tên trên đơn."
       >
         <div className="stack">
           {duplicates.length > 0 && (
@@ -297,9 +296,6 @@ function Editor({ prescriptionId, existing = null, loadError = null }) {
           <button type="button" className="btn btn-secondary add-item" onClick={() => set({ items: [...form.items, newItem()] })}>
             <Plus size={16} aria-hidden="true" /> Thêm thuốc
           </button>
-          <p className="fine-print">
-            Tự chọn giờ cho từng thuốc và từng buổi. Uống trong khoảng ±60 phút quanh giờ hẹn được tính đúng giờ; quá 60 phút sau giờ hẹn chưa xác nhận sẽ tính bỏ lỡ.
-          </p>
         </div>
       </Card>
 

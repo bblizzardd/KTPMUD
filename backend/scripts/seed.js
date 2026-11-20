@@ -135,7 +135,7 @@ function seed(passwordHash) {
               deadlineAt: iso(deadlineMs), status: 'SCHEDULED', lastConfirmationId: null, createdAt: rx.confirmedAt,
             };
             if (rx === rxA && scheduledMs > supersededAtMs) dose.status = 'CANCELLED';
-            else if (deadlineMs < nowMs) {
+            else if (date < today && deadlineMs < nowMs) {
               if (outcome === 'MISSED') {
                 dose.status = 'MISSED';
                 dose.missedAt = iso(deadlineMs + 60_000);

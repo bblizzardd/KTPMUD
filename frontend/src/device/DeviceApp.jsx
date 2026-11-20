@@ -5,7 +5,6 @@ import {
   BellRing,
   Check,
   CheckCircle2,
-  Clock,
   Delete,
   HeartPulse,
   Pill,
@@ -19,7 +18,7 @@ import { isNetworkError } from '../api/errors.js';
 import { href, ROUTES } from '../app/router.js';
 import { useNow } from '../app/hooks.js';
 import { CONFIRMED_STATUSES, SLOT_META } from '../domain/constants.js';
-import { checkConfirmable, groupDoses } from '../domain/rules.js';
+import { checkConfirmable, decideUnconfirmedStatus, groupDoses } from '../domain/rules.js';
 import { dayLabel, fmtTime, toDateKey, weekdayOf, fmtDateShort, MINUTE } from '../lib/time.js';
 import { fmtNumber } from '../lib/text.js';
 import { confirmDoses, forgetPairing, pairPhone, playChime, usePhoneData } from './deviceClient.js';
@@ -27,24 +26,21 @@ import { updatePhone } from './phones.js';
 
 const DONE = [...CONFIRMED_STATUSES, 'QUEUED'];
 
-/** Gộp các xác nhận đang chờ gửi (mất mạng) vào danh sách cữ để hiển thị ngay trên máy. */
-function applyQueue(doses, queue) {
-  if (!queue?.length) return doses;
-  return doses.map((dose) => {
-    const items = queue.filter((q) => q.doseId === dose.id && !q.correctsConfirmationId);
-    if (!items.length) return dose;
-    const latest = items[items.length - 1];
-    if (latest.correctsConfirmationId) {
-      return { ...dose, lastConfirmation: { ...dose.lastConfirmation, takenAt: latest.takenAt, pendingSync: true } };
-    }
-    return { ...dose, status: 'QUEUED', lastConfirmation: { takenAt: latest.takenAt, recordedAt: latest.queuedAt, pendingSync: true } };
+function phoneDoses(doses, queue, nowMs) {
+  const today = toDateKey(nowMs);
+  return doses.filter(d => d.date === today || Math.abs(Date.parse(d.scheduledAt) - nowMs) <= 60 * MINUTE).map(dose => {
+    if (dose.lastConfirmation || dose.status === 'CANCELLED') return dose;
+    const queued = queue?.find(q => q.doseId === dose.id && !q.correctsConfirmationId);
+    if (queued) return { ...dose, status: 'QUEUED', lastConfirmation: { takenAt: queued.takenAt, recordedAt: queued.queuedAt, pendingSync: true } };
+    return { ...dose, status: decideUnconfirmedStatus(dose, nowMs) };
   });
 }
 
 /** Ai đã xác nhận, nói theo góc nhìn của người đang cầm máy. */
 function doneTitle(group, role) {
   const conf = group.lastConfirmation;
-  if (conf?.actorRole === 'CAREGIVER') return `${conf.actorLabel || 'Người chăm sóc'} đã đính chính giờ uống thành`;
+  if (conf?.correctsConfirmationId) return `${conf.actorLabel || 'Người chăm sóc'} đã đính chính giờ uống thành`;
+  if (conf?.actorRole === 'CAREGIVER') return `${conf.actorLabel || 'Người chăm sóc'} đã xác nhận hộ lúc`;
   if (!conf?.actorRole || conf.actorRole === role) return role === 'DELEGATE' ? 'Đã xác nhận hộ lúc' : 'Đã uống lúc';
   return conf.actorRole === 'PATIENT' ? `${conf.actorLabel || 'Bệnh nhân'} đã uống lúc` : `${conf.actorLabel || 'Người nhà'} đã xác nhận lúc`;
 }
@@ -66,9 +62,12 @@ function StatusBar({ now, online }) {
   );
 }
 
-function rowStatus(group, role) {
+function rowStatus(group, role, nowMs) {
   const conf = group.lastConfirmation;
   const at = conf ? fmtTime(conf.takenAt) : '';
+  if (DONE.includes(group.status) && Date.parse(conf?.recordedAt) > nowMs + 1500) {
+    return { tone: 'neutral', text: 'Đã ghi nhận ở lần chạy trước' };
+  }
   switch (group.status) {
     case 'TAKEN':
       return { tone: 'success', text: `Đã uống ${at}` };
@@ -90,7 +89,7 @@ function rowStatus(group, role) {
 function MedList({ group }) {
   return (
     <ul className="dev-meds">
-      {group.doses.map((d) => (
+      {group.doses.filter(d => !DONE.includes(d.status)).map((d) => (
         <li key={d.id}>
           <Pill size={22} aria-hidden="true" className="dev-med-icon" />
           <div>
@@ -147,7 +146,6 @@ function PairingScreen({ phone, result, onPaired, onDone }) {
             ? `Điện thoại này sẽ nhắc ${result.patientAlias} uống thuốc đúng giờ.`
             : `${result.ownerAlias} có thể xác nhận hộ và nhận cảnh báo cho ${result.patientAlias}.`}
         </p>
-        <p className="dev-text-sm">Không cần mật khẩu. Không cần đăng nhập lại.</p>
         <button type="button" className="dev-btn dev-btn-confirm" onClick={onDone}>
           BẮT ĐẦU
         </button>
@@ -168,10 +166,9 @@ function PairingScreen({ phone, result, onPaired, onDone }) {
       <div className="stack-sm">
         <a className="dev-btn dev-btn-confirm" href={href(ROUTES.login, { role: 'PATIENT', surface: 'app' })} target="_blank" rel="noopener noreferrer">Đăng nhập bệnh nhân</a>
         <a className="dev-btn dev-btn-secondary" href={href(ROUTES.login, { role: 'CAREGIVER', surface: 'app' })} target="_blank" rel="noopener noreferrer">Đăng nhập người chăm sóc</a>
-        <p className="dev-text-sm">Hoặc ghép thiết bị bằng mã bên dưới.</p>
       </div>
       <h2 className="dev-h1">Nhập mã ghép nối</h2>
-      <p className="dev-text-sm">Mã gồm 6 số do con (người chăm sóc) tạo trên ứng dụng An Tâm. Mã chỉ dùng một lần.</p>
+      <p className="dev-text-sm">Nhập mã 6 số từ người chăm sóc.</p>
       <label className="sr-only" htmlFor={`pair-${phone.id}`}>
         Mã ghép nối 6 số
       </label>
@@ -234,12 +231,11 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
   const role = data.profile.role;
   const isPatient = role === 'PATIENT';
   const alias = data.profile.patientAlias;
-  const doses = applyQueue(data.doses, phone.queue);
+  const doses = phoneDoses(data.doses, phone.queue, nowMs);
   const groups = groupDoses(doses);
   const [justDone, setJustDone] = useState(null);
-  const [ringing, setRinging] = useState(null);
+  const [dismissed, setDismissed] = useState(() => new Set());
   const [sending, setSending] = useState(false);
-  const seen = useRef(null);
 
   const pending = groups.filter((g) => g.status === 'PENDING');
   const missed = groups.filter((g) => g.status === 'MISSED');
@@ -253,23 +249,17 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
 
   // Nhắc nhở (FR-10, US-08) trên máy bệnh nhân; cảnh báo bỏ lỡ (US-12) trên máy người nhà
   const ringKeys = isPatient ? pending.map((g) => `p:${g.key}`) : unresolved.map((n) => `n:${n.id}`);
+  const ringing = ringKeys.find(key => !dismissed.has(key));
+  function dismissReminder() {
+    if (ringing) setDismissed(previous => new Set(previous).add(ringing));
+  }
   useEffect(() => {
-    if (seen.current === null) {
-      seen.current = new Set(ringKeys);
-      return;
-    }
-    const fresh = ringKeys.find((k) => !seen.current.has(k));
-    ringKeys.forEach((k) => seen.current.add(k));
-    if (fresh) {
-      setRinging(fresh);
-      playChime();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ringKeys.join('|')]);
+    if (ringing) playChime();
+  }, [ringing]);
 
   async function doConfirm(group) {
     if (sending) return;
-    setRinging(null);
+    dismissReminder();
     setSending(true);
     const targets = group.doses.filter(d => ['SCHEDULED', 'PENDING', 'MISSED'].includes(d.status));
     const invalid = targets.map(d => checkConfirmable(d, { takenAt: new Date(nowMs).toISOString(), nowMs })).find(result => !result.ok);
@@ -301,27 +291,25 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
   }
 
   // Thẻ chính: việc cần làm ngay (tối đa một thao tác cho mỗi cữ)
-  const done = justDone ? groups.find((g) => g.key === justDone && DONE.includes(g.status)) : null;
-  const recent = [...groups].reverse().find((g) => DONE.includes(g.status) && g.lastConfirmation && nowMs - Date.parse(g.lastConfirmation.recordedAt || g.lastConfirmation.takenAt) < 45 * MINUTE);
+  const done = justDone ? groups.find(g => g.key === justDone && DONE.includes(g.status) && nowMs - Date.parse(g.lastConfirmation?.takenAt) < 45 * MINUTE) : null;
   const next = groups.find((g) => g.status === 'SCHEDULED');
   const canConfirmEarly = group => group.status === 'SCHEDULED' && checkConfirmable(group.doses[0], { takenAt: new Date(nowMs).toISOString(), nowMs }).ok;
   let focus;
   if (pending.length) focus = { kind: 'PENDING', group: pending[0] };
-  else if (done) focus = { kind: 'DONE', group: done };
   else if (missed.length) focus = { kind: 'MISSED', group: missed[missed.length - 1] };
-  else if (recent) focus = { kind: 'DONE', group: recent };
+  else if (done) focus = { kind: 'DONE', group: done };
   else if (next) focus = { kind: 'NEXT', group: next };
   else focus = { kind: groups.length ? 'ALL_DONE' : 'NONE' };
 
   const today = toDateKey(new Date(nowMs));
   const queuedLast = [...(phone.queue || [])].filter((q) => !q.correctsConfirmationId).sort((a, b) => b.takenAt.localeCompare(a.takenAt))[0];
   const last = queuedLast && (!data.last || queuedLast.takenAt > data.last.takenAt)
-    ? { takenAt: queuedLast.takenAt, slot: doses.find((d) => d.id === queuedLast.doseId)?.slot, date: today, pendingSync: true }
+    ? { takenAt: queuedLast.takenAt, slot: data.doses.find(d => d.id === queuedLast.doseId)?.slot, date: toDateKey(queuedLast.takenAt), pendingSync: true }
     : data.last;
 
   const ringingGroup = ringing?.startsWith('p:') ? groups.find((g) => `p:${g.key}` === ringing && g.status === 'PENDING') : null;
   const ringingNote = ringing?.startsWith('n:') ? unresolved.find((n) => `n:${n.id}` === ringing) : null;
-  const confirmLabel = isPatient ? 'ĐÃ UỐNG' : `XÁC NHẬN HỘ: ${alias.toUpperCase()} ĐÃ UỐNG`;
+  const confirmLabel = isPatient ? 'XÁC NHẬN ĐÃ UỐNG' : `XÁC NHẬN HỘ: ${alias.toUpperCase()} ĐÃ UỐNG`;
 
   return (
     <div className="dev-screen">
@@ -374,7 +362,7 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
             <Check size={30} strokeWidth={3} aria-hidden="true" /> {confirmLabel}
           </button>
           <p className="dev-hint">
-            {isPatient ? 'Bấm một lần sau khi uống xong.' : `Chỉ bấm khi ${alias} đã uống mà quên bấm.`} Hạn xác nhận {fmtTime(focus.group.deadlineAt)}.
+            {isPatient ? 'Xác nhận sau khi uống.' : `Chỉ bấm khi ${alias} đã uống mà quên bấm.`} Hạn xác nhận {fmtTime(focus.group.deadlineAt)}.
           </p>
         </section>
       )}
@@ -390,7 +378,7 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
           <button type="button" className="dev-btn dev-btn-late" onClick={() => doConfirm(focus.group)} disabled={sending}>
             <Check size={28} strokeWidth={3} aria-hidden="true" /> {isPatient ? 'TÔI ĐÃ UỐNG RỒI' : `${alias.toUpperCase()} ĐÃ UỐNG RỒI`}
           </button>
-          <p className="dev-hint">Sẽ ghi là xác nhận muộn. Nếu chưa uống, hãy hỏi con hoặc bác sĩ trước khi uống bù.</p>
+          <p className="dev-hint">Nếu chưa uống, hãy hỏi bác sĩ trước khi uống bù.</p>
         </section>
       )}
 
@@ -406,7 +394,6 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
           </div>
           {focus.group.status === 'QUEUED' && <div className="dev-queued">Đang mất mạng — sẽ tự gửi khi có mạng</div>}
           {focus.group.status === 'LATE_CONFIRMED' && <div className="dev-text-sm">Đã ghi là xác nhận muộn.</div>}
-          <p className="dev-text-sm">Nếu cần sửa giờ uống, hãy nhờ người chăm sóc kiểm tra và đính chính.</p>
           {justDone && (
             <button type="button" className="dev-btn dev-btn-secondary" onClick={() => setJustDone(null)}>
               XONG
@@ -423,22 +410,18 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
             <span className="dev-slot">{SLOT_META[focus.group.slot].long}</span>
           </div>
           <MedList group={focus.group} />
-          <p className="dev-hint">
-            <Clock size={18} aria-hidden="true" /> Điện thoại sẽ đổ chuông khi đến giờ.
-          </p>
           {canConfirmEarly(focus.group) && <>
             <button type="button" className={`dev-btn ${isPatient ? 'dev-btn-confirm' : 'dev-btn-delegate'}`} onClick={() => doConfirm(focus.group)} disabled={sending}>
               <Check size={28} aria-hidden="true" /> {confirmLabel}
             </button>
-            <p className="dev-hint">Đang trong khoảng 60 phút trước giờ hẹn. Chỉ bấm sau khi đã uống.</p>
+            <p className="dev-hint">Chỉ xác nhận sau khi đã uống.</p>
           </>}
         </section>
       )}
 
       {(focus.kind === 'ALL_DONE' || focus.kind === 'NONE') && (
-        <section className="dev-card dev-card-done">
-          <CheckCircle2 size={56} aria-hidden="true" />
-          <div className="dev-done-title">{focus.kind === 'NONE' ? 'Hôm nay không có cữ thuốc' : 'Hôm nay đã xong các cữ thuốc'}</div>
+        <section className="dev-card">
+          <div className="dev-done-title">{focus.kind === 'NONE' ? 'Hôm nay không có cữ thuốc' : 'Không còn cữ chờ xác nhận'}</div>
         </section>
       )}
 
@@ -447,6 +430,7 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
         {last ? (
           <span>
             {SLOT_META[last.slot]?.long || 'Cữ'} {dayLabel(last.date, nowMs).toLowerCase()}, lúc <strong className="num">{fmtTime(last.takenAt)}</strong>
+            {last.actorLabel && ` · ${last.actorLabel}`}
             {last.pendingSync ? ' (chờ gửi)' : ''}
           </span>
         ) : (
@@ -455,13 +439,12 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
       </div>
 
       <div className="dev-section-title">Lịch thuốc hôm nay</div>
-      <p className="dev-text-sm">Uống trong khoảng ±60 phút quanh giờ hẹn được tính đúng giờ.</p>
       {groups.length === 0 ? (
         <p className="dev-text-sm">Không có cữ thuốc nào hôm nay.</p>
       ) : (
         <ul className="dev-list">
           {groups.map((g) => {
-            const st = rowStatus(g, role);
+            const st = rowStatus(g, role, nowMs);
             return (
               <li key={g.key} className={`dev-row tone-row-${st.tone}`}>
                 <span className="dev-row-time num">{fmtTime(g.scheduledAt)}</span>
@@ -492,9 +475,9 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
           </div>
           <MedList group={ringingGroup} />
           <button type="button" className="dev-btn dev-btn-confirm" onClick={() => doConfirm(ringingGroup)}>
-            <Check size={30} strokeWidth={3} aria-hidden="true" /> ĐÃ UỐNG
+            <Check size={30} strokeWidth={3} aria-hidden="true" /> {confirmLabel}
           </button>
-          <button type="button" className="dev-btn dev-btn-ghost" onClick={() => setRinging(null)}>
+          <button type="button" className="dev-btn dev-btn-ghost" onClick={dismissReminder}>
             Để sau
           </button>
         </div>
@@ -510,12 +493,12 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
             className="dev-btn dev-btn-delegate"
             onClick={() => {
               ack(ringingNote.id);
-              setRinging(null);
+              dismissReminder();
             }}
           >
             ĐÃ NHẮC {alias.toUpperCase()}
           </button>
-          <button type="button" className="dev-btn dev-btn-ghost" onClick={() => setRinging(null)}>
+          <button type="button" className="dev-btn dev-btn-ghost" onClick={dismissReminder}>
             Để sau
           </button>
         </div>
@@ -526,12 +509,16 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
 
 /** Ứng dụng điện thoại (Mobile App, deviceAuth): chế độ bệnh nhân và chế độ người nhà. */
 export default function DeviceApp({ phone }) {
-  const nowMs = useNow(10_000);
+  const nowMs = useNow(1000);
   const [message, setMessage] = useState(null);
   // Giữ màn hình "Đã ghép nối" cho tới khi người dùng bấm BẮT ĐẦU, kể cả khi lịch đã tải xong.
   const [paired, setPaired] = useState(null);
   const timer = useRef(null);
   const data = usePhoneData(phone);
+  // Older snapshots only covered the day on which they were downloaded.
+  const today = toDateKey(nowMs);
+  const savedDay = data.savedAt && toDateKey(data.savedAt);
+  const hasSchedule = today >= (data.fromDate || savedDay) && today <= (data.toDate || savedDay);
 
   const flash = (msg) => {
     clearTimeout(timer.current);
@@ -543,12 +530,12 @@ export default function DeviceApp({ phone }) {
   let screen;
   if (paired || data.state === 'UNPAIRED') screen = <PairingScreen phone={phone} result={paired} onPaired={setPaired} onDone={() => setPaired(null)} />;
   else if (data.state === 'REVOKED') screen = <RevokedScreen phone={phone} />;
-  else if (data.state === 'OFFLINE_NO_CACHE')
+  else if (data.state === 'OFFLINE_NO_CACHE' || (data.state === 'READY' && !hasSchedule))
     screen = (
       <div className="dev-screen dev-center">
         <WifiOff size={64} className="muted" aria-hidden="true" />
-        <h2 className="dev-h1">Không có mạng</h2>
-        <p className="dev-text">Hãy bật Wi-Fi hoặc dữ liệu di động để tải lịch uống thuốc.</p>
+        <h2 className="dev-h1">Chưa tải lịch hôm nay</h2>
+        <p className="dev-text">Kết nối mạng để tải lịch uống thuốc.</p>
       </div>
     );
   else if (data.state === 'READY') screen = <HomeScreen key={`${phone.id}-${data.profile.deviceId}`} phone={phone} data={data} nowMs={nowMs} flash={flash} reload={data.reload} />;
@@ -579,7 +566,7 @@ export default function DeviceApp({ phone }) {
           <span>Không kết nối được máy chủ. Đang hiển thị lịch đã tải lúc {fmtTime(data.savedAt)}.</span>
         </div>
       )}
-      {!phone.online && data.state === 'READY' && (
+      {!phone.online && data.state === 'READY' && hasSchedule && (
         <div className="dev-offline" role="status">
           <WifiOff size={18} aria-hidden="true" />
           <span>

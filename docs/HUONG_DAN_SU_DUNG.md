@@ -38,7 +38,8 @@ Hai lựa chọn **Giao diện web** và **Giao diện app** dùng chung tài kh
 | Đơn thuốc | Nhập đơn, chọn thuốc, số lượng, đơn vị, buổi và giờ uống; sửa/hủy đơn nháp; xác nhận đơn | Đơn thuốc |
 | Kiểm tra trùng hoạt chất | Xem cảnh báo khi các thuốc trong đơn trùng hoạt chất | Màn hình nhập và chi tiết đơn |
 | Theo dõi hằng ngày | Xem lịch hôm nay, lần uống gần nhất, tỷ lệ tuân thủ và diễn biến theo ngày | Tổng quan |
-| Lịch sử cữ thuốc | Lọc theo ngày/trạng thái; xem ai xác nhận, giờ uống và giờ hệ thống ghi nhận | Lịch cữ thuốc |
+| Lịch sử cữ thuốc | Lọc theo ngày hoặc trạng thái, xem giờ uống và người xác nhận | Lịch cữ thuốc |
+| Xác nhận hộ | Ghi nhận người bệnh vừa uống từng thuốc trong cữ | Chi tiết cữ trong Lịch cữ thuốc |
 | Đính chính | Sửa giờ uống của một xác nhận đã có bằng bản ghi đính chính, giữ bản gốc | Chi tiết cữ trong Lịch cữ thuốc |
 | Cảnh báo | Xem cữ bỏ lỡ, lịch tái khám và cảnh báo trùng hoạt chất; đánh dấu đã đọc | Biểu tượng chuông |
 | Chỉ số xét nghiệm | Ghi HbA1c, đường huyết lúc đói, đường huyết sau ăn và chỉ số khác; xem xu hướng | Chỉ số & tái khám |
@@ -124,18 +125,19 @@ Có thể xóa đơn nháp, đang hiệu lực hoặc đơn trong lịch sử. �
 1. Chọn **Hôm nay**, **7 ngày qua**, **30 ngày qua**, **7 ngày tới** hoặc nhập khoảng ngày.
 2. Lọc trạng thái nếu cần, chẳng hạn **Bỏ lỡ** hoặc **Xác nhận muộn**.
 3. Bấm vào một cữ để xem từng thuốc và các bản ghi xác nhận.
-4. Kiểm tra người xác nhận, giờ uống và thời điểm máy chủ nhận dữ liệu.
+4. Khi người bệnh vừa uống thuốc, chọn **Xác nhận hộ** ở thuốc tương ứng. Hệ thống ghi giờ hiện tại và tên tài khoản người chăm sóc. Có thể xác nhận từ 60 phút trước giờ hẹn. Sau khoảng đúng giờ, hệ thống ghi nhận muộn trong ngày của cữ.
+5. Kiểm tra giờ uống và người xác nhận.
 
 Khi chuông có cảnh báo, mở để xem nội dung và kiểm tra với bệnh nhân/người nhà. **Bỏ lỡ** nghĩa là chưa có xác nhận đúng hạn trên hệ thống, chưa đủ để kết luận bệnh nhân chưa uống. Việc đánh dấu cảnh báo đã đọc không thay thế thao tác xác nhận uống thuốc.
 
-Tỷ lệ tuân thủ trên Tổng quan tính các cữ được ghi nhận đúng hạn, gồm bệnh nhân tự xác nhận và người nhà xác nhận hộ. Các cữ xác nhận muộn được thống kê riêng.
+Tỷ lệ tuân thủ trên Tổng quan tính các cữ được ghi nhận đúng hạn, gồm bệnh nhân tự xác nhận và người chăm sóc hoặc người nhà được ủy quyền xác nhận hộ. Các cữ xác nhận muộn được thống kê riêng.
 
 ### 7. Đính chính giờ uống khi ghi nhận sai
 
 1. Vào **Lịch cữ thuốc**, mở cữ có bản ghi cần sửa.
-2. Chọn **Đính chính giờ uống** tại thuốc tương ứng.
-3. Nhập ngày uống và giờ uống thực tế, bấm **Lưu đính chính**.
-4. Kiểm tra bản ghi mới trong lịch sử.
+2. Chọn **Sửa giờ** tại thuốc tương ứng.
+3. Nhập ngày uống và giờ uống thực tế, bấm **Lưu**.
+4. Mở **Lịch sử sửa giờ** để xem các lần chỉnh sửa.
 
 Chỉ người chăm sóc quản lý hồ sơ có quyền đính chính; bệnh nhân và người nhà không tự sửa giờ uống. Bản ghi gốc được giữ lại cùng tên người đính chính. Tính năng này sửa giờ của xác nhận đã có, không phải nút xác nhận hộ cho cữ chưa được xác nhận.
 
@@ -199,7 +201,7 @@ Nút **Đã nhắc …** trên cảnh báo của người nhà chỉ ghi nhận 
 | Xem lịch thuốc | Xem cữ cần thực hiện, cữ tiếp theo và lịch thuốc hôm nay |
 | Xem cách dùng | Đọc tên thuốc, số lượng, đơn vị và ghi chú tại cữ thuốc |
 | Nhắc đến giờ | Nhận màn hình nhắc và âm thanh khi giao diện đang hoạt động, trình duyệt cho phép |
-| Xác nhận uống thuốc | Bấm ĐÃ UỐNG sau khi uống xong |
+| Xác nhận uống thuốc | Bấm XÁC NHẬN ĐÃ UỐNG sau khi uống xong |
 | Xem lần uống gần nhất | Kiểm tra giờ đã ghi nhận và trạng thái chờ gửi nếu có |
 | Chữ lớn | Dùng nút đổi cỡ chữ để chuyển giữa chữ lớn và rất lớn |
 | Dùng khi mất mạng | Xem lịch đã tải và lưu tạm xác nhận, tự gửi lại khi có mạng |
@@ -224,7 +226,7 @@ Nếu người con hướng dẫn dùng cách ghép thiết bị, chọn **Ghép
 
 1. Mở giao diện bệnh nhân và xem tên gọi của mình.
 2. Xem cữ đang đến giờ: giờ uống, tên thuốc, số lượng và ghi chú.
-3. Sau khi đã uống xong các thuốc được liệt kê trong cữ, bấm **ĐÃ UỐNG** một lần.
+3. Sau khi đã uống xong các thuốc được liệt kê trong cữ, bấm **XÁC NHẬN ĐÃ UỐNG** một lần.
 4. Kiểm tra màn hình chuyển sang **Đã uống lúc …** hoặc thông báo đã ghi nhận.
 5. Xem **Lần uống gần nhất** và **Lịch thuốc hôm nay** để biết cữ đã ghi nhận và cữ tiếp theo.
 
@@ -246,8 +248,8 @@ Khi xuất hiện màn hình **ĐẾN GIỜ UỐNG THUỐC**, xem thông tin c�
 
 ### 6. Sử dụng khi mất mạng
 
-1. Nếu lịch đã được tải trước đó, vẫn có thể xem lịch đã lưu trên máy.
-2. Sau khi uống, bấm **ĐÃ UỐNG**; kiểm tra thông báo **chờ gửi** hoặc **Sẽ tự gửi khi có mạng**.
+1. Khi có mạng, điện thoại tải lịch hôm nay và 6 ngày tiếp theo. Giữ app mở để nhận lời nhắc theo lịch đã lưu khi chuyển ngày.
+2. Sau khi uống, bấm **XÁC NHẬN ĐÃ UỐNG**; kiểm tra thông báo **chờ gửi** hoặc **Sẽ tự gửi khi có mạng**.
 3. Kết nối lại Wi-Fi/dữ liệu di động và giữ hoặc mở lại giao diện để hệ thống gửi xác nhận.
 4. Kiểm tra trạng thái đã đồng bộ; nhờ người con xem lại nếu vẫn còn chờ gửi hoặc xuất hiện lỗi.
 
@@ -258,7 +260,7 @@ Nếu máy chưa tải lịch thì cần có mạng để tải lần đầu. X�
 ### 7. Ba việc cần nhớ mỗi ngày
 
 1. **Mở lịch** để xem cữ và thông tin thuốc.
-2. **Uống xong mới bấm ĐÃ UỐNG**.
+2. **Uống xong mới bấm XÁC NHẬN ĐÃ UỐNG**.
 3. **Kiểm tra đã ghi nhận**; nếu có lỗi hoặc không rõ, nhờ người con hỗ trợ.
 
 <a id="tra-cuu"></a>
@@ -272,7 +274,7 @@ Nếu máy chưa tải lịch thì cần có mạng để tải lần đầu. X�
 | Đã lên lịch / Sắp tới | Chưa đến giờ nhắc |
 | Đang chờ / Đến giờ uống | Đã đến giờ, đang chờ xác nhận |
 | Đã uống | Bệnh nhân tự xác nhận trong khoảng đúng giờ |
-| Đã uống (hộ) | Người nhà được ủy quyền xác nhận hộ trong khoảng đúng giờ |
+| Đã uống (hộ) | Người chăm sóc hoặc người nhà được ủy quyền xác nhận hộ trong khoảng đúng giờ |
 | Xác nhận muộn / Uống muộn | Giờ uống được ghi nhận sau thời hạn |
 | Bỏ lỡ / Chưa xác nhận | Đã quá thời hạn nhưng hệ thống chưa có xác nhận |
 | Đã hủy | Cữ không còn áp dụng do thay hoặc xóa đơn thuốc |

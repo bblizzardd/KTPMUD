@@ -32,8 +32,8 @@ export default function DeletePrescriptionButton({ prescription, onDeleted, disa
     <ConfirmDialog open={open} title={`Xóa đơn kê ngày ${fmtDate(prescription.issuedDate)}?`} tone="danger"
       confirmLabel={busy ? 'Đang xóa…' : 'Xóa đơn thuốc'} confirmDisabled={busy}
       cancelLabel="Giữ lại" onCancel={() => { if (!busy) setOpen(false); }} onConfirm={remove}>
-      <p>Đơn sẽ bị xóa khỏi danh sách. Các cữ chưa đến giờ và đang chờ của đơn này sẽ bị hủy, không tiếp tục nhắc thuốc.</p>
-      <p>Lịch sử đã uống, cữ đã bỏ lỡ và nhật ký vẫn được giữ. Lịch tái khám đã tạo không bị xóa. Không thể khôi phục đơn trên giao diện.</p>
+      <p>Xóa đơn sẽ hủy các cữ đang chờ và sắp tới.</p>
+      <p>Lịch sử và lịch tái khám vẫn được giữ. Không thể hoàn tác.</p>
     </ConfirmDialog>
   </>;
 }

@@ -4,20 +4,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as deviceApi from '../api/device.js';
 import { isNetworkError } from '../api/errors.js';
-import { clock } from '../app/clock.js';
+import { clock, syncClock } from '../app/clock.js';
 import { onRefreshAll } from '../app/query.js';
 import { getPhone, updatePhone } from './phones.js';
 
 const POLL_MS = 10_000;
 
 async function fetchSnapshot(token) {
-  const [profile, doses, last] = await Promise.all([
+  const [profile, schedule, last] = await Promise.all([
     deviceApi.getDeviceProfile(token),
-    deviceApi.listTodayDoses(token),
-    deviceApi.getLastConfirmed(token)
+    deviceApi.getDoseSchedule(token),
+    deviceApi.getLastConfirmed(token),
+    syncClock()
   ]);
-  // Cữ đã hủy do thay đơn không còn hiện trên máy (BR-03).
-  return { profile, doses: doses.filter((d) => d.status !== 'CANCELLED'), last, savedAt: new Date(clock.now()).toISOString() };
+  return { profile, ...schedule, last, savedAt: new Date(clock.now()).toISOString() };
 }
 
 /**
@@ -31,6 +31,7 @@ export function usePhoneData(phone) {
   const online = phone?.online;
 
   const load = useCallback(async () => {
+    const mine = ++seq.current;
     const current = phone?.id ? getPhone(phone.id) : null;
     if (!current?.token) {
       setState({ state: 'UNPAIRED' });
@@ -40,7 +41,6 @@ export function usePhoneData(phone) {
       setState(fromCache(current));
       return;
     }
-    const mine = ++seq.current;
     try {
       const snapshot = await fetchSnapshot(current.token);
       if (mine !== seq.current) return;
@@ -63,9 +63,13 @@ export function usePhoneData(phone) {
     load();
     const id = setInterval(load, POLL_MS);
     const off = onRefreshAll(load);
+    const resume = () => { if (!document.hidden) load(); };
+    document.addEventListener('visibilitychange', resume);
     return () => {
+      seq.current++;
       clearInterval(id);
       off();
+      document.removeEventListener('visibilitychange', resume);
     };
   }, [load, token, online]);
 
@@ -74,7 +78,7 @@ export function usePhoneData(phone) {
 
 function initialState(phone) {
   if (!phone?.token) return { state: 'UNPAIRED' };
-  if (phone.cache && !phone.cache.revoked) return { state: 'READY', ...phone.cache, fromCache: true };
+  if (!phone.online) return fromCache(phone);
   return { state: 'LOADING' };
 }
 

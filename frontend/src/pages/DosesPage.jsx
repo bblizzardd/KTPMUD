@@ -1,15 +1,15 @@
 import { Fragment, useState } from 'react';
-import { CalendarClock, ChevronDown, ChevronRight, HelpCircle, Pill } from 'lucide-react';
+import { CalendarClock, ChevronDown, ChevronRight, Pill } from 'lucide-react';
 import * as api from '../api/caregiver.js';
 import { patientKey, useApp } from '../app/AppContext.jsx';
 import { useNow } from '../app/hooks.js';
 import { useQuery } from '../app/query.js';
 import { replaceQuery } from '../app/router.js';
 import { DOSE_STATUS, SLOT_META } from '../domain/constants.js';
-import { DECISION_TABLE, groupDoses, checkConfirmable } from '../domain/rules.js';
+import { groupDoses, checkConfirmable } from '../domain/rules.js';
 import { addDays, atTime, dayLabel, diffDays, fmtDate, fmtDateTime, fmtTime, isValidDateKey, isValidHHmm, toDateKey } from '../lib/time.js';
-import { fmtNumber, shortId } from '../lib/text.js';
-import { Badge, Card, DoseStatusBadge, EmptyState, Field, Modal, PageHeader, PageStatus } from '../components/ui.jsx';
+import { fmtNumber } from '../lib/text.js';
+import { Card, DoseStatusBadge, EmptyState, Field, PageHeader, PageStatus } from '../components/ui.jsx';
 import { confirmationText } from './OverviewPage.jsx';
 
 const STATUS_ORDER = ['PENDING', 'TAKEN', 'TAKEN_BY_DELEGATE', 'LATE_CONFIRMED', 'MISSED', 'SCHEDULED', 'CANCELLED'];
@@ -41,106 +41,65 @@ function CorrectionForm({ dose, latest, onClose }) {
   }
   return (
     <form className="stack" onSubmit={save}>
-      <p className="text-sm">Chỉ người chăm sóc được sửa giờ uống đã ghi nhận. Lịch sử sẽ giữ bản gốc và ghi tên người đính chính.</p>
       <div className="form-grid">
         <Field label="Ngày uống" htmlFor={`correct-date-${dose.id}`}><input id={`correct-date-${dose.id}`} className="input" type="date" value={date} max={toDateKey(nowMs)} onChange={e => setDate(e.target.value)} required disabled={busy} /></Field>
         <Field label="Giờ uống thực tế" htmlFor={`correct-time-${dose.id}`}><input id={`correct-time-${dose.id}`} className="input" type="text" placeholder="HH:mm" maxLength={5} pattern="([01][0-9]|2[0-3]):[0-5][0-9]" title="24h: 00:00 - 23:59" value={time} onChange={e => setTime(e.target.value)} required disabled={busy} /></Field>
       </div>
       {error && <p className="text-sm" role="alert">{error}</p>}
-      <div className="row"><button className="btn btn-primary" disabled={busy}>{busy ? 'Đang lưu…' : 'Lưu đính chính'}</button><button type="button" className="btn btn-secondary" disabled={busy} onClick={onClose}>Hủy</button></div>
+      <div className="row"><button className="btn btn-primary" disabled={busy}>{busy ? 'Đang lưu…' : 'Lưu'}</button><button type="button" className="btn btn-secondary" disabled={busy} onClick={onClose}>Hủy</button></div>
     </form>
   );
 }
 
-function StatusGuide({ open, onClose }) {
-  return (
-    <Modal open={open} onClose={onClose} size="lg" title="Trạng thái cữ thuốc" subtitle="Ý nghĩa các trạng thái và thời hạn xác nhận.">
-      <div className="stack">
-        <ul className="status-guide">
-          {STATUS_ORDER.map((s) => (
-            <li key={s}>
-              <DoseStatusBadge status={s} />
-              <span>{DOSE_STATUS[s].desc}</span>
-            </li>
-          ))}
-        </ul>
-        <div>
-          <h3 style={{ marginBottom: 8 }}>Bảng quyết định cập nhật trạng thái</h3>
-          <div className="table-wrap card" style={{ boxShadow: 'none' }}>
-            <table className="table table-compact">
-              <thead>
-                <tr>
-                  <th>Luật</th>
-                  <th>Có xác nhận</th>
-                  <th>Người xác nhận là bệnh nhân</th>
-                  <th>Trong thời hạn</th>
-                  <th>Đã quá thời hạn</th>
-                  <th>Trạng thái mới</th>
-                  <th>Hành động kèm theo</th>
-                </tr>
-              </thead>
-              <tbody>
-                {DECISION_TABLE.map((r) => (
-                  <tr key={r.rule}>
-                    <td className="strong">{r.rule}</td>
-                    <td>{r.hasConfirmation}</td>
-                    <td>{r.byPatient}</td>
-                    <td>{r.inTime}</td>
-                    <td>{r.overdue}</td>
-                    <td>
-                      <DoseStatusBadge status={r.result} />
-                    </td>
-                    <td>{r.action}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <p className="fine-print" style={{ marginTop: 8 }}>
-            Đúng giờ là từ 60 phút trước đến 60 phút sau giờ hẹn, gồm cả hai mốc. Quá mốc sau mà chưa xác nhận sẽ tính bỏ lỡ. Xét theo giờ uống (takenAt), kể cả xác nhận ngoại tuyến gửi lại trong 72 giờ. Khoảng đúng giờ có thể qua nửa đêm; ngoài khoảng đó chỉ nhận xác nhận muộn trong ngày của cữ.
-          </p>
-        </div>
-      </div>
-    </Modal>
-  );
-}
-
 function DoseRecords({ dose }) {
+  const { call } = useApp();
+  const nowMs = useNow();
+  const [confirming, setConfirming] = useState(false);
   const [correcting, setCorrecting] = useState(false);
   const recordsQ = useQuery(patientKey(dose.patientId, `confirmations:${dose.id}`), () => api.listDoseConfirmations(dose.id));
   const records = recordsQ.data;
+  const original = records?.[0];
+  const latest = records?.at(-1);
+  const actorName = record => record.actorLabel || ACTOR_LABELS[record.actorRole];
+  const doseTime = record => toDateKey(record.takenAt) === dose.date ? fmtTime(record.takenAt) : fmtDateTime(record.takenAt);
+  const canConfirm = !dose.prescriptionDeleted && checkConfirmable(dose, { takenAt: new Date(nowMs).toISOString(), nowMs }).ok;
+  async function confirm() {
+    setConfirming(true);
+    await call(() => api.confirmDose(dose.id), {
+      success: `Đã xác nhận hộ cữ ${dose.drugDisplayName}`, errorTitle: 'Chưa xác nhận được cữ thuốc', refresh: patientKey(dose.patientId)
+    });
+    setConfirming(false);
+  }
   return (
     <div className="conf-dose">
       <div className="conf-dose-head">
         <Pill size={14} aria-hidden="true" />
         <strong>{dose.drugDisplayName}</strong>
         <span className="muted">
-          · {fmtNumber(dose.unitsPerDose)} {dose.unit} · hạn {fmtTime(dose.deadlineAt)}
+          · {fmtNumber(dose.unitsPerDose)} {dose.unit}
         </span>
         <DoseStatusBadge status={dose.status} />
       </div>
       {!records ? (
         <PageStatus compact error={recordsQ.error} onRetry={recordsQ.reload} label="Đang tải bản ghi…" />
       ) : records.length === 0 ? (
-        <p className="muted text-sm">Chưa có bản ghi xác nhận.</p>
+        canConfirm
+          ? <button type="button" className="btn btn-primary btn-sm" disabled={confirming || recordsQ.refreshing} onClick={confirm}>{confirming ? 'Đang ghi nhận…' : 'Xác nhận hộ'}</button>
+          : <p className="muted text-sm">Chưa xác nhận.</p>
       ) : (
-        <ol className="conf-records">
-          {records.map((r) => (
-            <li key={r.id}>
-              <Badge tone={r.correctsConfirmationId ? 'warning' : 'neutral'}>{r.correctsConfirmationId ? 'Đính chính' : 'Bản ghi gốc'}</Badge>
-              <span>
-                {r.actorLabel || ACTOR_LABELS[r.actorRole]} ({ACTOR_LABELS[r.actorRole]}) · uống lúc <strong className="num">{fmtTime(r.takenAt)}</strong> · máy chủ ghi{' '}
-                <span className="num">{fmtDateTime(r.recordedAt)}</span> → {DOSE_STATUS[r.resultingStatus]?.label}
-                {r.correctsConfirmationId && <span className="muted"> · tham chiếu bản ghi #{shortId(r.correctsConfirmationId)}</span>}
-              </span>
-              <span className="mono faint">#{shortId(r.id)}</span>
-            </li>
-          ))}
-        </ol>
+        <div className="row">
+          <span className="text-sm">Uống lúc <strong className="num">{doseTime(latest)}</strong> · {actorName(original)} {original.actorRole === 'PATIENT' ? 'tự xác nhận' : 'xác nhận hộ'}</span>
+          {!correcting && dose.status !== 'CANCELLED' && <button type="button" className="btn btn-secondary btn-sm" onClick={() => setCorrecting(true)}>Sửa giờ</button>}
+        </div>
       )}
-      {records?.length > 0 && dose.status !== 'CANCELLED' && (
-        correcting ? <CorrectionForm key={records.at(-1).id} dose={dose} latest={records.at(-1)} onClose={() => setCorrecting(false)} />
-          : <button type="button" className="btn btn-secondary btn-sm" onClick={() => setCorrecting(true)}>Đính chính giờ uống</button>
+      {correcting && latest && dose.status !== 'CANCELLED' && <CorrectionForm key={latest.id} dose={dose} latest={latest} onClose={() => setCorrecting(false)} />}
+      {records?.length > 1 && (
+        <details className="text-sm muted">
+          <summary>Lịch sử sửa giờ</summary>
+          <ol className="conf-records">
+            {records.map(r => <li key={r.id}>{actorName(r)} {r.correctsConfirmationId ? 'sửa giờ thành' : 'ghi nhận giờ uống'} {doseTime(r)}</li>)}
+          </ol>
+        </details>
       )}
     </div>
   );
@@ -152,7 +111,6 @@ function ConfirmationHistory({ group }) {
       {group.doses.map((dose) => (
         <DoseRecords key={dose.id} dose={dose} />
       ))}
-      <p className="fine-print">Bệnh nhân và người nhà không được sửa giờ uống. Chỉ người chăm sóc quản lý hồ sơ được đính chính bằng bản ghi mới; bản gốc luôn được giữ lại.</p>
     </div>
   );
 }
@@ -162,7 +120,6 @@ export default function DosesPage({ route }) {
   const nowMs = useNow(30_000);
   const today = toDateKey(nowMs);
   const [expanded, setExpanded] = useState(() => new Set());
-  const [guide, setGuide] = useState(false);
 
   const q = route.query;
   let from = isValidDateKey(q.from) ? q.from : addDays(today, -6);
@@ -200,15 +157,7 @@ export default function DosesPage({ route }) {
 
   return (
     <>
-      <PageHeader
-        title="Lịch cữ thuốc"
-        subtitle={`Từng cữ thuốc của ${patient.alias}: giờ nhắc, hạn xác nhận, ai xác nhận và lúc nào.`}
-        actions={
-          <button type="button" className="btn btn-secondary" onClick={() => setGuide(true)}>
-            <HelpCircle size={16} aria-hidden="true" /> Giải thích trạng thái
-          </button>
-        }
-      />
+      <PageHeader title="Lịch cữ thuốc" />
 
       <Card>
         <div className="filters">
@@ -306,7 +255,6 @@ export default function DosesPage({ route }) {
         </div>
       )}
 
-      <StatusGuide open={guide} onClose={() => setGuide(false)} />
     </>
   );
 }

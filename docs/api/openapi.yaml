@@ -410,6 +410,29 @@ paths:
               schema:
                 type: array
                 items: { $ref: '#/components/schemas/Dose' }
+  /device/doses/schedule:
+    get:
+      tags: [Doses]
+      summary: Lịch 7 ngày để điện thoại nhắc thuốc ngoại tuyến
+      operationId: getDeviceDoseSchedule
+      security:
+        - deviceAuth: []
+        - patientAuth: []
+      responses:
+        '200':
+          description: Khoảng ngày theo giờ Việt Nam và các cữ có thời hạn xác nhận giao với khoảng này
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [fromDate, toDate, doses]
+                properties:
+                  fromDate: { type: string, format: date }
+                  toDate: { type: string, format: date }
+                  doses:
+                    type: array
+                    items: { $ref: '#/components/schemas/Dose' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /device/doses/today:
     get:
       tags: [Doses]
@@ -437,12 +460,13 @@ paths:
       tags: [Doses]
       summary: Xác nhận đã uống thuốc bằng một chạm
       description: |
-        Người thực hiện được suy ra từ token thiết bị: PATIENT cho ra trạng thái Đã uống,
-        DELEGATE cho ra Đã uống (hộ). Xác nhận sau thời hạn cho ra Xác nhận muộn.
+        PATIENT tự xác nhận. DELEGATE và CAREGIVER xác nhận hộ.
+        CAREGIVER chỉ được xác nhận cho hồ sơ mình quản lý. Xác nhận sau thời hạn cho ra Xác nhận muộn.
         Bệnh nhân/người nhà không được đính chính; correctsConfirmationId khác null bị từ chối 403.
         Chỉ CAREGIVER quản lý hồ sơ được thêm đính chính qua POST /doses/{doseId}/corrections.
       operationId: confirmDose
       security:
+        - caregiverAuth: []
         - deviceAuth: []
         - patientAuth: []
       requestBody:
@@ -944,6 +968,7 @@ components:
         scheduledAt: { type: string, format: date-time }
         deadlineAt: { type: string, format: date-time }
         status: { $ref: '#/components/schemas/DoseStatus' }
+        prescriptionDeleted: { type: boolean, description: Đơn thuốc đã bị xóa (lịch của người chăm sóc). }
         lastConfirmation:
           allOf:
             - $ref: '#/components/schemas/Confirmation'

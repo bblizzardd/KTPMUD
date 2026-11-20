@@ -35,7 +35,6 @@ export default function PrescriptionsPage() {
     <>
       <PageHeader
         title="Đơn thuốc"
-        subtitle="Nhập đơn tra cứu từ hệ thống số hóa của bệnh viện, xem lại rồi xác nhận. Lịch nhắc chỉ sinh từ đơn đã xác nhận."
         actions={
           <a className="btn btn-primary" href={href(ROUTES.prescriptionNew)}>
             <FilePlus2 size={16} aria-hidden="true" /> Thêm đơn thuốc
@@ -55,9 +54,7 @@ export default function PrescriptionsPage() {
                 <FilePlus2 size={16} aria-hidden="true" /> Nhập đơn đầu tiên
               </a>
             }
-          >
-            Tra cứu đơn trên hệ thống số hóa của BV Hữu Nghị, sau đó nhập ngày kê, ngày bắt đầu, ngày tái khám và từng thuốc. Ứng dụng gợi ý tên thuốc sau 2 ký tự.
-          </EmptyState>
+          />
         </Card>
       )}
 
@@ -70,7 +67,7 @@ export default function PrescriptionsPage() {
               Đơn nháp ngày kê {fmtDate(rx.issuedDate)} <RxStatusBadge status={rx.status} />
             </>
           }
-          subtitle={`Tạo lúc ${fmtDateTime(rx.createdAt)} · chưa sinh lịch nhắc cho tới khi xác nhận`}
+          subtitle={`Tạo lúc ${fmtDateTime(rx.createdAt)}`}
           actions={
             <>
               <a className="btn btn-sm btn-secondary" href={href(`${ROUTES.prescriptions}/${rx.id}/sua`)}>
@@ -116,18 +113,14 @@ export default function PrescriptionsPage() {
             <DeletePrescriptionButton prescription={active} />
             </>
           }
-          footer={
-            <>
-              {activeDoses ? `Đã sinh ${activeDoses.length} cữ thuốc, còn ${upcoming} cữ sắp tới. ` : ''}Muốn đổi thuốc: thêm đơn mới; khi xác nhận, đơn này chuyển sang Bị thay thế và các cữ tương lai bị hủy.
-            </>
-          }
+          footer={activeDoses ? `${upcoming} cữ sắp tới` : undefined}
         >
           <RxItemsTable items={active.items} />
         </Card>
       )}
 
       {history.length > 0 && (
-        <Card title="Lịch sử đơn thuốc" subtitle="Đơn đã thay thế, hết hạn hoặc đã hủy được giữ lại để đối chiếu.">
+        <Card title="Lịch sử đơn thuốc">
           <div className="table-wrap">
             <table className="table">
               <thead>

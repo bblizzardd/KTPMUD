@@ -428,18 +428,36 @@ export function registerMedicationRoutes(router, ctx) {
     const doses = ctx.db.list('doses', { patientId }).filter((dose) => (
       dose.date >= query.from && dose.date <= query.to && (!query.status || dose.status === query.status)
     )).sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt) || a.id.localeCompare(b.id));
-    res.json(doses.map((dose) => serializeDose(ctx, dose)));
+    const deletedIds = new Set(ctx.db.list('prescriptions', { patientId }).filter(rx => rx.deletedAt).map(rx => rx.id));
+    res.json(doses.map(dose => ({ ...serializeDose(ctx, dose), prescriptionDeleted: deletedIds.has(dose.prescriptionId) })));
   });
+
+  function deviceDoses(patientId, inRange) {
+    return ctx.db.list('doses', { patientId }).filter(inRange)
+      .filter(dose => dose.lastConfirmationId || !ctx.db.get('prescriptions', dose.prescriptionId)?.deletedAt)
+      .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt) || a.id.localeCompare(b.id))
+      .map(dose => serializeDose(ctx, dose));
+  }
 
   router.get('/device/doses/today', ctx.device, (req, res) => {
     tickMedication(ctx);
-    const today = localDate(ctx.now());
-    const nowMs = +ctx.now();
-    const doses = ctx.db.list('doses', { patientId: req.actor.patientId })
-      .filter(dose => dose.lastConfirmationId || !ctx.db.get('prescriptions', dose.prescriptionId)?.deletedAt)
-      .filter(dose => dose.date === today || Math.abs(Date.parse(dose.scheduledAt) - nowMs) <= WINDOW_MS)
-      .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt) || a.id.localeCompare(b.id));
-    res.json(doses.map((dose) => serializeDose(ctx, dose)));
+    const now = ctx.now();
+    const today = localDate(now);
+    res.json(deviceDoses(req.actor.patientId, dose => dose.date === today || Math.abs(Date.parse(dose.scheduledAt) - now) <= WINDOW_MS));
+  });
+
+  router.get('/device/doses/schedule', ctx.device, (req, res) => {
+    tickMedication(ctx);
+    const fromDate = localDate(ctx.now());
+    const toDate = shiftDate(fromDate, 6);
+    // Include adjacent doses whose confirmation window crosses midnight.
+    const start = Date.parse(`${fromDate}T00:00:00+07:00`) - WINDOW_MS;
+    const end = Date.parse(`${shiftDate(toDate, 1)}T00:00:00+07:00`) + WINDOW_MS;
+    const doses = deviceDoses(req.actor.patientId, dose => {
+      const scheduled = Date.parse(dose.scheduledAt);
+      return dose.status !== 'CANCELLED' && scheduled >= start && scheduled < end;
+    });
+    res.json({ fromDate, toDate, doses });
   });
 
   function recordConfirmation(req, res, correction = false) {
@@ -448,7 +466,7 @@ export function registerMedicationRoutes(router, ctx) {
     if (!correction && input.correctsConfirmationId) throw new ApiError(403, 'CORRECTION_FORBIDDEN', 'Chỉ người chăm sóc quản lý hồ sơ được đính chính giờ uống');
     const existing = ctx.db.get('doses', doseId);
     if (!existing) throw new ApiError(404, 'DOSE_NOT_FOUND', 'Không tìm thấy cữ thuốc');
-    if (correction) ctx.patientAccess(req, existing.patientId);
+    if (req.actor.role === 'CAREGIVER') ctx.patientAccess(req, existing.patientId);
     else if (existing.patientId !== req.actor.patientId) throw new ApiError(403, 'FORBIDDEN', 'Thiết bị không có quyền trên cữ thuốc này');
     req.auditContext = { patientId: existing.patientId, targetType: 'Dose', targetId: existing.id };
     if (!correction && ctx.db.get('prescriptions', existing.prescriptionId)?.deletedAt) {
@@ -483,7 +501,7 @@ export function registerMedicationRoutes(router, ctx) {
     const confirmedByRole = original?.actorRole || req.actor.role;
     const resultingStatus = takenAt.getTime() > scheduledMs + WINDOW_MS
       ? 'LATE_CONFIRMED'
-      : confirmedByRole === 'DELEGATE' ? 'TAKEN_BY_DELEGATE' : 'TAKEN';
+      : confirmedByRole === 'PATIENT' ? 'TAKEN' : 'TAKEN_BY_DELEGATE';
     const confirmation = ctx.db.transaction(() => {
       const created = ctx.db.insert('confirmations', {
         id: newId(), doseId, patientId: dose.patientId, actorRole: req.actor.role, actorId: req.actor.id,
@@ -496,7 +514,7 @@ export function registerMedicationRoutes(router, ctx) {
     });
     res.status(201).json(confirmation);
   }
-  router.post('/doses/:doseId/confirmations', ctx.device, (req, res) => recordConfirmation(req, res));
+  router.post('/doses/:doseId/confirmations', ctx.confirmationActor, (req, res) => recordConfirmation(req, res));
   router.post('/doses/:doseId/corrections', ctx.caregiver, (req, res) => recordConfirmation(req, res, true));
 
   // Caregiver view of the append-only chain: original record and every correction.
@@ -516,9 +534,11 @@ export function registerMedicationRoutes(router, ctx) {
   // US-10: "when did I last take my medicine?" may refer to yesterday, beyond /device/doses/today.
   router.get('/device/doses/last-confirmed', ctx.device, (req, res) => {
     tickMedication(ctx);
+    const nowMs = +ctx.now();
     const confirmed = ctx.db.list('doses', { patientId: req.actor.patientId })
       .filter((dose) => dose.lastConfirmationId && ['TAKEN', 'TAKEN_BY_DELEGATE', 'LATE_CONFIRMED'].includes(dose.status))
       .map((dose) => ({ dose, confirmation: serializeConfirmation(ctx, ctx.db.get('confirmations', dose.lastConfirmationId)) }))
+      .filter(({ confirmation }) => Date.parse(confirmation.recordedAt) <= nowMs && Date.parse(confirmation.takenAt) <= nowMs)
       .sort((a, b) => b.confirmation.takenAt.localeCompare(a.confirmation.takenAt));
     const latest = confirmed[0];
     if (!latest) return res.json(null);

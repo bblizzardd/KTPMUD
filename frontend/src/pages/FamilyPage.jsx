@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { KeyRound, Pencil, ShieldCheck, Smartphone, UserMinus, UserPlus } from 'lucide-react';
+import { KeyRound, Pencil, Smartphone, UserMinus, UserPlus } from 'lucide-react';
 import * as api from '../api/caregiver.js';
 import { fieldError } from '../api/errors.js';
 import { patientKey, useApp } from '../app/AppContext.jsx';
@@ -58,7 +58,7 @@ function PairingCard({ patient, delegates, devices }) {
   const clear = () => setPairingCodes((map) => ({ ...map, [patient.id]: undefined }));
 
   return (
-    <Card title="Liên kết tài khoản & thiết bị" subtitle="Mã bệnh nhân dùng để liên kết tài khoản lúc đăng ký lần đầu, hoặc ghép thiết bị. Sau khi đăng ký, bệnh nhân đăng nhập bằng email/mật khẩu trên web và app.">
+    <Card title="Liên kết tài khoản & thiết bị">
       {valid ? (
         <div className="pair-active">
           <div className="pair-code" aria-live="polite">
@@ -77,11 +77,7 @@ function PairingCard({ patient, delegates, devices }) {
               </span>
             </div>
           </div>
-          <ol className="pair-steps">
-            {current.role === 'PATIENT' && !patient.hasLoginAccount && <li>Tạo tài khoản: chọn Bệnh nhân → Đăng ký trên web hoặc app, rồi nhập mã này cùng email và mật khẩu.</li>}
-            <li>Hoặc chọn “Ghép thiết bị bằng mã 6 số”, nhập mã rồi bấm “Ghép nối”.</li>
-            <li>Mã chỉ dùng được một lần và hết hạn sau {PAIRING_CODE_TTL_MINUTES} phút.</li>
-          </ol>
+          <p className="muted text-sm">{current.role === 'PATIENT' && !patient.hasLoginAccount ? 'Nhập mã khi đăng ký tài khoản bệnh nhân hoặc ghép điện thoại.' : 'Nhập mã trên điện thoại cần ghép.'}</p>
           <div className="row">
             <button type="button" className="btn btn-secondary" onClick={openSimulator}>
               <Smartphone size={16} aria-hidden="true" /> Nhập mã trên điện thoại mô phỏng
@@ -96,7 +92,7 @@ function PairingCard({ patient, delegates, devices }) {
         </div>
       ) : (
         <div className="stack">
-          {accountLinked && <Callout tone="success" title="Đã liên kết tài khoản bệnh nhân" actions={<button type="button" className="btn btn-sm btn-secondary" onClick={clear}>Đóng</button>}>Bệnh nhân có thể đăng nhập bằng email và mật khẩu trên cả web và app.</Callout>}
+          {accountLinked && <Callout tone="success" title="Đã liên kết tài khoản bệnh nhân" actions={<button type="button" className="btn btn-sm btn-secondary" onClick={clear}>Đóng</button>} />}
           {current && pairedDevice && (
             <Callout tone="success" title={`Đã ghép nối lúc ${fmtTime(pairedDevice.pairedAt)}`} actions={<button type="button" className="btn btn-sm btn-secondary" onClick={clear}>Đóng</button>}>
               {pairedDevice.deviceName} của {pairedDevice.ownerAlias} đã được ghép với vai trò {pairedDevice.role === 'PATIENT' ? 'Bệnh nhân' : 'Người nhà'}.
@@ -104,7 +100,7 @@ function PairingCard({ patient, delegates, devices }) {
           )}
           {current && !pairedDevice && !accountLinked && (
             <Callout tone="warning" title={codeQ.data?.replaced ? 'Mã đã được thay thế' : codeQ.data?.used ? 'Mã đã được sử dụng' : 'Mã đã hết hạn'} actions={<button type="button" className="btn btn-sm btn-secondary" onClick={clear}>Đóng</button>}>
-              Mã cho {current.who} không còn dùng được. Hãy tạo mã mới.
+              Tạo mã mới cho {current.who}.
             </Callout>
           )}
           <div className="pair-form">
@@ -122,7 +118,7 @@ function PairingCard({ patient, delegates, devices }) {
               {busy ? <Spinner /> : <KeyRound size={16} aria-hidden="true" />} {current ? 'Tạo lại mã' : 'Tạo mã 6 số'}
             </button>
           </div>
-          {active.length === 0 && <p className="muted text-sm">Muốn ghép điện thoại cho người nhà, hãy ủy quyền người nhà ở mục bên dưới trước.</p>}
+          {active.length === 0 && <p className="muted text-sm">Ủy quyền người nhà trước khi ghép máy cho họ.</p>}
         </div>
       )}
     </Card>
@@ -181,7 +177,7 @@ export default function FamilyPage() {
 
   return (
     <>
-      <PageHeader title="Hồ sơ & thiết bị" subtitle={`Hồ sơ ${patient.alias}, điện thoại đã ghép nối và người nhà được ủy quyền xác nhận hộ.`} />
+      <PageHeader title="Hồ sơ & thiết bị" />
 
       <Card
         title="Hồ sơ bệnh nhân"
@@ -225,15 +221,12 @@ export default function FamilyPage() {
               ))}
             </div>
           </div>
-          <Callout tone="neutral" icon={ShieldCheck}>
-            Hồ sơ chỉ có tên gọi trong gia đình và năm sinh; không lưu họ tên thật, số CCCD hay số BHYT. Giờ nhắc và ngưỡng mới áp dụng cho đơn thuốc được xác nhận sau khi đổi.
-          </Callout>
         </div>
       </Card>
 
       <PairingCard patient={patient} delegates={delegates} devices={devices} />
 
-      <Card title={`Thiết bị đã ghép nối (${devices.filter((d) => d.active).length} đang hoạt động)`} subtitle="Thu hồi khi mất máy hoặc đổi máy: thiết bị bị thu hồi không nhận nhắc và không xác nhận được nữa.">
+      <Card title={`Thiết bị đã ghép nối (${devices.filter((d) => d.active).length} đang hoạt động)`}>
         {devices.length === 0 ? (
           <EmptyState icon={Smartphone} title="Chưa ghép điện thoại nào">
             Tạo mã ở mục Ghép nối điện thoại rồi nhập trên điện thoại của {patient.alias}.
@@ -287,10 +280,10 @@ export default function FamilyPage() {
         )}
       </Card>
 
-      <Card title="Người nhà được ủy quyền" subtitle={`Người sống cùng ${patient.alias} có thể xác nhận hộ khi ${patient.alias} quên bấm và nhận cảnh báo khi bỏ lỡ cữ.`}>
+      <Card title="Người nhà được ủy quyền">
         <div className="stack">
           {delegates.length === 0 ? (
-            <p className="muted">Chưa ủy quyền người nhà nào. Khi bỏ lỡ cữ, chỉ bạn nhận được cảnh báo.</p>
+            <p className="muted">Chưa có người nhà được ủy quyền.</p>
           ) : (
             <ul className="delegate-list">
               {delegates.map((d) => {
