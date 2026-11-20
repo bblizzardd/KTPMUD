@@ -9,7 +9,7 @@
       }
     ],
     "dosageForm": "Viên nén",
-    "registrationNo": ""
+    "registrationNo": "300110016124"
   },
   {
     "id": "10000000-0000-4000-8000-000000000002",
@@ -21,7 +21,7 @@
       }
     ],
     "dosageForm": "Viên nén phóng thích kéo dài",
-    "registrationNo": ""
+    "registrationNo": "890110015924"
   },
   {
     "id": "10000000-0000-4000-8000-000000000003",
@@ -33,7 +33,7 @@
       }
     ],
     "dosageForm": "Viên nén giải phóng có kiểm soát",
-    "registrationNo": ""
+    "registrationNo": "VN-0465-06"
   },
   {
     "id": "10000000-0000-4000-8000-000000000004",
@@ -73,7 +73,7 @@
       }
     ],
     "dosageForm": "Viên nén bao phim",
-    "registrationNo": ""
+    "registrationNo": "300110016224"
   },
   {
     "id": "6f1c2a10-0003-4a01-9a01-000000000003",
@@ -97,7 +97,7 @@
       }
     ],
     "dosageForm": "Viên giải phóng kéo dài",
-    "registrationNo": ""
+    "registrationNo": "890110015824"
   },
   {
     "id": "6f1c2a10-0006-4a01-9a01-000000000006",
@@ -225,7 +225,7 @@
       }
     ],
     "dosageForm": "Viên nén bao phim",
-    "registrationNo": ""
+    "registrationNo": "VN-17087-13"
   },
   {
     "id": "6f1c2a10-0018-4a01-9a01-000000000018",
@@ -237,7 +237,7 @@
       }
     ],
     "dosageForm": "Viên nang",
-    "registrationNo": ""
+    "registrationNo": "VN-9352-05"
   },
   {
     "id": "6f1c2a10-0019-4a01-9a01-000000000019",
@@ -249,7 +249,7 @@
       }
     ],
     "dosageForm": "Viên nén bao phim",
-    "registrationNo": ""
+    "registrationNo": "VN-18150-14"
   },
   {
     "id": "6f1c2a10-0020-4a01-9a01-000000000020",
@@ -298,18 +298,6 @@
     ],
     "dosageForm": "Viên nén",
     "registrationNo": "VN-14201-11"
-  },
-  {
-    "id": "99350068-b672-45e9-9cba-030d563a2b17",
-    "brandName": "Diamicron MR 30mg Les Laboratoires Servier",
-    "activeIngredients": [
-      {
-        "name": "Gliclazide",
-        "strength": "30mg"
-      }
-    ],
-    "dosageForm": "Viên nén phóng thích có kiểm soát-30mg",
-    "registrationNo": "VN-0465-06"
   },
   {
     "id": "68a97624-7af8-4e27-a07f-1c373af4c51d",
@@ -762,18 +750,6 @@
     ],
     "dosageForm": "Viên nén",
     "registrationNo": "VD-23000-15"
-  },
-  {
-    "id": "2759d207-e7d4-45b4-9b32-71f5dfce1ece",
-    "brandName": "Crestor 10mg dạng viên nén",
-    "activeIngredients": [
-      {
-        "name": "Rosuvastatin",
-        "strength": "dưới dạng Rosuvastatin calci"
-      }
-    ],
-    "dosageForm": "Viên nén bao phim",
-    "registrationNo": "VN-18150-14"
   },
   {
     "id": "4fab9020-ebca-4c3b-bf15-4babbb785d35",
@@ -1616,18 +1592,6 @@
     ],
     "dosageForm": "Viên nén bao phim",
     "registrationNo": "VN-15536-12"
-  },
-  {
-    "id": "f153b93d-39de-4e5d-8a3a-3a9d1434b6d5",
-    "brandName": "Coversyl 5mg dạng viên nén bao phim",
-    "activeIngredients": [
-      {
-        "name": "Perindopril",
-        "strength": "5mg"
-      }
-    ],
-    "dosageForm": "Viên nén bao phim",
-    "registrationNo": "VN-17087-13"
   },
   {
     "id": "b743331e-3714-49b3-b6d6-c65b1b4af488",
@@ -3821,18 +3785,6 @@
     "registrationNo": "VN-6729-02"
   },
   {
-    "id": "163cf6cf-ad13-48ef-a790-d13da221bbdf",
-    "brandName": "Amlor 5mg Pfizer",
-    "activeIngredients": [
-      {
-        "name": "Amlodipine",
-        "strength": "5mg"
-      }
-    ],
-    "dosageForm": "Viên nang",
-    "registrationNo": "VN-9352-05"
-  },
-  {
     "id": "ca400fb6-cf31-4c46-9f84-abbb419c48d4",
     "brandName": "DilodinDHG",
     "activeIngredients": [
@@ -4745,18 +4697,6 @@
     ],
     "dosageForm": "Viên nén",
     "registrationNo": "893110347523"
-  },
-  {
-    "id": "59d6f0a2-c07a-4af8-bbb1-511536277ad7",
-    "brandName": "Panfor SR-500 dạng viên nén phóng thích chậm",
-    "activeIngredients": [
-      {
-        "name": "Metformin",
-        "strength": "dưới dạng Metformin hydrochlorid"
-      }
-    ],
-    "dosageForm": "Viên nén phóng thích chậm",
-    "registrationNo": "890110015924"
   },
   {
     "id": "8105cd4b-0439-4f4a-8e15-4a9e96be5fb4",
@@ -8104,22 +8044,6 @@
     "registrationNo": "VD-19017-13"
   },
   {
-    "id": "5aedf430-0856-40ff-8d1b-061a96e98dcb",
-    "brandName": "Diane 35 Bayer",
-    "activeIngredients": [
-      {
-        "name": "Cyproterone",
-        "strength": ""
-      },
-      {
-        "name": "Ethinyl estradiol",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VN-6022-01"
-  },
-  {
     "id": "77fc910b-9520-4bd2-9b43-6c413785d9c3",
     "brandName": "Halozam",
     "activeIngredients": [
@@ -9999,22 +9923,6 @@
     "registrationNo": "VN-11014-10"
   },
   {
-    "id": "76b95e58-659c-49d6-876b-6ca8c85b9de4",
-    "brandName": "Ideos 500mg/400IU - Hỗ trợ điều trị thiếu Calci",
-    "activeIngredients": [
-      {
-        "name": "Calcium Carbonate",
-        "strength": ""
-      },
-      {
-        "name": "Vitamin D",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nhai",
-    "registrationNo": "VN-19910-16"
-  },
-  {
     "id": "004becb0-8aaf-456f-8af6-f97da0c2827a",
     "brandName": "Nicomen Tablets 5mg - Thuốc điều trị đau thắt ngực",
     "activeIngredients": [
@@ -10516,18 +10424,6 @@
     ],
     "dosageForm": "Viên nén bao phim",
     "registrationNo": "893110806424"
-  },
-  {
-    "id": "82326fdc-88f0-4a3d-b490-e21dcc11a588",
-    "brandName": "Glucophage 500mg - Thuốc điều trị đái tháo đường týp II",
-    "activeIngredients": [
-      {
-        "name": "Metformin",
-        "strength": "500mg"
-      }
-    ],
-    "dosageForm": "Viên nén bao phim",
-    "registrationNo": "300110016124"
   },
   {
     "id": "36d97256-1f9b-4a0d-bba1-887ed410fc85",
@@ -14121,7 +14017,7 @@
     "activeIngredients": [
       {
         "name": "Montelukast",
-        "strength": "dưới dạng Montelukast natri"
+        "strength": "10mg"
       }
     ],
     "dosageForm": "Viên nén bao phim",
@@ -15864,18 +15760,6 @@
     "registrationNo": "VD-29229-18"
   },
   {
-    "id": "58c10700-36de-4492-a363-df50c17ef7ff",
-    "brandName": "Panfor SR 1000",
-    "activeIngredients": [
-      {
-        "name": "Metformin",
-        "strength": "1000mg"
-      }
-    ],
-    "dosageForm": "Viên nén giải phóng chậm",
-    "registrationNo": "890110015824"
-  },
-  {
     "id": "9835eb59-c648-4576-b994-4494473d6dc0",
     "brandName": "Polydeson 5ml Vidipha",
     "activeIngredients": [
@@ -16435,18 +16319,6 @@
     ],
     "dosageForm": "Viên nén",
     "registrationNo": "VNB-0829-03"
-  },
-  {
-    "id": "493d20ab-4590-4d98-9143-bdd0c1bd7067",
-    "brandName": "Pletaal tablets 100mg",
-    "activeIngredients": [
-      {
-        "name": "Cilostazol",
-        "strength": "100mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VN-20590-17"
   },
   {
     "id": "0888204f-d35f-4066-8333-94fea705f459",
@@ -18902,18 +18774,6 @@
     "registrationNo": "VN-16477-13"
   },
   {
-    "id": "d64e97f2-2011-45bd-a675-98ca91ea07cf",
-    "brandName": "Ilmagino 1.5g suspension",
-    "activeIngredients": [
-      {
-        "name": "Almagate",
-        "strength": "1.5g"
-      }
-    ],
-    "dosageForm": "Hỗn dịch uống",
-    "registrationNo": "VN-18826-15"
-  },
-  {
     "id": "01255c7d-edcc-47e2-a26e-3f5209d06a94",
     "brandName": "Cotriseptol 480mg Quapharco",
     "activeIngredients": [
@@ -19108,18 +18968,6 @@
     ],
     "dosageForm": "Thuốc bột pha tiêm",
     "registrationNo": "VNB-2109-04"
-  },
-  {
-    "id": "fa46b8e2-83ac-45d0-b0b0-53b492a93879",
-    "brandName": "Panadol",
-    "activeIngredients": [
-      {
-        "name": "Paracetamol",
-        "strength": "500mg"
-      }
-    ],
-    "dosageForm": "Viên nén bao phim",
-    "registrationNo": "VN-12465-11"
   },
   {
     "id": "e803aefc-2c65-4c03-83c4-5786b083a8f0",
@@ -21450,18 +21298,6 @@
     "registrationNo": "VD-24884-16"
   },
   {
-    "id": "556dff01-b831-46f4-920b-2287ae32b8d7",
-    "brandName": "Ceftriaxone 1g",
-    "activeIngredients": [
-      {
-        "name": "Ceftriaxone",
-        "strength": "1g"
-      }
-    ],
-    "dosageForm": "Bột pha tiêm",
-    "registrationNo": "VD-20867-14"
-  },
-  {
     "id": "aa9204d5-22fd-4b6c-bb68-72e22289b0d1",
     "brandName": "Atihepam 500",
     "activeIngredients": [
@@ -22990,22 +22826,6 @@
     ],
     "dosageForm": "Viên nén",
     "registrationNo": "893110496325"
-  },
-  {
-    "id": "a8a9e56b-17fa-4036-86af-25d98849e4ac",
-    "brandName": "Librax",
-    "activeIngredients": [
-      {
-        "name": "Chlordiazepoxide",
-        "strength": "Mỗi viên chứa: Chlor"
-      },
-      {
-        "name": "Clidinium bromide",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nén bao đường",
-    "registrationNo": "VN-10691-10"
   },
   {
     "id": "b9aa9ee1-fe89-4c25-b1b5-d8c9fc4e7afa",
@@ -25441,38 +25261,6 @@
     "registrationNo": "VN-20388-17"
   },
   {
-    "id": "c82037c1-59e0-4176-81f4-b4adde717673",
-    "brandName": "Pharnanca",
-    "activeIngredients": [
-      {
-        "name": "Bạch mao căn",
-        "strength": ""
-      },
-      {
-        "name": "Cam thảo",
-        "strength": ""
-      },
-      {
-        "name": "Thần khúc",
-        "strength": ""
-      },
-      {
-        "name": "Mạch nha",
-        "strength": ""
-      },
-      {
-        "name": "Đan sâm",
-        "strength": ""
-      },
-      {
-        "name": "Bạch thược",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nang",
-    "registrationNo": "VD-28954-18"
-  },
-  {
     "id": "e3f91428-778f-447e-a748-688dc345b251",
     "brandName": "Langitax 20",
     "activeIngredients": [
@@ -27608,22 +27396,6 @@
     "registrationNo": "VN-11918-11"
   },
   {
-    "id": "8c293397-c5e7-48ea-ba83-7584e647e018",
-    "brandName": "Ringer lactate",
-    "activeIngredients": [
-      {
-        "name": "Natri clorid",
-        "strength": ""
-      },
-      {
-        "name": "Kali chloride",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Dung dịch tiêm truyền",
-    "registrationNo": "VD-22591-15"
-  },
-  {
     "id": "075f8334-02c4-4813-8b26-b0abace66ba1",
     "brandName": "Alcoclear",
     "activeIngredients": [
@@ -28344,13 +28116,6 @@
     ],
     "dosageForm": "Viên bao phim",
     "registrationNo": "VD-11074-10"
-  },
-  {
-    "id": "226eb2a2-20d2-4ed0-98f4-da285a170a41",
-    "brandName": "Hepagold",
-    "activeIngredients": [],
-    "dosageForm": "Dung dịch tiêm truyền",
-    "registrationNo": "VN-13096-11"
   },
   {
     "id": "f435bee8-e09d-4894-933c-9d2d19c78cd4",
@@ -32221,18 +31986,6 @@
     "registrationNo": "VN-22049-19"
   },
   {
-    "id": "80e4985a-a671-49b3-9557-5f532dddaf95",
-    "brandName": "Methionin 250 mg",
-    "activeIngredients": [
-      {
-        "name": "Methionine",
-        "strength": "250mg"
-      }
-    ],
-    "dosageForm": "Chai 100 viên nang cứng cam-vàng",
-    "registrationNo": "VD-13786-11"
-  },
-  {
     "id": "008ad3e2-9e8e-44b8-a4b9-5ac09c7328e4",
     "brandName": "Trineulion",
     "activeIngredients": [
@@ -32303,18 +32056,6 @@
     ],
     "dosageForm": "Viên nén bao phim",
     "registrationNo": "893115039300"
-  },
-  {
-    "id": "aedae5b4-a069-423a-b68b-3422bf1e2ef8",
-    "brandName": "Gemapaxane",
-    "activeIngredients": [
-      {
-        "name": "Enoxaparin",
-        "strength": "Mỗi viờn chứa: Calci"
-      }
-    ],
-    "dosageForm": "Dung dịch tiêm",
-    "registrationNo": "VN-16312-13"
   },
   {
     "id": "c46a6895-b56f-43d3-995a-81cb07f8b33e",
@@ -33492,18 +33233,6 @@
     "registrationNo": "VD-17438-12"
   },
   {
-    "id": "7b598eae-0f9e-4c5e-94a6-c42ce1dc589b",
-    "brandName": "Diltiazem Stada 60mg",
-    "activeIngredients": [
-      {
-        "name": "Diltiazem",
-        "strength": "60mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VD-14553-11"
-  },
-  {
     "id": "17360dbe-3d86-4fff-b18f-5fbf70426647",
     "brandName": "Pentasa Sachet 2g",
     "activeIngredients": [
@@ -33926,18 +33655,6 @@
     ],
     "dosageForm": "Viên nén-12mg",
     "registrationNo": "VN-15329-12"
-  },
-  {
-    "id": "763346e9-d70e-4bcb-98ce-b316ceb39e55",
-    "brandName": "Eurax 20g Novartis",
-    "activeIngredients": [
-      {
-        "name": "Crotamiton",
-        "strength": "10g"
-      }
-    ],
-    "dosageForm": "Kem bôi da",
-    "registrationNo": "VN-17764-14"
   },
   {
     "id": "24e12f5f-7be2-4b3f-9fff-235fe754c603",
@@ -34586,26 +34303,6 @@
     "registrationNo": "VD-22621-15"
   },
   {
-    "id": "0c47f46c-1663-43bd-b283-53285101120b",
-    "brandName": "Oresol 27,9g",
-    "activeIngredients": [
-      {
-        "name": "Natri chloride",
-        "strength": "27,9g"
-      },
-      {
-        "name": "Glucose",
-        "strength": ""
-      },
-      {
-        "name": "Potassium",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Thuốc bột",
-    "registrationNo": "VNA-0374-02"
-  },
-  {
     "id": "d574bd72-ef80-43a2-8178-1179f8c2cfb3",
     "brandName": "Bromhexine A.T",
     "activeIngredients": [
@@ -34879,22 +34576,6 @@
     "registrationNo": "VD-22372-15"
   },
   {
-    "id": "29a308ba-f462-4e63-9248-26f059576764",
-    "brandName": "Fe Folic",
-    "activeIngredients": [
-      {
-        "name": "Sắt",
-        "strength": ""
-      },
-      {
-        "name": "Folic acid",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nang",
-    "registrationNo": "VNA-4274-01"
-  },
-  {
     "id": "a85317bf-1686-4e1e-85fb-979e50014e58",
     "brandName": "Cepmaxlox 200",
     "activeIngredients": [
@@ -34953,30 +34634,6 @@
     ],
     "dosageForm": "Viên nén",
     "registrationNo": "VD-23542-15"
-  },
-  {
-    "id": "485579e5-1ad9-4c20-b6b8-15b870607c46",
-    "brandName": "Britop Bharat",
-    "activeIngredients": [
-      {
-        "name": "Dexamethasone",
-        "strength": "5mg"
-      }
-    ],
-    "dosageForm": "Dung dịch nhỏ mắt",
-    "registrationNo": "VN-19353-15"
-  },
-  {
-    "id": "3350855a-707c-4cff-ada7-b5e06a0623d2",
-    "brandName": "Paracetamol 500mg",
-    "activeIngredients": [
-      {
-        "name": "Paracetamol",
-        "strength": "500mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VD-5340-08"
   },
   {
     "id": "4d1b5275-fc62-4cac-96ad-2b57b78aec4c",
@@ -35473,26 +35130,6 @@
     "registrationNo": "VN-17385-13"
   },
   {
-    "id": "70606219-c060-4471-9f84-09f059fcb6a9",
-    "brandName": "Rataf",
-    "activeIngredients": [
-      {
-        "name": "Paracetamol",
-        "strength": "500 mg"
-      },
-      {
-        "name": "Dextromethorphan",
-        "strength": "15 mg"
-      },
-      {
-        "name": "Loratadine",
-        "strength": "5 mg"
-      }
-    ],
-    "dosageForm": "",
-    "registrationNo": "VD-10840-10"
-  },
-  {
     "id": "d39fd581-0e22-42c7-9582-3939fb88576e",
     "brandName": "Pharmox IMP 500 mg",
     "activeIngredients": [
@@ -35771,18 +35408,6 @@
     ],
     "dosageForm": "Viên nén bao phim",
     "registrationNo": "VD-26098-17"
-  },
-  {
-    "id": "873acb9b-e2d0-445a-8b60-f8438c247aeb",
-    "brandName": "Air X",
-    "activeIngredients": [
-      {
-        "name": "Simethicone",
-        "strength": "80mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VN-7831-03"
   },
   {
     "id": "57a47184-2802-4ae6-9cd3-b1e679822002",
@@ -42697,18 +42322,6 @@
     "registrationNo": "VN-6135-08"
   },
   {
-    "id": "09568d7a-d5e0-4a87-afe3-252f54a69488",
-    "brandName": "Tobramycin 80mg/2ml",
-    "activeIngredients": [
-      {
-        "name": "Tobramycin",
-        "strength": "dưới dạng tobramycin sulfat"
-      }
-    ],
-    "dosageForm": "Dung dịch tiêm",
-    "registrationNo": "VD-28673-18"
-  },
-  {
     "id": "916247dd-cc61-4bb8-bb9a-5ea8b66f51d6",
     "brandName": "Cetraxal",
     "activeIngredients": [
@@ -44953,18 +44566,6 @@
     "registrationNo": "VD-13153-10"
   },
   {
-    "id": "a1b5b7f8-ba27-4fd4-9145-1c74309ed43c",
-    "brandName": "Rotundin 30",
-    "activeIngredients": [
-      {
-        "name": "Rotundin",
-        "strength": "30mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VD-22913-15"
-  },
-  {
     "id": "95e572fc-8d29-4dcb-90a0-52581a0f767f",
     "brandName": "Zlatko-50",
     "activeIngredients": [
@@ -46749,18 +46350,6 @@
     "registrationNo": "VN-16095-12"
   },
   {
-    "id": "cc914668-2c99-4375-abad-4553fb061038",
-    "brandName": "Forxiga",
-    "activeIngredients": [
-      {
-        "name": "Dapagliflozin",
-        "strength": "dưới dạng Dapagliflozin propanediol monohydrat"
-      }
-    ],
-    "dosageForm": "Viên nén bao phim",
-    "registrationNo": "VN3-38-18"
-  },
-  {
     "id": "cf07b8d8-294f-4fdc-aacc-c617b63f62e9",
     "brandName": "Furosol Danapha",
     "activeIngredients": [
@@ -47735,18 +47324,6 @@
     "registrationNo": "VD-20807-14"
   },
   {
-    "id": "4ed7eb24-0386-4ded-b478-9987e22bd283",
-    "brandName": "Human Albumin",
-    "activeIngredients": [
-      {
-        "name": "Albumin",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Thuốc tiêm-200g/l",
-    "registrationNo": "VN-0663-06"
-  },
-  {
     "id": "3b91bd7b-b780-4bed-bea4-2403e01babd6",
     "brandName": "Olavex 10",
     "activeIngredients": [
@@ -48337,18 +47914,6 @@
     ],
     "dosageForm": "hộp 1 lọ 10 ml dung dịch nhỏ mũi",
     "registrationNo": "VD-14277-11"
-  },
-  {
-    "id": "bcc087d2-e5a4-4143-8565-223998ce201c",
-    "brandName": "Daehwa almetamin tab.",
-    "activeIngredients": [
-      {
-        "name": "Dexchlorpheniramine",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VN-15406-12"
   },
   {
     "id": "f1c8995e-3f39-47dc-ab37-f4c793aa4fd8",
@@ -50144,18 +49709,6 @@
     "registrationNo": "VN-21018-18"
   },
   {
-    "id": "782ee498-4afe-44aa-bdbb-25ca0f97b481",
-    "brandName": "Prazone-S 2.0g",
-    "activeIngredients": [
-      {
-        "name": "Sulbactam",
-        "strength": "dưới dạng sulbactam natri"
-      }
-    ],
-    "dosageForm": "Bột pha tiêm",
-    "registrationNo": "VN-18288-14"
-  },
-  {
     "id": "8447b87d-64c8-404c-be1f-12ed16e4a03b",
     "brandName": "A.T Ambroxol",
     "activeIngredients": [
@@ -51698,18 +51251,6 @@
     "registrationNo": "VD-25138-16"
   },
   {
-    "id": "cb46b6f8-4ea0-4f72-b15d-2bcce224f3c2",
-    "brandName": "Daxas",
-    "activeIngredients": [
-      {
-        "name": "Roflumilast",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nén bao phim",
-    "registrationNo": "VN2-63-13"
-  },
-  {
     "id": "35726892-e319-4499-b57f-8846d5abc9c2",
     "brandName": "Ednyt 5mg",
     "activeIngredients": [
@@ -52466,13 +52007,6 @@
     "registrationNo": "VNB-1171-03"
   },
   {
-    "id": "593388b1-3f1f-49f2-9488-865388a537b7",
-    "brandName": "Reamberin",
-    "activeIngredients": [],
-    "dosageForm": "Dung dịch truyền",
-    "registrationNo": "VN-8181-04"
-  },
-  {
     "id": "7bedd5d3-521a-4a35-8497-aafbf519ccb8",
     "brandName": "Alphachymotrypsin 4200IU TV.Pharm",
     "activeIngredients": [
@@ -52507,18 +52041,6 @@
     ],
     "dosageForm": "Viên nén bao phim",
     "registrationNo": "VD-24770-16"
-  },
-  {
-    "id": "eb2f6242-10f0-48e1-bc33-c869c5da111d",
-    "brandName": "Vinpocetin 5mg",
-    "activeIngredients": [
-      {
-        "name": "Vinpocetine",
-        "strength": "5mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VNA-0291-02"
   },
   {
     "id": "eeaca791-aa25-41a5-bfa6-d3302a4ade0f",
@@ -57959,18 +57481,6 @@
     "registrationNo": "VD-29140-18"
   },
   {
-    "id": "d92a183c-bfc0-4cc6-bb2c-d4cb41845844",
-    "brandName": "Cimetidin 200mg",
-    "activeIngredients": [
-      {
-        "name": "Cimetidine",
-        "strength": "200mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": ""
-  },
-  {
     "id": "e95472b0-05e0-4f21-a21c-e07617fdcc6d",
     "brandName": "Immulimus 0,03%",
     "activeIngredients": [
@@ -60927,18 +60437,6 @@
     "registrationNo": "VD-20599-14"
   },
   {
-    "id": "6465c311-06e6-4429-a1e9-a65fd8cfab6b",
-    "brandName": "Montelukast 10 mg",
-    "activeIngredients": [
-      {
-        "name": "Montelukast",
-        "strength": "10mg"
-      }
-    ],
-    "dosageForm": "hộp 4 vỉ x 7 viên nén bao phim",
-    "registrationNo": "VD-13795-11"
-  },
-  {
     "id": "c92a7da6-8e06-44b5-a512-8c5fe8d6e480",
     "brandName": "Zopiclone Tablets 7.5mg",
     "activeIngredients": [
@@ -61676,22 +61174,6 @@
     ],
     "dosageForm": "Dung dịch tiêm tĩnh mạch",
     "registrationNo": "VN-6804-02"
-  },
-  {
-    "id": "50c98300-11e7-4a88-a74d-f9f418b3617d",
-    "brandName": "Para-codein 10",
-    "activeIngredients": [
-      {
-        "name": "Paracetamol",
-        "strength": ""
-      },
-      {
-        "name": "Codeine",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VNA-3832-00"
   },
   {
     "id": "64e86bae-ff58-4394-9f81-a86028c3008f",
@@ -68781,18 +68263,6 @@
     "registrationNo": "VD-16853-12"
   },
   {
-    "id": "d9fd5447-cd36-4b58-9c96-8643af78110c",
-    "brandName": "Desloratadin",
-    "activeIngredients": [
-      {
-        "name": "Desloratadine",
-        "strength": "5mg"
-      }
-    ],
-    "dosageForm": "Viên nén bao phim",
-    "registrationNo": "VD-23482-15"
-  },
-  {
     "id": "a75b6113-d9bf-4bd5-be6a-bfc7c4776608",
     "brandName": "Simelox",
     "activeIngredients": [
@@ -71140,18 +70610,6 @@
     "registrationNo": "VN-22910-21"
   },
   {
-    "id": "460348da-fd0e-45ef-a0a3-d21a192a4fd5",
-    "brandName": "Effer Paralmax - 500mg",
-    "activeIngredients": [
-      {
-        "name": "Paracetamol",
-        "strength": "500mg"
-      }
-    ],
-    "dosageForm": "Viên sủi",
-    "registrationNo": ""
-  },
-  {
     "id": "25e3cce6-0b2d-4688-875b-50513c55c6d5",
     "brandName": "Fordamet 1g Medochemie",
     "activeIngredients": [
@@ -71386,18 +70844,6 @@
     ],
     "dosageForm": "Viên nén bao phim",
     "registrationNo": "VN-19078-15"
-  },
-  {
-    "id": "6e22bf06-e59f-4e95-89cc-f3386b75c9d8",
-    "brandName": "Rotundin - 30 mg",
-    "activeIngredients": [
-      {
-        "name": "Rotundin",
-        "strength": "30 mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VD-20927-14"
   },
   {
     "id": "61caabb6-540d-472b-bd71-378dbee36e7d",
@@ -73792,18 +73238,6 @@
     "registrationNo": "VNB-0464-03"
   },
   {
-    "id": "6d30037e-a41f-4c9a-a586-98aa6afdee10",
-    "brandName": "R-Cin 300",
-    "activeIngredients": [
-      {
-        "name": "Rifampicin",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nang",
-    "registrationNo": "VN-7622-09"
-  },
-  {
     "id": "9330d6a4-bbcc-4fb1-871a-e61630722100",
     "brandName": "Aminic",
     "activeIngredients": [],
@@ -75129,18 +74563,6 @@
     "registrationNo": "VD-26108-17"
   },
   {
-    "id": "30e15d36-1e2f-4483-8457-b087ceb5b747",
-    "brandName": "Gemapaxane",
-    "activeIngredients": [
-      {
-        "name": "Enoxaparin",
-        "strength": "Mỗi viờn chứa: Calci"
-      }
-    ],
-    "dosageForm": "Dung dịch tiêm",
-    "registrationNo": "VN-16313-13"
-  },
-  {
     "id": "b39e488f-89cb-4e96-bed8-d29a92541250",
     "brandName": "Fenbrat 100mg Mebiphar",
     "activeIngredients": [
@@ -75211,22 +74633,6 @@
     ],
     "dosageForm": "Viên nén bao phim",
     "registrationNo": "893100167726"
-  },
-  {
-    "id": "751c452e-888c-49f8-ade0-320eb1b321f5",
-    "brandName": "Cotrim stada forte",
-    "activeIngredients": [
-      {
-        "name": "Sulfamethoxazole",
-        "strength": ""
-      },
-      {
-        "name": "Trimethoprim",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VNB-0933-01"
   },
   {
     "id": "5e8b27d1-7c24-4790-9295-16e43c3c29c9",
@@ -79667,18 +79073,6 @@
     "activeIngredients": [],
     "dosageForm": "Viên nang cứng",
     "registrationNo": "VD-29745-18"
-  },
-  {
-    "id": "59324fcb-7255-4171-9470-d1d4b575fcfa",
-    "brandName": "Oxytocin 5IU",
-    "activeIngredients": [
-      {
-        "name": "Oxytocin",
-        "strength": "5IU"
-      }
-    ],
-    "dosageForm": "Dung dịch tiêm",
-    "registrationNo": "VD-2051-06"
   },
   {
     "id": "f359ae3c-d1c5-47a7-8a5d-838e8dba1149",
@@ -84727,18 +84121,6 @@
     "registrationNo": "VN1-689-12"
   },
   {
-    "id": "43ce0fce-7c21-4966-94e2-1addcd99dea7",
-    "brandName": "AcezinDHG 5 - Alimemazin tartrat DHG Pharma",
-    "activeIngredients": [
-      {
-        "name": "Alimemazine",
-        "strength": "5mg"
-      }
-    ],
-    "dosageForm": "Viên nén bao phim",
-    "registrationNo": "VD-22364-15"
-  },
-  {
     "id": "dfe9700b-b997-47e8-acb0-07112b33e4f4",
     "brandName": "Atigluco 500",
     "activeIngredients": [
@@ -84787,18 +84169,6 @@
     ],
     "dosageForm": "Viên nén bao phim",
     "registrationNo": "VD-20408-14"
-  },
-  {
-    "id": "455a83dd-4196-42f5-b460-2e88d9565412",
-    "brandName": "Lupilopram",
-    "activeIngredients": [
-      {
-        "name": "Escitalopram",
-        "strength": "dưới dạng Escitalopram oxalat"
-      }
-    ],
-    "dosageForm": "Viên nén bao phim",
-    "registrationNo": "VN-18929-15"
   },
   {
     "id": "9336f141-d14a-4e04-8f7a-cc6ce4d21d04",
@@ -85320,13 +84690,6 @@
     ],
     "dosageForm": "Viên nén",
     "registrationNo": "VD-4984-08"
-  },
-  {
-    "id": "a82a957e-bc8d-4bfc-8649-dfc3cc4c7d06",
-    "brandName": "Natri bicarbonat 500mg Bidiphar",
-    "activeIngredients": [],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VD-28708-18"
   },
   {
     "id": "ad8bd01e-5d41-45a8-bafb-df94b237ac18",
@@ -88855,18 +88218,6 @@
     "registrationNo": "VN-15627-12"
   },
   {
-    "id": "fcaf68b6-3b05-4fec-b63e-c71e310a60d4",
-    "brandName": "Ceftriaxone 1g",
-    "activeIngredients": [
-      {
-        "name": "Ceftriaxone",
-        "strength": "1g"
-      }
-    ],
-    "dosageForm": "Thuốc bột pha tiêm",
-    "registrationNo": "VD-24027-15"
-  },
-  {
     "id": "1b1d0449-d540-4e40-bdb5-127b4dab6c5d",
     "brandName": "Propylthiouracil 50mg Dược phẩm Hà Nội",
     "activeIngredients": [
@@ -89630,18 +88981,6 @@
     ],
     "dosageForm": "Viên nén bao phim",
     "registrationNo": ""
-  },
-  {
-    "id": "85ac78a2-7af3-49b8-8a75-53a7004155d8",
-    "brandName": "Ibuprofen 400mg",
-    "activeIngredients": [
-      {
-        "name": "Ibuprofen",
-        "strength": "400mg"
-      }
-    ],
-    "dosageForm": "Viên nén bao phim",
-    "registrationNo": "VNA-3678-00"
   },
   {
     "id": "afd4130a-be07-4042-8733-ad323cd4ec51",
@@ -91137,22 +90476,6 @@
     "registrationNo": "840110524324"
   },
   {
-    "id": "0eccb763-fac9-4296-90ad-2355d26d326d",
-    "brandName": "Calcium Softgel",
-    "activeIngredients": [
-      {
-        "name": "Calcium Carbonate",
-        "strength": ""
-      },
-      {
-        "name": "Vitamin D",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nang mềm",
-    "registrationNo": "VD-1904-06"
-  },
-  {
     "id": "9f1f9560-fe80-4c2b-a699-8b7ae460e191",
     "brandName": "Fencedol Vacopharm",
     "activeIngredients": [
@@ -91773,18 +91096,6 @@
     ],
     "dosageForm": "Thuốc bột pha dung dịch tiêm truyền",
     "registrationNo": "VN-21008-18"
-  },
-  {
-    "id": "180ebf2d-700c-422f-a762-d13602292a2e",
-    "brandName": "Levothyroxine",
-    "activeIngredients": [
-      {
-        "name": "Levothyroxine",
-        "strength": "01mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VN-7617-03"
   },
   {
     "id": "e8e4701f-f67b-43df-9c57-b86a732bd7ed",
@@ -92557,22 +91868,6 @@
     ],
     "dosageForm": "Bột rà miệng",
     "registrationNo": "893100200124"
-  },
-  {
-    "id": "6ac9a35b-99ec-4e30-955e-025e5abf9ad0",
-    "brandName": "Newgenasada cream 10g",
-    "activeIngredients": [
-      {
-        "name": "Gentamicin",
-        "strength": ""
-      },
-      {
-        "name": "Clotrimazole",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Kem bôi da",
-    "registrationNo": "VN-19571-16"
   },
   {
     "id": "551164d2-9cb6-4396-bd09-884872cffa8f",
@@ -93904,18 +93199,6 @@
     "registrationNo": "893110145523"
   },
   {
-    "id": "d97cd67e-889a-4dca-8b2b-b9c02048c8b3",
-    "brandName": "Hồ nước",
-    "activeIngredients": [
-      {
-        "name": "Zinc oxide",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Hỗn dịch dùng ngoài",
-    "registrationNo": "VD-20492-14"
-  },
-  {
     "id": "3c0a5083-eb84-447d-9e5c-0ed3eae97f09",
     "brandName": "Hypergold",
     "activeIngredients": [
@@ -94126,18 +93409,6 @@
     ],
     "dosageForm": "Viên nén bao phim",
     "registrationNo": "VD-30627-18"
-  },
-  {
-    "id": "6c1f5cd6-3af6-40f9-9290-a280f7af49fb",
-    "brandName": "Kali clorid 10% 1g/10 ml Vinphaco",
-    "activeIngredients": [
-      {
-        "name": "Potassium",
-        "strength": "5ml"
-      }
-    ],
-    "dosageForm": "Dung dịch tiêm",
-    "registrationNo": "893110375223"
   },
   {
     "id": "a1dd314f-f0fa-4701-bd29-ae2a760fda4e",
@@ -96281,18 +95552,6 @@
     "registrationNo": "VD-22822-15"
   },
   {
-    "id": "65f7b052-193b-47d2-b8bf-e90082b6a6a3",
-    "brandName": "L CysTine 500mg",
-    "activeIngredients": [
-      {
-        "name": "L-cystine",
-        "strength": "500mg"
-      }
-    ],
-    "dosageForm": "Viên nang mềm",
-    "registrationNo": "VNB-2753-05"
-  },
-  {
     "id": "dfc1326a-6043-4ae3-87fa-123c67f1c259",
     "brandName": "Pimenem 1g",
     "activeIngredients": [
@@ -96952,18 +96211,6 @@
     "registrationNo": "VN-7295-03"
   },
   {
-    "id": "c2c8d077-d511-4c7d-9f33-fd2d3509c1ee",
-    "brandName": "Fluopas",
-    "activeIngredients": [
-      {
-        "name": "Fluocinolon acetonid",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Thuốc mỡ bôi da",
-    "registrationNo": "VD-24843-16"
-  },
-  {
     "id": "034478dc-7a13-41bc-898f-22d441527afa",
     "brandName": "Lorfact-D",
     "activeIngredients": [
@@ -97226,18 +96473,6 @@
     ],
     "dosageForm": "Viên nang gelatin cứng",
     "registrationNo": "VN-15525-12"
-  },
-  {
-    "id": "c4a1f667-a995-4f20-bf3b-9bc49283e2d6",
-    "brandName": "Meropenem/Anfarm",
-    "activeIngredients": [
-      {
-        "name": "Meropenem",
-        "strength": "dưới dạng Meropenem trihydrat"
-      }
-    ],
-    "dosageForm": "Bột pha tiêm truyền",
-    "registrationNo": "VN-20408-17"
   },
   {
     "id": "5eab200c-b00c-4944-86ff-f6f4bd3643ac",
@@ -99456,18 +98691,6 @@
     "registrationNo": "VN-18265-14"
   },
   {
-    "id": "2adfa9ef-d616-4239-b2cd-f883abcb98aa",
-    "brandName": "Acid mefenamic 250mg",
-    "activeIngredients": [
-      {
-        "name": "Mefenamic acid",
-        "strength": "250mg"
-      }
-    ],
-    "dosageForm": "Viên nang",
-    "registrationNo": "VNA-3859-00"
-  },
-  {
     "id": "0256f817-96fe-4a23-8071-ba5db82a2e8f",
     "brandName": "Não đắc sinh cerinpas",
     "activeIngredients": [
@@ -100369,18 +99592,6 @@
     "registrationNo": "VD-30640-18"
   },
   {
-    "id": "473771a8-9817-422a-84f2-1f3f2929cacf",
-    "brandName": "Natri clorid 0,9%",
-    "activeIngredients": [
-      {
-        "name": "Natri chloride",
-        "strength": "10ml"
-      }
-    ],
-    "dosageForm": "Thuốc nhỏ mắt",
-    "registrationNo": ""
-  },
-  {
     "id": "060dcc25-aca5-4510-afec-a08783195a85",
     "brandName": "Simloxyd",
     "activeIngredients": [
@@ -101188,18 +100399,6 @@
     ],
     "dosageForm": "Viên nén",
     "registrationNo": "VN-22201-19"
-  },
-  {
-    "id": "9c6753ae-b0f3-4995-ba18-472b8efa7b12",
-    "brandName": "DexpanThenol 5%",
-    "activeIngredients": [
-      {
-        "name": "Dexpanthenol",
-        "strength": "10g"
-      }
-    ],
-    "dosageForm": "Thuốc mỡ bôi da",
-    "registrationNo": ""
   },
   {
     "id": "5870afe6-9c4e-4114-9398-8fc8423667c3",
@@ -102389,18 +101588,6 @@
     ],
     "dosageForm": "Viên nang",
     "registrationNo": "893110241300"
-  },
-  {
-    "id": "a0f35903-319c-4cd8-a7ce-70996a2ca323",
-    "brandName": "Diacerein",
-    "activeIngredients": [
-      {
-        "name": "Diacerein",
-        "strength": "50mg"
-      }
-    ],
-    "dosageForm": "Viên nang cứng",
-    "registrationNo": "VD-23376-15"
   },
   {
     "id": "6bae0a2e-cbae-41c6-ae5b-df549a3108e9",
@@ -104030,18 +103217,6 @@
     ],
     "dosageForm": "Viên nén",
     "registrationNo": "893100313200"
-  },
-  {
-    "id": "500f353b-1431-4413-a685-b2a6e77b078d",
-    "brandName": "Timolol 0,5%",
-    "activeIngredients": [
-      {
-        "name": "Timolol",
-        "strength": "dưới dạng Timolol maleat"
-      }
-    ],
-    "dosageForm": "Dung dịch nhỏ mắt",
-    "registrationNo": "VD-24234-16"
   },
   {
     "id": "adc33292-33b0-4f00-b2f3-25d9d9ba38db",
@@ -107343,13 +106518,6 @@
     ],
     "dosageForm": "Viên nén bao phim",
     "registrationNo": "VN-20791-17"
-  },
-  {
-    "id": "2bb8cc6d-7df2-4632-ac05-a9f7f7f86ad9",
-    "brandName": "Paciflam",
-    "activeIngredients": [],
-    "dosageForm": "Dung dịch tiêm",
-    "registrationNo": "VN-20432-17"
   },
   {
     "id": "011d9231-6f25-4f8b-86f9-52a255ccdeb8",
@@ -112641,18 +111809,6 @@
     "registrationNo": "VD-20089-13"
   },
   {
-    "id": "95f25f77-b786-4bb0-942e-a69aeaa6477c",
-    "brandName": "Nitromint",
-    "activeIngredients": [
-      {
-        "name": "Nitroglycerin",
-        "strength": "04mg/liều"
-      }
-    ],
-    "dosageForm": "Dung dịch phun mù",
-    "registrationNo": "VN-5441-01"
-  },
-  {
     "id": "6fe94bd7-d36f-4eb0-8e14-8ab7f7137bd9",
     "brandName": "Zycel 100",
     "activeIngredients": [
@@ -117376,18 +116532,6 @@
     "registrationNo": "VN-5037-10"
   },
   {
-    "id": "a2d8fcf7-2a12-48b3-80ac-030351defe48",
-    "brandName": "Femoston conti 1mg/5mg",
-    "activeIngredients": [
-      {
-        "name": "Dydrogesterone",
-        "strength": "1mg"
-      }
-    ],
-    "dosageForm": "Viên nén bao phim",
-    "registrationNo": "VN-5645-10"
-  },
-  {
     "id": "7e20db64-7c43-4b0c-9e86-267c512e7548",
     "brandName": "Thanh can sát độc hoàn",
     "activeIngredients": [
@@ -118020,18 +117164,6 @@
     "registrationNo": "VN-11896-11"
   },
   {
-    "id": "50e2a4ed-e2b5-4c91-ac34-ee1284512ab6",
-    "brandName": "Diacerein",
-    "activeIngredients": [
-      {
-        "name": "Diacerein",
-        "strength": "50mg"
-      }
-    ],
-    "dosageForm": "Viên nang cứng",
-    "registrationNo": "VD-21915-14"
-  },
-  {
     "id": "9e5a1a72-d2ef-499c-a74e-40732dc3de08",
     "brandName": "Sastan 25",
     "activeIngredients": [
@@ -118170,18 +117302,6 @@
     ],
     "dosageForm": "Thuốc hít định liều dạng phun mù",
     "registrationNo": "VN-20170-16"
-  },
-  {
-    "id": "1a8b4189-c61a-45a3-80f7-84e97b03fabe",
-    "brandName": "Glucophage 850mg Merck",
-    "activeIngredients": [
-      {
-        "name": "Metformin",
-        "strength": "850mg"
-      }
-    ],
-    "dosageForm": "Viên bao phim",
-    "registrationNo": "300110016224"
   },
   {
     "id": "8612012c-0d3f-4541-8cf8-56ae5467e338",
@@ -120638,18 +119758,6 @@
     "registrationNo": "VN-10547-10"
   },
   {
-    "id": "5b444486-691b-4318-b36c-23d57b8c6ae9",
-    "brandName": "Androcur 50mg Bayer",
-    "activeIngredients": [
-      {
-        "name": "Cyproterone",
-        "strength": "50mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VN-18165-14"
-  },
-  {
     "id": "28075b8b-ecfc-4031-9bc9-150dec52495f",
     "brandName": "Crasbel Soft Capsule Kolmar Pharma",
     "activeIngredients": [
@@ -122543,18 +121651,6 @@
     "registrationNo": "VN-19859-16"
   },
   {
-    "id": "1df312c9-2b9e-452a-809f-8bfd87c9cce0",
-    "brandName": "Pizulen",
-    "activeIngredients": [
-      {
-        "name": "Meropenem",
-        "strength": "dưới dạng Meropenem trihydrat"
-      }
-    ],
-    "dosageForm": "thuốc bột pha tiêm hoặc tiêm truyền",
-    "registrationNo": "VN-16249-13"
-  },
-  {
     "id": "5957d1db-cf3b-47c0-82a1-70fc006b4917",
     "brandName": "Acabrose Tablets 50mg",
     "activeIngredients": [
@@ -123570,18 +122666,6 @@
     "activeIngredients": [],
     "dosageForm": "Thuốc nước",
     "registrationNo": "VD-30828-18"
-  },
-  {
-    "id": "bfb77cc0-d25d-409c-9c8a-beeebd729d82",
-    "brandName": "Clindamycin",
-    "activeIngredients": [
-      {
-        "name": "Clindamycin",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nang-300mg Clindamycin",
-    "registrationNo": "VN-1644-06"
   },
   {
     "id": "9b7f6121-486f-411f-8be1-c951072094e3",
@@ -125619,18 +124703,6 @@
     "registrationNo": "VD-30020-18"
   },
   {
-    "id": "2101c56a-177b-44f2-96b8-e6d19bb92433",
-    "brandName": "Priligy 30 mg",
-    "activeIngredients": [
-      {
-        "name": "Dapoxetine",
-        "strength": "dưới dạng Dapoxetine HCl"
-      }
-    ],
-    "dosageForm": "Viên nén bao phim",
-    "registrationNo": "VN2-145-13"
-  },
-  {
     "id": "0cdc3c12-74cc-44cd-bcfc-6034338024bb",
     "brandName": "Vindermen",
     "activeIngredients": [
@@ -126400,18 +125472,6 @@
     ],
     "dosageForm": "Viên nén",
     "registrationNo": "VN-10011-10"
-  },
-  {
-    "id": "d0e006d8-df45-45a0-84cf-43bba3ced7b2",
-    "brandName": "Sathom",
-    "activeIngredients": [
-      {
-        "name": "Sorbitol",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Gel thụt trực tràng",
-    "registrationNo": "VD-22623-15"
   },
   {
     "id": "b6f1001e-eae7-4831-af72-b404840be9af",
@@ -127784,18 +126844,6 @@
     "registrationNo": "VD-22716-15"
   },
   {
-    "id": "517f6088-b4ed-4770-be58-2ea11bf1f137",
-    "brandName": "Vastanic 20",
-    "activeIngredients": [
-      {
-        "name": "Lovastatin",
-        "strength": "20 mg"
-      }
-    ],
-    "dosageForm": "",
-    "registrationNo": "VD-10848-10"
-  },
-  {
     "id": "f14459b3-2f2b-4770-bd30-6ae3e6ebb0f5",
     "brandName": "Pymetphage 1000 Pymepharco",
     "activeIngredients": [
@@ -128341,26 +127389,6 @@
     ],
     "dosageForm": "Bột pha dung dịch uống",
     "registrationNo": "VN2-144-13"
-  },
-  {
-    "id": "5d7b665c-59e4-450d-91ad-3c655a041ec1",
-    "brandName": "Rhumenol D500 Mebiphar",
-    "activeIngredients": [
-      {
-        "name": "Paracetamol",
-        "strength": ""
-      },
-      {
-        "name": "Pseudoephedrine",
-        "strength": ""
-      },
-      {
-        "name": "Dextromethorphan",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nén dài bao phim",
-    "registrationNo": "VN-16900-13"
   },
   {
     "id": "ee6e6755-0004-4692-ba3e-8da56cfd81c8",
@@ -130136,22 +129164,6 @@
     ],
     "dosageForm": "Viên nén bao tan trong ruột 20mg",
     "registrationNo": "VN-15399-12"
-  },
-  {
-    "id": "4b0a09ad-4f51-42b2-abb6-1818c00a2449",
-    "brandName": "Supetrim",
-    "activeIngredients": [
-      {
-        "name": "Sulfamethoxazole",
-        "strength": "400 mg"
-      },
-      {
-        "name": "Trimethoprim",
-        "strength": "80mg"
-      }
-    ],
-    "dosageForm": "Thuốc bột uống",
-    "registrationNo": "VD-23491-15"
   },
   {
     "id": "35a87405-48a8-4893-92b6-c0e080bee015",
@@ -133782,18 +132794,6 @@
     "registrationNo": "VD-10805-10"
   },
   {
-    "id": "d08708e8-7473-4a21-88ef-5945064fd90f",
-    "brandName": "Amlodipine",
-    "activeIngredients": [
-      {
-        "name": "Amlodipine",
-        "strength": "5mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VN-6491-02"
-  },
-  {
     "id": "efadd1f6-ea3c-468c-86e3-ea1c0c22d8eb",
     "brandName": "Đại tràng- F Fito Pharma",
     "activeIngredients": [
@@ -134434,18 +133434,6 @@
     ],
     "dosageForm": "Hỗn dịch uống",
     "registrationNo": "893100268100"
-  },
-  {
-    "id": "5afe7f51-1f47-4730-ab11-9a09bed57de5",
-    "brandName": "Betamethason Medipharco dạng kem bôi da",
-    "activeIngredients": [
-      {
-        "name": "Betamethasone",
-        "strength": "2mg"
-      }
-    ],
-    "dosageForm": "Gel bôi da",
-    "registrationNo": "VD-28278-17"
   },
   {
     "id": "70fb8ac7-f287-442f-a5b2-316e6d5235df",
@@ -135334,22 +134322,6 @@
     ],
     "dosageForm": "Nguyên liệu",
     "registrationNo": "VN-8102-04"
-  },
-  {
-    "id": "cd5544d8-f673-4da0-a76c-bb2eebe3062b",
-    "brandName": "Magovite Medisun",
-    "activeIngredients": [
-      {
-        "name": "Magnesium",
-        "strength": ""
-      },
-      {
-        "name": "Vitamin B6",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nén bao phim",
-    "registrationNo": "VD-28443-17"
   },
   {
     "id": "c3f7cc35-c444-49cd-bada-c68732692754",
@@ -139159,18 +138131,6 @@
     "registrationNo": "VD-26124-17"
   },
   {
-    "id": "90c09859-b6ac-4afb-81d6-c36b5782132a",
-    "brandName": "Tobramycin ophthalmic solution USP",
-    "activeIngredients": [
-      {
-        "name": "Tobramycin",
-        "strength": "3mg/ml"
-      }
-    ],
-    "dosageForm": "Dung dịch nhỏ mắt-3mg/ml",
-    "registrationNo": "VN-3101-07"
-  },
-  {
     "id": "e32f05cb-7d1f-4a80-9594-3009eed9344a",
     "brandName": "Mediphylamin Siro 100ml",
     "activeIngredients": [],
@@ -142275,18 +141235,6 @@
     "registrationNo": "VN-6820-02"
   },
   {
-    "id": "de4c6fdb-c629-4490-90ad-b8ddeb8e5d09",
-    "brandName": "Clopheniramin 4mg",
-    "activeIngredients": [
-      {
-        "name": "Clorpheniramin",
-        "strength": "4mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": ""
-  },
-  {
     "id": "a09e1a88-92c4-4209-be0c-430958afffd2",
     "brandName": "Atropin sulfat 0,025mg/1ml",
     "activeIngredients": [
@@ -143116,18 +142064,6 @@
     "registrationNo": "VD-10044-10"
   },
   {
-    "id": "8da76839-e9ea-43f6-92f5-9ebeabbbe2d9",
-    "brandName": "Lidocain 40mg/2ml Vinphaco",
-    "activeIngredients": [
-      {
-        "name": "Lidocaine hydrochloride",
-        "strength": "0,04g/2ml"
-      }
-    ],
-    "dosageForm": "Dung dịch tiêm",
-    "registrationNo": "893110688924"
-  },
-  {
     "id": "e540e042-aed1-43cd-9229-a2f42c551d9d",
     "brandName": "Kwang Dong Wonbang Woohwang Chung Sim Won (Including Civet Instead of Musk)",
     "activeIngredients": [
@@ -143174,22 +142110,6 @@
     ],
     "dosageForm": "Viên hoàn",
     "registrationNo": "VN-15299-12"
-  },
-  {
-    "id": "8680f7ac-1c2e-479b-a65f-4938d4789810",
-    "brandName": "Dầu khuynh diệp OPC",
-    "activeIngredients": [
-      {
-        "name": "Eucalyptol",
-        "strength": ""
-      },
-      {
-        "name": "Camphor",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Dầu xoa",
-    "registrationNo": "VD-20453-14"
   },
   {
     "id": "5d86917c-1af7-44e9-b217-4a9c5e8c1603",
@@ -143784,18 +142704,6 @@
     "registrationNo": "VD-27324-17"
   },
   {
-    "id": "8091c596-5a49-4dd9-b720-29519e4ba149",
-    "brandName": "Epokine Prefilled injection 2000 Units/0.5ml",
-    "activeIngredients": [
-      {
-        "name": "Erythropoietin",
-        "strength": "0.5ml"
-      }
-    ],
-    "dosageForm": "Dung dịch tiêm-2000IU/0,5ml",
-    "registrationNo": "880410110624"
-  },
-  {
     "id": "f8524903-2210-4706-b5d0-fb745dd550f7",
     "brandName": "Morystale Capsule",
     "activeIngredients": [
@@ -144228,13 +143136,6 @@
     ],
     "dosageForm": "Viên hoàn cứng",
     "registrationNo": "VNA-4809-02"
-  },
-  {
-    "id": "24c4698c-f6d0-47a5-95c7-4d8c89edbc8c",
-    "brandName": "Phostaligel Nic",
-    "activeIngredients": [],
-    "dosageForm": "Hỗn dịch uống",
-    "registrationNo": "VD-23314-15"
   },
   {
     "id": "a1417017-9242-49b3-aec5-93e3785e15bc",
@@ -145684,18 +144585,6 @@
     "registrationNo": "893110445624"
   },
   {
-    "id": "157ba1d2-53a0-4503-8f6d-9e75ed81c239",
-    "brandName": "Efexor 75mg",
-    "activeIngredients": [
-      {
-        "name": "Venlafaxine",
-        "strength": "75mg"
-      }
-    ],
-    "dosageForm": "Viên nang giải phóng kéo dài",
-    "registrationNo": "VN-18976-15"
-  },
-  {
     "id": "4a51f822-3132-4894-9293-d49861aef612",
     "brandName": "Lisinopril Stada 20 mg",
     "activeIngredients": [
@@ -146485,18 +145374,6 @@
     ],
     "dosageForm": "Viên nén đặt âm đạo",
     "registrationNo": "VD-29918-18"
-  },
-  {
-    "id": "9df03c46-8658-4fd8-8f24-a2d4fa5d895c",
-    "brandName": "Meropenem 1g",
-    "activeIngredients": [
-      {
-        "name": "Meropenem",
-        "strength": "dưới dạng Meropenem trihydrat"
-      }
-    ],
-    "dosageForm": "Bột pha tiêm truyền tĩnh mạch",
-    "registrationNo": "VN-18195-14"
   },
   {
     "id": "5c8c3571-3ff5-4b8f-aa43-beaca0c72a73",
@@ -149205,30 +148082,6 @@
     "registrationNo": "VD-23912-15"
   },
   {
-    "id": "05a58729-01e1-4629-b5c4-480c7c975cd1",
-    "brandName": "Furosemid",
-    "activeIngredients": [
-      {
-        "name": "Furosemide",
-        "strength": "20mg"
-      }
-    ],
-    "dosageForm": "Dung dịch tiêm",
-    "registrationNo": "VD-22586-15"
-  },
-  {
-    "id": "7f712a5c-c9be-4163-9749-bcf091a4b625",
-    "brandName": "Astmodil",
-    "activeIngredients": [
-      {
-        "name": "Montelukast",
-        "strength": "dưới dạng Montelukast natri"
-      }
-    ],
-    "dosageForm": "Viên nén nhai",
-    "registrationNo": "VN-16883-13"
-  },
-  {
     "id": "7711a8da-9175-4523-9b2c-cb7fe102cbd9",
     "brandName": "Somazina 200mg/2ml Ferrer",
     "activeIngredients": [
@@ -151203,18 +150056,6 @@
     "registrationNo": "VN-11217-10"
   },
   {
-    "id": "1cfbe3b5-f177-4190-9bf0-5d7c209cc3e8",
-    "brandName": "Venlafaxine Stada 37,5mg",
-    "activeIngredients": [
-      {
-        "name": "Venlafaxine",
-        "strength": "37,5mg"
-      }
-    ],
-    "dosageForm": "Hộp 3 vỉ x 10 viên, hộp 6 vỉ x 10 viên nang cứng",
-    "registrationNo": "VD-14579-11"
-  },
-  {
     "id": "ef9b22a5-7fe4-4453-b8ab-790b8eb786c8",
     "brandName": "Laxan",
     "activeIngredients": [
@@ -151536,18 +150377,6 @@
     ],
     "dosageForm": "Viên bao đường",
     "registrationNo": "893110058000"
-  },
-  {
-    "id": "fa7446ff-97cf-425c-bd66-6f9aa45a9b10",
-    "brandName": "Benca IMP 500",
-    "activeIngredients": [
-      {
-        "name": "Mebendazole",
-        "strength": "500 mg"
-      }
-    ],
-    "dosageForm": "Viên nén nhai",
-    "registrationNo": "VD-27896-17"
   },
   {
     "id": "1977d4a5-e4dc-45c1-8a4b-521a78299c64",
@@ -152315,18 +151144,6 @@
     ],
     "dosageForm": "Viên nang",
     "registrationNo": "VD-21088-14"
-  },
-  {
-    "id": "b5aa98c2-1f74-442c-b985-4ec85b15ce17",
-    "brandName": "Furosemide",
-    "activeIngredients": [
-      {
-        "name": "Furosemide",
-        "strength": "20mg"
-      }
-    ],
-    "dosageForm": "Dung dịch tiêm",
-    "registrationNo": "VD-20854-14"
   },
   {
     "id": "74c38f2d-0533-475e-bd4c-f8f31173d7a3",
@@ -154416,18 +153233,6 @@
     "activeIngredients": [],
     "dosageForm": "Bột pha tiêm",
     "registrationNo": "VN-20047-16"
-  },
-  {
-    "id": "cd7dd93b-193c-4091-9584-f16e4092072d",
-    "brandName": "Terpin Zoat",
-    "activeIngredients": [
-      {
-        "name": "Terpin hydrat",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên bao đường",
-    "registrationNo": "VNB-4108-05"
   },
   {
     "id": "9eb7db5b-17cf-4624-902a-499166631627",
@@ -157090,7 +155895,7 @@
     "activeIngredients": [
       {
         "name": "Tobramycin",
-        "strength": "dưới dạng Tobramycin sulfat"
+        "strength": "3mg/ml"
       }
     ],
     "dosageForm": "Dung dịch nhỏ mắt",
@@ -157162,18 +155967,6 @@
     "activeIngredients": [],
     "dosageForm": "Viên bao đường",
     "registrationNo": "VNA-4811-02"
-  },
-  {
-    "id": "5f84b7ab-d09c-496a-a730-13578b01ca80",
-    "brandName": "Clobetasol 0,05%",
-    "activeIngredients": [
-      {
-        "name": "Clobetasol",
-        "strength": "30g"
-      }
-    ],
-    "dosageForm": "Kem bôi da",
-    "registrationNo": "VNA-1119-03"
   },
   {
     "id": "fd19b6e3-70ab-487c-89e9-62375e308616",
@@ -157350,18 +156143,6 @@
     ],
     "dosageForm": "Viên bao phim",
     "registrationNo": "VD-3531-07"
-  },
-  {
-    "id": "c4c328a2-9673-4dba-9887-72edb890379c",
-    "brandName": "Viên nén bao phim YSPPuIin",
-    "activeIngredients": [
-      {
-        "name": "Metoclopramide",
-        "strength": "10mg"
-      }
-    ],
-    "dosageForm": "Viên nén bao phim",
-    "registrationNo": "VN-19371-15"
   },
   {
     "id": "17e594ad-bbae-492a-86ce-356ef92af838",
@@ -157897,7 +156678,7 @@
         "strength": "50mg"
       }
     ],
-    "dosageForm": "",
+    "dosageForm": "Viên nén bao đường",
     "registrationNo": "VD-10024-10"
   },
   {
@@ -158422,18 +157203,6 @@
     "registrationNo": "VD-25800-16"
   },
   {
-    "id": "f0ac9e72-40e7-4bd6-ad67-eb0298087561",
-    "brandName": "Atenolol 50mg",
-    "activeIngredients": [
-      {
-        "name": "Atenolol",
-        "strength": "50mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VN-4990-07"
-  },
-  {
     "id": "dc6699cc-68ab-42bc-ab50-a459bbe71c1f",
     "brandName": "Huons Prothionamide tab. 250mg Huons",
     "activeIngredients": [
@@ -158855,18 +157624,6 @@
     ],
     "dosageForm": "Viên nén bao phim",
     "registrationNo": "VD-21017-14"
-  },
-  {
-    "id": "7227d1b9-6e37-4528-9748-e9e036945f31",
-    "brandName": "Vomina 50",
-    "activeIngredients": [
-      {
-        "name": "Dimenhydrinate",
-        "strength": "50 mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VD-20493-14"
   },
   {
     "id": "e2914c64-1baf-4175-96e4-6d272e199726",
@@ -162263,18 +161020,6 @@
     ],
     "dosageForm": "Viên nang",
     "registrationNo": "VN-5619-01"
-  },
-  {
-    "id": "701ea923-d97a-4f57-8d9e-202686770a4a",
-    "brandName": "Priligy 60 mg",
-    "activeIngredients": [
-      {
-        "name": "Dapoxetine",
-        "strength": "dưới dạng Dapoxetine HCl"
-      }
-    ],
-    "dosageForm": "Viên nén bao phim",
-    "registrationNo": "VN2-146-13"
   },
   {
     "id": "fa000c68-af5b-4c77-bfce-294788a4b6c2",
@@ -170006,18 +168751,6 @@
     "registrationNo": "VD-22725-15"
   },
   {
-    "id": "02c5214d-49f9-48c4-b610-b5cdca851a2d",
-    "brandName": "Advagraf",
-    "activeIngredients": [
-      {
-        "name": "Tacrolimus",
-        "strength": "dưới dạng Tacrolimus monohydrate"
-      }
-    ],
-    "dosageForm": "Viên nang cứng phóng thích kéo dài",
-    "registrationNo": "VN-16291-13"
-  },
-  {
     "id": "bc1c0432-6cd7-43c5-b85c-b6a140a915c5",
     "brandName": "Ampot-625",
     "activeIngredients": [
@@ -172792,18 +171525,6 @@
     "registrationNo": "VN-15901-12"
   },
   {
-    "id": "468ad76f-f94c-4a13-bf12-150050d4b79c",
-    "brandName": "Hyđan Thephaco",
-    "activeIngredients": [
-      {
-        "name": "Ngũ gia bì",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Hoàn cứng bao đường",
-    "registrationNo": "VD-23165-15"
-  },
-  {
     "id": "f8f4d1cf-4b5d-4890-a80e-443f6fce051b",
     "brandName": "Novomycine 0,75 M.IU Mekophar",
     "activeIngredients": [
@@ -174130,18 +172851,6 @@
     "registrationNo": "893110823524"
   },
   {
-    "id": "b91dd3ef-e7ac-49b9-9de7-3dd8164f74da",
-    "brandName": "Cinnarizin 25mg",
-    "activeIngredients": [
-      {
-        "name": "Cinnarizine",
-        "strength": "25mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VN-7781-03"
-  },
-  {
     "id": "7d165f3e-614a-4489-b50f-e8b7be787939",
     "brandName": "Medimax-F",
     "activeIngredients": [
@@ -175268,18 +173977,6 @@
     "registrationNo": "VN-4284-07"
   },
   {
-    "id": "65a5d6a9-8750-4f68-b72a-f6e902eca0c0",
-    "brandName": "Citysaam",
-    "activeIngredients": [
-      {
-        "name": "Citicoline",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Dung dịch tiêm/pha tiêm",
-    "registrationNo": "VN-16823-13"
-  },
-  {
     "id": "a020d4f5-08ce-4d40-ad0f-bf55581f15f0",
     "brandName": "Actifif-Nic USA - NIC",
     "activeIngredients": [
@@ -175942,18 +174639,6 @@
     "registrationNo": "VN-16780-13"
   },
   {
-    "id": "98d0c9cb-f31a-4961-8132-29e9d2a382f4",
-    "brandName": "lsonace Soft Capsule",
-    "activeIngredients": [
-      {
-        "name": "Isotretinoin",
-        "strength": "10mg"
-      }
-    ],
-    "dosageForm": "Viên nang mềm",
-    "registrationNo": "VN-20944-18"
-  },
-  {
     "id": "e48dfb96-8abd-4a59-8813-7ad7f6a24e67",
     "brandName": "Para-Api 250",
     "activeIngredients": [
@@ -176305,18 +174990,6 @@
     "registrationNo": "VN-7082-08"
   },
   {
-    "id": "b98abbe6-d0c9-46a4-9039-b6fbbae7cdeb",
-    "brandName": "Bluemin",
-    "activeIngredients": [
-      {
-        "name": "L-cystine",
-        "strength": "500mg"
-      }
-    ],
-    "dosageForm": "Viên nang mềm",
-    "registrationNo": "VD-30863-18"
-  },
-  {
     "id": "0702a8d1-59f7-4a8d-be29-5396a01fd3d5",
     "brandName": "Enafran 10",
     "activeIngredients": [
@@ -176559,18 +175232,6 @@
     ],
     "dosageForm": "Dung dịch đậm đặc pha tiêm truyền",
     "registrationNo": "VN-21270-18"
-  },
-  {
-    "id": "08df4e65-cd8c-4f10-8666-6160a2a59eb2",
-    "brandName": "Meloxicam - 7,5mg",
-    "activeIngredients": [
-      {
-        "name": "Meloxicam",
-        "strength": "7,5mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VD-5085-08"
   },
   {
     "id": "7919be5d-ab5f-4119-bd86-f6613c85b11d",
@@ -177075,13 +175736,6 @@
     "registrationNo": "VN-13718-11"
   },
   {
-    "id": "8047ca3a-b99a-4786-b786-70928c447731",
-    "brandName": "Oxy 10 Rohto-Mentholatum",
-    "activeIngredients": [],
-    "dosageForm": "Lotion bôi da",
-    "registrationNo": "893100222724"
-  },
-  {
     "id": "03232a94-a81a-4720-a091-2f36a0cc4e32",
     "brandName": "Meyerceti 10mg Meyer",
     "activeIngredients": [
@@ -177130,18 +175784,6 @@
     "registrationNo": "893110613424"
   },
   {
-    "id": "ccc2ee3d-e29a-4e56-8b09-22263e1fe047",
-    "brandName": "Cao lạc tiên Fito Pharma dạng cao lỏng",
-    "activeIngredients": [
-      {
-        "name": "Lạc tiên",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Cao lỏng",
-    "registrationNo": "VD-21758-14"
-  },
-  {
     "id": "b6741cbc-98b9-4827-bc1e-a6ff56195773",
     "brandName": "Doximpak 200",
     "activeIngredients": [
@@ -177176,18 +175818,6 @@
     ],
     "dosageForm": "Viên nén",
     "registrationNo": "VD-28807-18"
-  },
-  {
-    "id": "d972eb95-773d-4172-8adf-cc67aae68da7",
-    "brandName": "Cefoperazone Sodium Shandong Lukang Pharma",
-    "activeIngredients": [
-      {
-        "name": "Cefoperazone",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Bột pha tiêm-1g",
-    "registrationNo": "VN-18234-14"
   },
   {
     "id": "ca6b36f5-493f-4ee0-bf81-18d71ca4115a",
@@ -179138,18 +177768,6 @@
     "registrationNo": "VN-19035-15"
   },
   {
-    "id": "202d5614-a373-4180-93fa-1f79ce107dba",
-    "brandName": "Calciumgeral",
-    "activeIngredients": [
-      {
-        "name": "Vitamin D3",
-        "strength": "360ml"
-      }
-    ],
-    "dosageForm": "Hỗn dịch",
-    "registrationNo": "VNB-1015-01"
-  },
-  {
     "id": "022b9eea-0735-42d6-b6f5-887ce65bc789",
     "brandName": "Sendy",
     "activeIngredients": [
@@ -179291,18 +177909,6 @@
     ],
     "dosageForm": "Viên nén-8mg",
     "registrationNo": "VN-16416-13"
-  },
-  {
-    "id": "2e0951fd-3490-471e-9950-71822101ca23",
-    "brandName": "Dung dịch DEP",
-    "activeIngredients": [
-      {
-        "name": "Diethylphtalat",
-        "strength": "20ml"
-      }
-    ],
-    "dosageForm": "Dung dịch dùng ngoài",
-    "registrationNo": ""
   },
   {
     "id": "be99be1b-b0c5-413e-a279-97987f4e9fcb",
@@ -181228,18 +179834,6 @@
     "registrationNo": "VD-20129-13"
   },
   {
-    "id": "48e1ffc9-21db-43cc-91ab-2729bc62a450",
-    "brandName": "Salbutamol 2 mg",
-    "activeIngredients": [
-      {
-        "name": "Salbutamol",
-        "strength": "dưới dạng Salbutamol sulfat"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VD-23772-15"
-  },
-  {
     "id": "ce391345-910c-427b-a5a3-e4a8afe5e627",
     "brandName": "Rohapam",
     "activeIngredients": [
@@ -182514,18 +181108,6 @@
     ],
     "dosageForm": "Viên nén",
     "registrationNo": "VN-7090-02"
-  },
-  {
-    "id": "aab9f1a8-2f7c-40a5-9218-5582de8f03a4",
-    "brandName": "Etoposide",
-    "activeIngredients": [
-      {
-        "name": "Etoposide",
-        "strength": "20mg/ml"
-      }
-    ],
-    "dosageForm": "Dung dịch tiêm",
-    "registrationNo": "VN-5953-01"
   },
   {
     "id": "623fe35e-9248-4d8e-bd6e-11dc2b85f820",
@@ -184449,22 +183031,6 @@
     ],
     "dosageForm": "Thuốc tiêm",
     "registrationNo": "VN1-665-12"
-  },
-  {
-    "id": "bb261484-ae04-425d-bd4d-e0d154a70ddf",
-    "brandName": "Magnesi B6",
-    "activeIngredients": [
-      {
-        "name": "Magnesium",
-        "strength": ""
-      },
-      {
-        "name": "Vitamin B6",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nén dài",
-    "registrationNo": "VD-0135-06"
   },
   {
     "id": "b52e5c21-89df-4c3e-9e90-1c6fe9f4de27",
@@ -186442,18 +185008,6 @@
     "registrationNo": "VD-24093-16"
   },
   {
-    "id": "bac7461b-11a3-4fb8-a56d-50d25e5c33b1",
-    "brandName": "Furosemid",
-    "activeIngredients": [
-      {
-        "name": "Furosemide",
-        "strength": "10mg/ml"
-      }
-    ],
-    "dosageForm": "Dung dịch tiêm",
-    "registrationNo": "VN-5735-01"
-  },
-  {
     "id": "4723210e-428a-417d-a2fa-924b8b79b113",
     "brandName": "Sepy-O-200",
     "activeIngredients": [
@@ -186730,18 +185284,6 @@
     ],
     "dosageForm": "Viên nén bao phim",
     "registrationNo": "VN-15366-12"
-  },
-  {
-    "id": "810dcd7e-90b5-476f-9c4d-008fba2cd998",
-    "brandName": "Amlodipin - 5mg",
-    "activeIngredients": [
-      {
-        "name": "Amlodipine",
-        "strength": "5mg"
-      }
-    ],
-    "dosageForm": "Viên nang",
-    "registrationNo": "VD-5552-08"
   },
   {
     "id": "b64997ee-abd0-4a53-88f5-c11961d0c5eb",
@@ -187687,18 +186229,6 @@
     ],
     "dosageForm": "Dung dịch tiêm-0,2mg/ml",
     "registrationNo": "VN-0047-06"
-  },
-  {
-    "id": "81e2ea87-ef6c-442f-95a5-f72ad65b99a9",
-    "brandName": "Mepreson Powder for Injection",
-    "activeIngredients": [
-      {
-        "name": "Methylprednisolone",
-        "strength": "dưới dạng Methylprednisolone natri succinate"
-      }
-    ],
-    "dosageForm": "Bột pha tiêm bắp, tĩnh mạch",
-    "registrationNo": "VN-18551-14"
   },
   {
     "id": "31805802-d5af-4abc-836e-c521cd0758bd",
@@ -188799,50 +187329,6 @@
     ],
     "dosageForm": "Dung dịch tiêm",
     "registrationNo": "VN-5736-10"
-  },
-  {
-    "id": "84dfe0a4-08b5-428f-930e-f60a0b28fbcb",
-    "brandName": "Thiên môn cao",
-    "activeIngredients": [
-      {
-        "name": "Thiên môn đông",
-        "strength": ""
-      },
-      {
-        "name": "Bạc Hà",
-        "strength": ""
-      },
-      {
-        "name": "Thiên hoa phấn",
-        "strength": ""
-      },
-      {
-        "name": "Bạch Linh",
-        "strength": ""
-      },
-      {
-        "name": "Cát cánh",
-        "strength": ""
-      },
-      {
-        "name": "Trần bì",
-        "strength": ""
-      },
-      {
-        "name": "Tỳ bà diệp",
-        "strength": ""
-      },
-      {
-        "name": "Xuyên bối mẫu",
-        "strength": ""
-      },
-      {
-        "name": "Sài hồ",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "",
-    "registrationNo": ""
   },
   {
     "id": "5af875fa-a0d2-4afa-b6c5-594dd7756138",
@@ -190931,18 +189417,6 @@
     ],
     "dosageForm": "Dung dịch đậm đặc pha tiêm truyền",
     "registrationNo": "VN-16660-13"
-  },
-  {
-    "id": "666c9949-6b84-4d3e-9e6e-04c4f348c8a9",
-    "brandName": "Cefotaxime",
-    "activeIngredients": [
-      {
-        "name": "Cefotaxime",
-        "strength": "1g"
-      }
-    ],
-    "dosageForm": "Thuốc bột tiêm",
-    "registrationNo": "VD-1528-06"
   },
   {
     "id": "7b630df2-4e6e-45d9-ac0c-a138271c8d1b",
@@ -195331,22 +193805,6 @@
     "registrationNo": "VN-6648-08"
   },
   {
-    "id": "31cce79c-29f4-43a2-a138-84cb31ecc6f8",
-    "brandName": "Salmeflo",
-    "activeIngredients": [
-      {
-        "name": "Salmeterol",
-        "strength": "dưới dạng Salmeterol xinafoate"
-      },
-      {
-        "name": "Fluticasone",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nang chứa bột để hít",
-    "registrationNo": "VN-18354-14"
-  },
-  {
     "id": "c0795b21-1590-4c54-9311-5647c3309005",
     "brandName": "Rượu cấp cứu",
     "activeIngredients": [
@@ -195393,18 +193851,6 @@
     ],
     "dosageForm": "Viên nang cứng",
     "registrationNo": "VD-29220-18"
-  },
-  {
-    "id": "c398f11b-9988-49c8-8336-f239134e9b3f",
-    "brandName": "Loratadine",
-    "activeIngredients": [
-      {
-        "name": "Loratadine",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VN-4826-07"
   },
   {
     "id": "7e7fa2cf-335e-4f2f-aae3-db037531eb00",
@@ -195507,18 +193953,6 @@
     ],
     "dosageForm": "Kem bôi da",
     "registrationNo": "893110838624"
-  },
-  {
-    "id": "cf85c2e8-cb72-41da-ae8c-72f6d9a0f521",
-    "brandName": "Dong Do Calio",
-    "activeIngredients": [
-      {
-        "name": "Calcitriol",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nang mềm",
-    "registrationNo": "VD-15678-11"
   },
   {
     "id": "f0db2060-47b0-42a3-a137-f142428b8aca",
@@ -196588,18 +195022,6 @@
     ],
     "dosageForm": "Thuốc bột tiêm",
     "registrationNo": "VD-15830-11"
-  },
-  {
-    "id": "2e655aa0-e179-4579-82f3-b7f282fa4df8",
-    "brandName": "Tamiflu",
-    "activeIngredients": [
-      {
-        "name": "Oseltamivir phosphate",
-        "strength": "30mg oseltamivir"
-      }
-    ],
-    "dosageForm": "Viên nang cứng",
-    "registrationNo": "VN-16261-13"
   },
   {
     "id": "38616c00-871d-462b-8647-68413f6c3258",
@@ -198516,18 +196938,6 @@
     "registrationNo": "VND-1856-04"
   },
   {
-    "id": "b27bebfd-4634-4adc-859a-28b3ce32eccd",
-    "brandName": "Dexamethasone Sodium Phosphate injection USP 4mg/ml",
-    "activeIngredients": [
-      {
-        "name": "Dexamethasone",
-        "strength": "4mg/ml"
-      }
-    ],
-    "dosageForm": "Thuốc tiêm-4mg/ml",
-    "registrationNo": "VN-3733-07"
-  },
-  {
     "id": "c103ff79-0959-40b1-97a8-00f981b57653",
     "brandName": "Neurodar",
     "activeIngredients": [
@@ -199958,18 +198368,6 @@
     "registrationNo": ""
   },
   {
-    "id": "6bee5f61-e04b-4f77-a7ae-f81a15045f28",
-    "brandName": "EsomeprazoI Stada 40 mg",
-    "activeIngredients": [
-      {
-        "name": "Esomeprazole",
-        "strength": "40 mg"
-      }
-    ],
-    "dosageForm": "Viên nang cứng",
-    "registrationNo": "VD-22670-15"
-  },
-  {
     "id": "6423ba47-08ce-4858-a493-f076d8fa4e39",
     "brandName": "Zentocor 80mg",
     "activeIngredients": [
@@ -200539,22 +198937,6 @@
     ],
     "dosageForm": "Viên nang mềm",
     "registrationNo": "VD-12431-10"
-  },
-  {
-    "id": "2ffae82e-8c7a-488c-baa0-a300c0e130e3",
-    "brandName": "Rutin Vitamin C",
-    "activeIngredients": [
-      {
-        "name": "Rutin",
-        "strength": ""
-      },
-      {
-        "name": "Vitamin C",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nén bao đường",
-    "registrationNo": "VNB-2333-04"
   },
   {
     "id": "6d3b8999-e702-4769-93b4-e71b0ef09ff6",
@@ -205915,30 +204297,6 @@
     "registrationNo": "VD-26328-17"
   },
   {
-    "id": "dba229c3-3c81-4d33-ad56-3c7d550f8753",
-    "brandName": "Lactated Ringer' s and Dextrose",
-    "activeIngredients": [
-      {
-        "name": "Natri chloride",
-        "strength": "250ml, 500ml"
-      },
-      {
-        "name": "Calcium chloride",
-        "strength": ""
-      },
-      {
-        "name": "Dextrose monohydrate",
-        "strength": ""
-      },
-      {
-        "name": "Potassium",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Dung dịch tiêm truyền",
-    "registrationNo": "VNA-1131-03"
-  },
-  {
     "id": "5d913c68-e5ab-4584-8b9a-96193f08b3a6",
     "brandName": "Aspirin pH8 500mg Mediplantex",
     "activeIngredients": [
@@ -208295,13 +206653,6 @@
     "registrationNo": "VD-10596-10"
   },
   {
-    "id": "b4c294d5-39ae-4720-9339-3f85d134a3bb",
-    "brandName": "Cilzobac",
-    "activeIngredients": [],
-    "dosageForm": "Thuốc bột pha tiêm",
-    "registrationNo": "VN-14857-12"
-  },
-  {
     "id": "be96c60d-7ac5-4d89-862c-1e718b1484e0",
     "brandName": "Vitamin B1 50mg Mekophar",
     "activeIngredients": [
@@ -209771,18 +208122,6 @@
     "registrationNo": "890110038825"
   },
   {
-    "id": "279ceab5-4a6b-459c-a424-932a6ae320d1",
-    "brandName": "Glucosamine capsules 250mg Brawn",
-    "activeIngredients": [
-      {
-        "name": "Glucosamine",
-        "strength": "250mg"
-      }
-    ],
-    "dosageForm": "Viên nang-250mg",
-    "registrationNo": "VN-14936-12"
-  },
-  {
     "id": "546ad1b1-3037-41ff-9727-6e4430f2c098",
     "brandName": "Bostarelboston 20",
     "activeIngredients": [
@@ -210585,18 +208924,6 @@
     ],
     "dosageForm": "Viên nén bao phim",
     "registrationNo": "VD-22544-15"
-  },
-  {
-    "id": "f39505af-bef7-4956-b2d4-b19e38a98187",
-    "brandName": "Celecoxib 100mg",
-    "activeIngredients": [
-      {
-        "name": "Celecoxib",
-        "strength": "100mg"
-      }
-    ],
-    "dosageForm": "Viên nang",
-    "registrationNo": "VNA-2474-04"
   },
   {
     "id": "b3e2074b-aec4-4a29-9196-1e7468566ad8",
@@ -211428,18 +209755,6 @@
     "registrationNo": "VN-7035-08"
   },
   {
-    "id": "1de0b72e-adca-4b6f-87af-b022dcc0e03f",
-    "brandName": "Cetirizine 10",
-    "activeIngredients": [
-      {
-        "name": "Cetirizin",
-        "strength": "10 mg"
-      }
-    ],
-    "dosageForm": "Viên nén bao phim",
-    "registrationNo": "VD-24210-16"
-  },
-  {
     "id": "d409a4ff-2b3d-4875-b896-8d5aed9433a6",
     "brandName": "Austriol",
     "activeIngredients": [
@@ -211932,18 +210247,6 @@
     ],
     "dosageForm": "Cao lỏng",
     "registrationNo": ""
-  },
-  {
-    "id": "bef6fb4f-0faf-45da-ab81-38a4143cda23",
-    "brandName": "Mg-B6",
-    "activeIngredients": [
-      {
-        "name": "Vitamin B6",
-        "strength": "2mg"
-      }
-    ],
-    "dosageForm": "Viên bao phim",
-    "registrationNo": "VD-5680-08"
   },
   {
     "id": "15128173-df0e-412e-b6de-970390a9db96",
@@ -213263,18 +211566,6 @@
     ],
     "dosageForm": "viên nang",
     "registrationNo": ""
-  },
-  {
-    "id": "8e03ce28-c2d8-43ac-9979-b7839e94d4a7",
-    "brandName": "Nifedipin 10mg",
-    "activeIngredients": [
-      {
-        "name": "Nifedipine",
-        "strength": "10mg"
-      }
-    ],
-    "dosageForm": "Viên nén bao phim",
-    "registrationNo": "VN-7783-03"
   },
   {
     "id": "39880081-b10a-4904-9f6d-5da839e678bc",
@@ -216230,26 +214521,6 @@
     ],
     "dosageForm": "Thuốc bột",
     "registrationNo": "VD-22235-15"
-  },
-  {
-    "id": "42792f97-9c56-4c6b-bf30-4b518a1b37a2",
-    "brandName": "Vitamin B1B6B12",
-    "activeIngredients": [
-      {
-        "name": "Vitamin B1",
-        "strength": ""
-      },
-      {
-        "name": "Cyanocobalamin",
-        "strength": ""
-      },
-      {
-        "name": "Vitamin B6",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nén bao phim",
-    "registrationNo": "VD-5348-08"
   },
   {
     "id": "4e161715-09bf-444c-8062-4407329387a1",
@@ -219502,18 +217773,6 @@
     "registrationNo": "VD-8652-09"
   },
   {
-    "id": "3018c032-b4e1-4dec-9f3d-9008ae4dfc66",
-    "brandName": "Vitamin B1, B6, B12",
-    "activeIngredients": [
-      {
-        "name": "Vitamin B1",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nén bao phim",
-    "registrationNo": ""
-  },
-  {
     "id": "b0ca8cde-b26c-4da5-8547-0538b045db14",
     "brandName": "Newpantio Softcap",
     "activeIngredients": [
@@ -221345,18 +219604,6 @@
     "registrationNo": "VN-15690-12"
   },
   {
-    "id": "61944be9-72c3-4647-8a94-1d8b2bc0da56",
-    "brandName": "Dexamethason 4mg/1ml",
-    "activeIngredients": [
-      {
-        "name": "Dexamethasone",
-        "strength": "4mg/1ml"
-      }
-    ],
-    "dosageForm": "Dung dịch tiêm",
-    "registrationNo": "VNB-3099-05"
-  },
-  {
     "id": "e2b02989-8ab9-4b34-a5d7-9765abd9e808",
     "brandName": "Flucin",
     "activeIngredients": [
@@ -221525,26 +219772,6 @@
     ],
     "dosageForm": "Dung dịch nhỏ mắt",
     "registrationNo": "VN-20598-17"
-  },
-  {
-    "id": "928934f6-4938-4997-a393-8ee0deed5906",
-    "brandName": "Ringer Lactate",
-    "activeIngredients": [
-      {
-        "name": "Potassium",
-        "strength": "500ml"
-      },
-      {
-        "name": "Calcium chloride",
-        "strength": ""
-      },
-      {
-        "name": "Natri chloride",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Dung dịch tiêm truyền",
-    "registrationNo": "VN-6429-02"
   },
   {
     "id": "63b237b6-f109-4ce6-8e9f-147782852b81",
@@ -222075,18 +220302,6 @@
     ],
     "dosageForm": "Dung dịch xịt mũi",
     "registrationNo": "VN-15355-12"
-  },
-  {
-    "id": "9d7278b5-3e8e-4dcf-bc3c-389b20920aef",
-    "brandName": "Furosemide 20mg/2ml",
-    "activeIngredients": [
-      {
-        "name": "Furosemide",
-        "strength": "20mg/2ml"
-      }
-    ],
-    "dosageForm": "Dung dịch tiêm",
-    "registrationNo": "VN-5319-08"
   },
   {
     "id": "7472a5ae-f477-4e26-8c1b-1a6949e1e4f0",
@@ -223349,18 +221564,6 @@
     "registrationNo": "VN-21259-18"
   },
   {
-    "id": "55b031e1-6c1c-4e4b-8141-87176a3386aa",
-    "brandName": "Desfonak",
-    "activeIngredients": [
-      {
-        "name": "Deferoxamine",
-        "strength": "500mg"
-      }
-    ],
-    "dosageForm": "Bột đông khô pha tiêm",
-    "registrationNo": "VN-12315-11"
-  },
-  {
     "id": "2b8b8e51-0f54-480c-bd1b-e82332a7b184",
     "brandName": "Kytril 1mg Roche",
     "activeIngredients": [
@@ -223487,18 +221690,6 @@
     ],
     "dosageForm": "",
     "registrationNo": "VD-11866-10"
-  },
-  {
-    "id": "f74972c0-0109-40a2-86af-19f2d961e77b",
-    "brandName": "BSI",
-    "activeIngredients": [
-      {
-        "name": "Salicylic acid",
-        "strength": "30ml"
-      }
-    ],
-    "dosageForm": "Cồn thuốc",
-    "registrationNo": "VNB-0721-01"
   },
   {
     "id": "05342d1d-ce43-4744-8218-87178e606f2e",
@@ -223762,18 +221953,6 @@
     ],
     "dosageForm": "Viên nén bao phim",
     "registrationNo": "VN-11742-11"
-  },
-  {
-    "id": "375d2504-e8ba-4ca3-8ae9-b47568151c06",
-    "brandName": "Omeprazole",
-    "activeIngredients": [
-      {
-        "name": "Omeprazole",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nang-20mg",
-    "registrationNo": "VN-0442-06"
   },
   {
     "id": "96a89efe-33a5-4273-9f53-89653cd8d42d",
@@ -225708,18 +223887,6 @@
     "registrationNo": "880410175500"
   },
   {
-    "id": "554e94d7-2424-4715-9e82-aeb047a30dfa",
-    "brandName": "K Cort",
-    "activeIngredients": [
-      {
-        "name": "Triamcinolone",
-        "strength": "80mg/2ml"
-      }
-    ],
-    "dosageForm": "Hỗn dịch tiêm",
-    "registrationNo": "VN-9902-05"
-  },
-  {
     "id": "7da82444-d646-4c1f-8a0c-5fcb369ede8a",
     "brandName": "Letrozsun 2,5mg",
     "activeIngredients": [
@@ -225766,18 +223933,6 @@
     ],
     "dosageForm": "Viên nang cứng",
     "registrationNo": "VN-15236-12"
-  },
-  {
-    "id": "3be3a82e-74cd-492a-b208-93ec0c766c19",
-    "brandName": "NS",
-    "activeIngredients": [
-      {
-        "name": "Natri clorid",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Dung dịch tiêm truyền",
-    "registrationNo": "VN-21326-18"
   },
   {
     "id": "29a6fcfd-cc82-4001-9505-2b80754d7f04",
@@ -226062,18 +224217,6 @@
     ],
     "dosageForm": "Bột pha hỗn dịch",
     "registrationNo": "VN-14538-12"
-  },
-  {
-    "id": "f35e1486-9d05-4d2a-b9c7-1e4d0a9180a0",
-    "brandName": "Celecoxib 200mg",
-    "activeIngredients": [
-      {
-        "name": "Celecoxib",
-        "strength": "200mg"
-      }
-    ],
-    "dosageForm": "Viên nang",
-    "registrationNo": "VNA-1128-03"
   },
   {
     "id": "214a41b7-113e-48b2-9b6c-ca2f4efc359a",
@@ -227760,18 +225903,6 @@
     ],
     "dosageForm": "",
     "registrationNo": "VD-10142-10"
-  },
-  {
-    "id": "d4887b6c-b99d-4e85-8a64-c45b2911e833",
-    "brandName": "Metronidazol 250mg",
-    "activeIngredients": [
-      {
-        "name": "Metronidazole",
-        "strength": "250mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VNA-3990-01"
   },
   {
     "id": "fa0a6774-56c2-4e83-b175-e6214407c2f4",
@@ -232480,22 +230611,6 @@
     "registrationNo": "VN-10804-10"
   },
   {
-    "id": "76abdee1-73cb-47ff-9025-6840853f564e",
-    "brandName": "Rimactazid 150",
-    "activeIngredients": [
-      {
-        "name": "Rifampicin",
-        "strength": ""
-      },
-      {
-        "name": "Isoniazide",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nén bao phim",
-    "registrationNo": "VN-6134-02"
-  },
-  {
     "id": "a11b849c-81b5-4b6a-93af-dadacc0bc985",
     "brandName": "Pirimas Inj 1g",
     "activeIngredients": [
@@ -233150,18 +231265,6 @@
     ],
     "dosageForm": "Dung dịch tiêm",
     "registrationNo": "VD-29951-18"
-  },
-  {
-    "id": "8f8bbd61-244e-400b-8f6b-6534dae01efa",
-    "brandName": "Atenolol 100mg",
-    "activeIngredients": [
-      {
-        "name": "Atenolol",
-        "strength": "100mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VN-5617-08"
   },
   {
     "id": "87206aa3-3d43-407b-b5ba-f6a0c68d61b9",
@@ -234203,18 +232306,6 @@
     "registrationNo": "VD-14244-11"
   },
   {
-    "id": "48a25fa1-5aa9-43e2-b999-a09595ab3a34",
-    "brandName": "Celecoxib 200mg",
-    "activeIngredients": [
-      {
-        "name": "Celecoxib",
-        "strength": "200mg"
-      }
-    ],
-    "dosageForm": "Viên nang cứng",
-    "registrationNo": "VN-15841-12"
-  },
-  {
     "id": "a1639cf3-759b-404c-becb-21f5070ca235",
     "brandName": "Nước cất A.T",
     "activeIngredients": [],
@@ -235204,18 +233295,6 @@
     ],
     "dosageForm": "Bột pha tiêm",
     "registrationNo": "VN-11678-11"
-  },
-  {
-    "id": "355acf4a-f44d-447e-b7e9-ba2596c5ee85",
-    "brandName": "Nalidixic Acid Tablets BP 500mg",
-    "activeIngredients": [
-      {
-        "name": "Acid nalidixic",
-        "strength": "500mg"
-      }
-    ],
-    "dosageForm": "Viên bao phim",
-    "registrationNo": "VN-3927-07"
   },
   {
     "id": "5de6e7a4-5e11-4b3d-8906-6fee6d1bae19",
@@ -238968,18 +237047,6 @@
     "registrationNo": "VN-18416-14"
   },
   {
-    "id": "94e0b81f-893d-4785-b20f-6be165cbf443",
-    "brandName": "Cefadroxil 250mg Imexpharm",
-    "activeIngredients": [
-      {
-        "name": "Cefadroxil",
-        "strength": "250mg"
-      }
-    ],
-    "dosageForm": "Thuốc cốm",
-    "registrationNo": "VD-21305-14"
-  },
-  {
     "id": "70a0cf9a-95de-45b1-8aae-ab34a8287949",
     "brandName": "Cefaxil 750mg Lupin Ltd",
     "activeIngredients": [
@@ -239974,18 +238041,6 @@
     "registrationNo": "VN-11592-10"
   },
   {
-    "id": "97542053-e6ca-45b7-a37c-ca8c9477224b",
-    "brandName": "Cồn Iod 3%",
-    "activeIngredients": [
-      {
-        "name": "Kali iodid",
-        "strength": "20ml, 30ml"
-      }
-    ],
-    "dosageForm": "Dung dịch dùng ngoài",
-    "registrationNo": "VNB-0958-01"
-  },
-  {
     "id": "b400de4d-80b1-4159-b9cb-fa3b0b3e1f8e",
     "brandName": "Ogecort Suspended Injections Y.Y",
     "activeIngredients": [
@@ -240350,18 +238405,6 @@
     ],
     "dosageForm": "Dung dịch thuốc tiêm bắp, tiêm/truyền tĩnh mạch",
     "registrationNo": "VN-18236-14"
-  },
-  {
-    "id": "82dd213f-40a7-496e-8d1f-81a01f25d067",
-    "brandName": "Enalapril 10",
-    "activeIngredients": [
-      {
-        "name": "Enalapril",
-        "strength": "10mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VN-9090-04"
   },
   {
     "id": "28d24dfd-023a-45c7-bc92-52be0e9c37ab",
@@ -244030,18 +242073,6 @@
     "registrationNo": "VN-9922-05"
   },
   {
-    "id": "4decf4d2-cbd2-411c-a447-a4f57bd80a1e",
-    "brandName": "Cefotaxim",
-    "activeIngredients": [
-      {
-        "name": "Cefotaxime",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Bột pha tiêm-1g",
-    "registrationNo": "VN-0143-06"
-  },
-  {
     "id": "d6e3a7ae-d702-4997-80da-dff8cc7eaf53",
     "brandName": "Nasomom - 4 tinh dầu trẻ em",
     "activeIngredients": [
@@ -244163,18 +242194,6 @@
     ],
     "dosageForm": "Viên nén",
     "registrationNo": "893100419624"
-  },
-  {
-    "id": "e1859aca-bd4b-436b-addb-3a1e7dc3985c",
-    "brandName": "Albendazole 200mg",
-    "activeIngredients": [
-      {
-        "name": "Albendazole",
-        "strength": "200mg"
-      }
-    ],
-    "dosageForm": "Viên nén bao phim",
-    "registrationNo": "VNA-3433-00"
   },
   {
     "id": "ba5708d7-e37b-4db0-93c4-20d2fd4577b8",
@@ -246500,18 +244519,6 @@
     "registrationNo": ""
   },
   {
-    "id": "3fa85cfb-8a49-4312-8206-fbae0fbbe232",
-    "brandName": "Roxithromycin 150",
-    "activeIngredients": [
-      {
-        "name": "Roxithromycin",
-        "strength": "150mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VN-6150-02"
-  },
-  {
     "id": "927996a9-4023-4eb9-bcdc-c4a8c3ed6efa",
     "brandName": "Sunoxitol 150",
     "activeIngredients": [
@@ -246698,13 +244705,6 @@
     ],
     "dosageForm": "Dung dịch truyền tĩnh mạch",
     "registrationNo": "VN-19817-16"
-  },
-  {
-    "id": "fba2308d-6a87-448a-a294-65262d0e9269",
-    "brandName": "Albumin Inj. 20%-GCC",
-    "activeIngredients": [],
-    "dosageForm": "Dịch tiêm truyền",
-    "registrationNo": "VN-11062-10"
   },
   {
     "id": "979ec0d5-96da-4788-83bb-b56d6f48f084",
@@ -248412,18 +246412,6 @@
     "registrationNo": "VN-14300-11"
   },
   {
-    "id": "13c1f545-51cd-4cf7-9bdb-a1f11f2eba2d",
-    "brandName": "Cetirizine 10mg",
-    "activeIngredients": [
-      {
-        "name": "Cetirizine",
-        "strength": "10mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": ""
-  },
-  {
     "id": "8e6366e6-c198-4d75-811e-bdd66814c3fd",
     "brandName": "Auskin",
     "activeIngredients": [
@@ -250082,18 +248070,6 @@
     "registrationNo": "893110180424"
   },
   {
-    "id": "6f99e9b0-070d-43fd-952d-dcc3fbfbaf6f",
-    "brandName": "Salbutamol 2g Nadyphar",
-    "activeIngredients": [
-      {
-        "name": "Salbutamol",
-        "strength": "2g"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "893115478524"
-  },
-  {
     "id": "cacf60a6-7b77-4f83-bbb7-e13070b21edc",
     "brandName": "Ofloxacin 200mg Imexpharm",
     "activeIngredients": [
@@ -250787,18 +248763,6 @@
     ],
     "dosageForm": "Dung dịch đậm đặc dùng để pha tiêm truyền",
     "registrationNo": "VN-19851-16"
-  },
-  {
-    "id": "8afb7d91-4029-424e-8125-1b694a497649",
-    "brandName": "Chloramphenicol",
-    "activeIngredients": [
-      {
-        "name": "Chloramphenicol",
-        "strength": "250mg"
-      }
-    ],
-    "dosageForm": "Viên nang-250mg",
-    "registrationNo": "VN-2747-07"
   },
   {
     "id": "818fcf41-024d-4ed5-b968-43f5a114f427",
@@ -251549,18 +249513,6 @@
     "registrationNo": ""
   },
   {
-    "id": "4d76370b-bf6d-4410-9c34-ad1a4cf516ce",
-    "brandName": "Cồn Iod 2%",
-    "activeIngredients": [
-      {
-        "name": "Kali iodid",
-        "strength": "20ml"
-      }
-    ],
-    "dosageForm": "Thuốc nước dùng ngoài",
-    "registrationNo": "VNS-0024-02"
-  },
-  {
     "id": "d5d21c13-f3a0-4e37-99fe-ce25c44655d2",
     "brandName": "Narita Spray",
     "activeIngredients": [
@@ -252039,18 +249991,6 @@
     "registrationNo": "VD-2863-07"
   },
   {
-    "id": "7196ab88-7111-496f-8488-405dc7ee00a5",
-    "brandName": "Travatan",
-    "activeIngredients": [
-      {
-        "name": "Travoprost",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Dung dịch nhỏ mắt",
-    "registrationNo": "VN-20585-17"
-  },
-  {
     "id": "6e3c2b88-e406-41d8-97fb-a7873ebd1cb3",
     "brandName": "Diarent - 50",
     "activeIngredients": [
@@ -252210,18 +250150,6 @@
     ],
     "dosageForm": "Viên nén bao phim",
     "registrationNo": "VN-7939-09"
-  },
-  {
-    "id": "00ef66e8-60cc-4b3c-85e5-9830b669f186",
-    "brandName": "Clorocid 0,4%",
-    "activeIngredients": [
-      {
-        "name": "Chloramphenicol",
-        "strength": "8ml; 9,5ml"
-      }
-    ],
-    "dosageForm": "Dung dịch thuốc nhỏ mắt",
-    "registrationNo": ""
   },
   {
     "id": "28c6366d-321d-45cd-bf2d-1a91741738dd",
@@ -252767,18 +250695,6 @@
     ],
     "dosageForm": "Viên nén",
     "registrationNo": "893110261523"
-  },
-  {
-    "id": "651bce2a-dba5-4869-82de-c682c5e37ee8",
-    "brandName": "Fluconazole 150",
-    "activeIngredients": [
-      {
-        "name": "Fluconazole",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nang cứng",
-    "registrationNo": "VN-7451-09"
   },
   {
     "id": "20bafd1a-72d9-489c-8915-703d40c3ea55",
@@ -253646,18 +251562,6 @@
     ],
     "dosageForm": "Viên nén",
     "registrationNo": "VN-7046-02"
-  },
-  {
-    "id": "c12e4b3c-bfe3-45cd-a566-c067a8052672",
-    "brandName": "Diclofenac 75mg Vacopharm",
-    "activeIngredients": [
-      {
-        "name": "Diclofenac",
-        "strength": "75mg"
-      }
-    ],
-    "dosageForm": "Viên nén bao tan trong ruột",
-    "registrationNo": "VD-25338-16"
   },
   {
     "id": "78abb2c4-3ca5-4b2a-b398-11dc030861c1",
@@ -256540,18 +254444,6 @@
     "registrationNo": "VN-11100-10"
   },
   {
-    "id": "bab7357f-0cd1-4aa4-9ffb-ab2fd815b206",
-    "brandName": "Celecoxib 100",
-    "activeIngredients": [
-      {
-        "name": "Celecoxib",
-        "strength": "100mg"
-      }
-    ],
-    "dosageForm": "Viên nang cứng",
-    "registrationNo": "VN-4085-07"
-  },
-  {
     "id": "965cae9e-f03f-4917-b12f-b220a541b8bf",
     "brandName": "Fitneal",
     "activeIngredients": [
@@ -258748,18 +256640,6 @@
     "registrationNo": "VN-15785-12"
   },
   {
-    "id": "4ce76e92-8569-4951-a4c7-cfb74e190185",
-    "brandName": "Vancomycin hydrochloride for infusion",
-    "activeIngredients": [
-      {
-        "name": "Vancomycin",
-        "strength": "dưới dạng Vancomycin hydrochlorid"
-      }
-    ],
-    "dosageForm": "Bột đông khô pha tiêm",
-    "registrationNo": "VN-19885-16"
-  },
-  {
     "id": "b336346e-6be3-4245-927c-f7c1d21db226",
     "brandName": "Mucidrin",
     "activeIngredients": [
@@ -259230,18 +257110,6 @@
     ],
     "dosageForm": "Viên nén",
     "registrationNo": "VN-12135-11"
-  },
-  {
-    "id": "cc1d0a8c-06bd-4dd7-9c43-1d3a9246bb5e",
-    "brandName": "Ceclor",
-    "activeIngredients": [
-      {
-        "name": "Cefaclor",
-        "strength": "250mg"
-      }
-    ],
-    "dosageForm": "Viên nang",
-    "registrationNo": "VN-7124-02"
   },
   {
     "id": "6b107e25-b167-4f5f-9a1f-5cac7a2989e3",
@@ -259984,18 +257852,6 @@
     "registrationNo": "VN-19432-15"
   },
   {
-    "id": "07d9f8d4-2372-488f-a3a1-c6b6e44eeadf",
-    "brandName": "B complex",
-    "activeIngredients": [
-      {
-        "name": "Vitamin B1",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nang kèm toa",
-    "registrationNo": "VNA-3962-01"
-  },
-  {
     "id": "06ae41f2-5897-489c-b317-ddf3c164ce95",
     "brandName": "Cefantral 1000mg",
     "activeIngredients": [
@@ -260562,18 +258418,6 @@
     "registrationNo": "VN-12226-11"
   },
   {
-    "id": "e14bc94f-5a8e-4403-b646-a83ecfb15ef2",
-    "brandName": "Paracetamol 650mg",
-    "activeIngredients": [
-      {
-        "name": "Paracetamol",
-        "strength": "650mg"
-      }
-    ],
-    "dosageForm": "Viên nén dài",
-    "registrationNo": "VNA-3004-00"
-  },
-  {
     "id": "8d4c3cc1-04a7-4a5b-991a-030275f67ffc",
     "brandName": "Lopirator 20mg",
     "activeIngredients": [
@@ -260919,18 +258763,6 @@
     "registrationNo": "VN-9540-10"
   },
   {
-    "id": "72c3a744-c3d5-4481-b214-9a99df1d7f5c",
-    "brandName": "Vitamin 3B",
-    "activeIngredients": [
-      {
-        "name": "Vitamin B1",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nén bao phim",
-    "registrationNo": "VNB-3848-05"
-  },
-  {
     "id": "2900b47e-cffb-49fd-9f82-7ba3b0222328",
     "brandName": "Dầu gió xanh Thiên Linh",
     "activeIngredients": [
@@ -260945,18 +258777,6 @@
     ],
     "dosageForm": "Dầu xoa",
     "registrationNo": "VND-0678-03"
-  },
-  {
-    "id": "71e1f4fd-de92-45c9-88cd-9974394c9dae",
-    "brandName": "Nimesulide",
-    "activeIngredients": [
-      {
-        "name": "Nimesulide",
-        "strength": ""
-      }
-    ],
-    "dosageForm": "Viên nén-100mg",
-    "registrationNo": "VN-0832-06"
   },
   {
     "id": "aefb57c2-77e0-4bfd-a093-5fad47b71ed7",
@@ -263875,18 +261695,6 @@
     ],
     "dosageForm": "Viên nang cứng",
     "registrationNo": "VD-22111-15"
-  },
-  {
-    "id": "0e1df0f4-d3e4-4e76-a5cb-4c193905a58b",
-    "brandName": "Lopetab",
-    "activeIngredients": [
-      {
-        "name": "Loperamide",
-        "strength": "2mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VD-22891-15"
   },
   {
     "id": "4efdc6f1-1429-4a32-b6b4-165775de2cf5",
@@ -268117,18 +265925,6 @@
     "registrationNo": "VN-16505-13"
   },
   {
-    "id": "b6319547-60ac-4c9a-8bbb-70d291b5b4ba",
-    "brandName": "Nimesulide 100mg",
-    "activeIngredients": [
-      {
-        "name": "Nimesulide",
-        "strength": "100mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VN-10029-05"
-  },
-  {
     "id": "e01a6142-6ea8-4c54-a90b-b476e42b014a",
     "brandName": "Nước súc miệng TB Traphaco",
     "activeIngredients": [
@@ -268821,7 +266617,7 @@
       }
     ],
     "dosageForm": "Viên nang mềm",
-    "registrationNo": ""
+    "registrationNo": "VNB-2753-05"
   },
   {
     "id": "3a334003-fe89-49e7-84e7-affd1ee5edec",
@@ -269310,18 +267106,6 @@
     ],
     "dosageForm": "Siro",
     "registrationNo": "VD-23559-15"
-  },
-  {
-    "id": "cba22637-af12-4476-9765-1ee9ce6829d0",
-    "brandName": "Clarithromycin",
-    "activeIngredients": [
-      {
-        "name": "Clarithromycin",
-        "strength": "250mg"
-      }
-    ],
-    "dosageForm": "Viên nén",
-    "registrationNo": "VN-5490-01"
   },
   {
     "id": "9178a5d7-1214-4d40-b3f6-c794162b025d",
@@ -269841,18 +267625,6 @@
     ],
     "dosageForm": "Viên nén bao phim",
     "registrationNo": "893110063600"
-  },
-  {
-    "id": "2c4c6798-ddea-48d0-a243-b6805088ddb7",
-    "brandName": "Glycerin 45%",
-    "activeIngredients": [
-      {
-        "name": "Glycerin",
-        "strength": "3ml"
-      }
-    ],
-    "dosageForm": "Dung dịch dùng ngoài",
-    "registrationNo": ""
   },
   {
     "id": "7fb3964c-b71d-49c1-8f4d-c86201609776",
@@ -270840,13 +268612,6 @@
     "registrationNo": "VN-9962-05"
   },
   {
-    "id": "87cee6a9-814e-4fbe-91cf-72a61bd6e490",
-    "brandName": "Ích mẫu",
-    "activeIngredients": [],
-    "dosageForm": "Viên nang",
-    "registrationNo": "VD-0012-06"
-  },
-  {
     "id": "fa889f77-e972-417e-808a-082f7226153a",
     "brandName": "Lansovie",
     "activeIngredients": [
@@ -271217,18 +268982,6 @@
     ],
     "dosageForm": "Viên nang mềm",
     "registrationNo": "VD-24636-16"
-  },
-  {
-    "id": "3a42e489-a868-42ad-8b56-a49b969eaf74",
-    "brandName": "Alex",
-    "activeIngredients": [
-      {
-        "name": "Dextromethorphan",
-        "strength": "5mg"
-      }
-    ],
-    "dosageForm": "Viên ngậm",
-    "registrationNo": "VN-8758-04"
   },
   {
     "id": "d4cd0334-72c3-4092-acc4-bd6f973726a4",
