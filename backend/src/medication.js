@@ -228,14 +228,19 @@ export function adherence(ctx, patientId, days, includeLate = false) {
   const toDate = localDate(ctx.now());
   const fromDate = shiftDate(toDate, 1 - days);
   const doses = ctx.db.list('doses', { patientId }).filter((dose) => (
-    dose.date >= fromDate && dose.date <= toDate && FINISHED.has(dose.status)
+    dose.date >= fromDate && dose.date <= toDate
   ));
+  return { fromDate, toDate, ...adherenceSummary(doses, includeLate) };
+}
+
+export function adherenceSummary(periodDoses, includeLate) {
+  const doses = periodDoses.filter((dose) => FINISHED.has(dose.status));
   const count = (status) => doses.filter((dose) => dose.status === status).length;
   const taken = count('TAKEN');
   const takenByDelegate = count('TAKEN_BY_DELEGATE');
   const lateConfirmed = count('LATE_CONFIRMED');
   return {
-    fromDate, toDate, totalDoses: doses.length, taken, takenByDelegate,
+    totalDoses: doses.length, taken, takenByDelegate,
     lateConfirmed, missed: count('MISSED'),
     adherenceRate: doses.length ? (taken + takenByDelegate + (includeLate ? lateConfirmed : 0)) / doses.length : 0,
   };

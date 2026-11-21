@@ -4,7 +4,8 @@ import path from 'node:path';
 import PDFDocument from 'pdfkit';
 import { z } from 'zod';
 import { ApiError, parse, dateSchema, idSchema, localDate, shiftDate, newId } from './common.js';
-import { adherence } from './medication.js';
+import { adherenceSummary, serializeConfirmation } from './medication.js';
+import { drawClinicalReport } from './report-pdf.js';
 
 const labInput = z.object({
   testType: z.enum(['FASTING_GLUCOSE', 'HBA1C', 'POSTPRANDIAL_GLUCOSE', 'OTHER']),
@@ -204,29 +205,36 @@ export function registerClinicalRoutes(router, ctx) {
   }
 }
 
-const labels = { SCHEDULED: 'Đã lên lịch', PENDING: 'Đang chờ', TAKEN: 'Đã uống', TAKEN_BY_DELEGATE: 'Xác nhận hộ', LATE_CONFIRMED: 'Xác nhận muộn', MISSED: 'Bỏ lỡ', CANCELLED: 'Đã hủy' };
-const slotLabels = { MORNING: 'sáng', NOON: 'trưa', AFTERNOON: 'chiều', EVENING: 'tối' };
-const labLabels = { HBA1C: 'HbA1c', FASTING_GLUCOSE: 'Đường huyết lúc đói', POSTPRANDIAL_GLUCOSE: 'Đường huyết sau ăn', OTHER: 'Chỉ số khác' };
-
 async function createPdf(ctx, report) {
   const patient = ctx.db.get('patients', report.patientId);
   if (!patient) throw new Error('Patient unavailable');
-  const toDate = report.toDate || localDate(ctx.now());
+  const generatedAt = ctx.now();
+  const toDate = report.toDate || localDate(report.createdAt || generatedAt);
   const fromDate = report.fromDate || shiftDate(toDate, -(report.periodDays - 1));
-  const summary = adherence(ctx, report.patientId, report.periodDays, ctx.config.includeLateInRate === true);
-  const doses = ctx.db.list('doses', { patientId: patient.id }).filter((dose) => {
-    const date = dose.date || localDate(new Date(dose.scheduledAt));
-    return date >= fromDate && date <= toDate;
-  }).map((dose) => ({ ...dose, lastConfirmation: dose.lastConfirmationId ? ctx.db.get('confirmations', dose.lastConfirmationId) : null }));
-  const prescriptions = ctx.db.list('prescriptions', { patientId: patient.id }).filter((rx) => rx.status === 'ACTIVE');
-  const labs = newest(ctx.db.list('labResults', { patientId: patient.id }).filter((lab) => lab.testedDate >= fromDate && lab.testedDate <= toDate), 'testedDate');
-  const appointments = ctx.db.list('appointments', { patientId: patient.id }).filter((visit) => visit.status === 'UPCOMING').sort((a, b) => a.visitDate.localeCompare(b.visitDate));
+  const inPeriod = (date) => date >= fromDate && date <= toDate;
+  const doses = ctx.db.list('doses', { patientId: patient.id })
+    .filter((dose) => inPeriod(dose.date || localDate(dose.scheduledAt)))
+    .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt) || a.id.localeCompare(b.id))
+    .map((dose) => {
+      const last = dose.lastConfirmationId ? ctx.db.get('confirmations', dose.lastConfirmationId) : null;
+      // A caregiver correction updates the reported intake time, but the journal identifies the original confirmer.
+      let original = last;
+      while (original?.correctsConfirmationId) original = ctx.db.get('confirmations', original.correctsConfirmationId);
+      return { ...dose, takenAt: last?.takenAt, confirmation: serializeConfirmation(ctx, original) };
+    });
+  const includeLate = ctx.config.includeLateInRate === true;
+  const summary = adherenceSummary(doses, includeLate);
+  const [prescription] = ctx.db.list('prescriptions', { patientId: patient.id, status: 'ACTIVE' });
+  const labs = ctx.db.list('labResults', { patientId: patient.id }).filter((lab) => inPeriod(lab.testedDate))
+    .sort((a, b) => b.testedDate.localeCompare(a.testedDate) || (b.createdAt || '').localeCompare(a.createdAt || ''));
+  const appointments = ctx.db.list('appointments', { patientId: patient.id, status: 'UPCOMING' })
+    .sort((a, b) => a.visitDate.localeCompare(b.visitDate));
   const fontPath = ctx.config.fontPath || (process.platform === 'win32' ? 'C:/Windows/Fonts/arial.ttf' : '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf');
   if (!existsSync(fontPath)) throw new Error('Report font unavailable');
   const file = reportFile(ctx, report.id);
   const temp = reportFile(ctx, report.id, true);
   await mkdir(path.dirname(file), { recursive: true });
-  const doc = new PDFDocument({ size: 'A4', margins: { top: 44, bottom: 52, left: 46, right: 46 }, bufferPages: true, info: { Title: `An Tâm - Báo cáo ${report.periodDays} ngày`, Author: 'An Tâm', Subject: 'Tổng hợp dữ liệu đã ghi nhận' } });
+  const doc = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 26, bufferPages: true, info: { Title: `An Tâm - Báo cáo ${report.periodDays} ngày`, Author: 'An Tâm', Subject: 'Tổng hợp dữ liệu đã ghi nhận' } });
   const out = createWriteStream(temp, { flags: 'w', mode: 0o600 });
   const finished = new Promise((resolve, reject) => {
     out.once('finish', resolve);
@@ -238,63 +246,8 @@ async function createPdf(ctx, report) {
   doc.pipe(out);
   try {
     doc.font(fontPath);
-    const width = doc.page.width - 92;
-    const ensureSpace = (height = 60) => { if (doc.y + height > doc.page.height - 62) doc.addPage(); };
-    const paragraph = (text, options = {}) => { const { fontSize = 10, ...textOptions } = options; doc.fillColor('#344454').fontSize(fontSize).text(text, { width, lineGap: 3, ...textOptions }); doc.moveDown(0.35); };
-    const heading = (text) => {
-      ensureSpace(66);
-      doc.moveDown(0.6).fillColor('#116c70').fontSize(13).text(text, { width });
-      doc.moveDown(0.4);
-    };
-    doc.fillColor('#116c70').fontSize(24).text('AN TÂM', { width });
-    doc.fillColor('#182c3b').fontSize(17).text(`Báo cáo theo dõi ${report.periodDays} ngày`, { width });
-    doc.moveDown(0.4);
-    paragraph(`Khoảng dữ liệu: ${fromDate} đến ${toDate}`);
-    paragraph(`Tên gọi: ${patient.alias}  |  Năm sinh: ${patient.birthYear}`);
-    paragraph(`Tạo lúc: ${new Intl.DateTimeFormat('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', dateStyle: 'short', timeStyle: 'short' }).format(ctx.now())} (UTC+07)`);
-    paragraph('Tổng hợp các sự kiện được ghi nhận trên hệ thống. Việc bấm xác nhận không tự chứng minh đã dùng thuốc; báo cáo không đưa ra kết luận hay chỉ định điều trị.', { fontSize: 9 });
-    heading('1. Tổng hợp tuân thủ');
-    paragraph(`Tỷ lệ: ${(summary.adherenceRate * 100).toFixed(1)}%  |  Số cữ đã có kết quả: ${summary.totalDoses}`);
-    paragraph(`Đã uống: ${summary.taken}  |  Xác nhận hộ: ${summary.takenByDelegate}  |  Xác nhận muộn: ${summary.lateConfirmed}  |  Bỏ lỡ: ${summary.missed}`);
-    paragraph(`Cách tính: (đã uống + xác nhận hộ${ctx.config.includeLateInRate ? ' + xác nhận muộn' : ''}) / số cữ đã có kết quả. Cữ đã hủy, đang chờ và chưa đến giờ không nằm trong mẫu số.`);
-    if (!summary.totalDoses) paragraph('Chưa có đủ sự kiện hoàn tất để đánh giá tỷ lệ trong kỳ.');
-    heading('2. Đơn thuốc đang hiệu lực');
-    if (!prescriptions.length) paragraph('Không có đơn thuốc đang hiệu lực.');
-    for (const prescription of prescriptions) {
-      paragraph(`Ngày kê ${prescription.issuedDate}; bắt đầu ${prescription.startDate}; tái khám ${prescription.nextVisitDate}.`);
-      for (const item of prescription.items || []) {
-        ensureSpace(58);
-        paragraph(`${item.drugNameRaw} - ${item.unitsPerDose} ${item.unit || 'đơn vị'}/cữ; buổi: ${(item.slots || []).map((slot) => slotLabels[slot] || slot).join(', ')}.${item.instruction ? ` ${item.instruction}` : ''}`);
-      }
-    }
-    heading('3. Kết quả xét nghiệm trong kỳ');
-    if (!labs.length) paragraph('Chưa có kết quả xét nghiệm trong khoảng dữ liệu.');
-    for (const lab of labs) {
-      ensureSpace(55);
-      paragraph(`${lab.testedDate} | ${labLabels[lab.testType]}: ${lab.value} ${lab.unit}${lab.note ? ` | ${lab.note}` : ''}`);
-    }
-    heading('4. Lịch tái khám');
-    if (!appointments.length) paragraph('Chưa có lịch hẹn sắp tới.');
-    for (const appointment of appointments) {
-      ensureSpace(55);
-      paragraph(`${appointment.visitDate} | Nhắc trước ${appointment.remindDaysBefore} ngày${appointment.note ? ` | ${appointment.note}` : ''}`);
-    }
-    heading('5. Các cữ bỏ lỡ hoặc xác nhận muộn');
-    const exceptions = doses.filter((dose) => ['MISSED', 'LATE_CONFIRMED'].includes(dose.status)).sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt));
-    if (!exceptions.length) paragraph('Không có cữ bỏ lỡ hoặc xác nhận muộn được ghi nhận trong kỳ.');
-    for (const dose of exceptions) {
-      ensureSpace(58);
-      const time = new Intl.DateTimeFormat('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', dateStyle: 'short', timeStyle: 'short' }).format(new Date(dose.scheduledAt));
-      paragraph(`${time} | ${labels[dose.status]} | ${dose.drugDisplayName || 'Cữ thuốc'}${dose.lastConfirmation?.takenAt ? ` | Giờ uống khai báo: ${new Intl.DateTimeFormat('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', dateStyle: 'short', timeStyle: 'short' }).format(new Date(dose.lastConfirmation.takenAt))}` : ''}`);
-    }
-    const pages = doc.bufferedPageRange();
-    for (let index = 0; index < pages.count; index++) {
-      doc.switchToPage(index);
-      const bottomMargin = doc.page.margins.bottom;
-      doc.page.margins.bottom = 0;
-      doc.fillColor('#6b7785').fontSize(8).text(`An Tâm | ${patient.alias} | ${index + 1}/${pages.count}`, 46, doc.page.height - 35, { width, lineBreak: false, align: 'center' });
-      doc.page.margins.bottom = bottomMargin;
-    }
+    drawClinicalReport(doc, { patient, prescription, appointments, labs, doses, summary, includeLate,
+      fromDate, toDate, periodDays: report.periodDays, exportDate: localDate(generatedAt) });
     doc.end();
     await finished;
     await rename(temp, file);

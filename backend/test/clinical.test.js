@@ -57,7 +57,7 @@ test('report worker recovers PROCESSING jobs and creates a Vietnamese PDF', asyn
   const pdf = readFileSync(path.join(ctx.config.reportDir, `${report.id}.pdf`));
   assert.equal(pdf.subarray(0, 5).toString(), '%PDF-');
   assert.ok(pdf.length > 10000, 'Unicode font is embedded');
-  assert.equal((pdf.toString('latin1').match(/\/Type \/Page\b/g) || []).length, 1, 'Footers must not create blank pages');
+  assert.equal((pdf.toString('latin1').match(/\/Type \/Page\b/g) || []).length, 2, 'Empty report has a physician form and a separate dose journal');
   await tickClinical(ctx);
   assert.equal(ctx.db.list('auditLogs').filter((log) => log.actionType === 'REPORT_PDF_GENERATED').length, 1);
 });
