@@ -64,6 +64,7 @@ const NAV = [
 ];
 
 const ALERT_ICON = {
+  DOSE_UNCONFIRMED: { icon: Bell, tone: 'warning' },
   DOSE_MISSED: { icon: AlertCircle, tone: 'danger' },
   VISIT_UPCOMING: { icon: CalendarClock, tone: 'info' },
   DUPLICATE_INGREDIENT: { icon: AlertTriangle, tone: 'warning' }
@@ -82,7 +83,7 @@ function useAlertStream() {
       if (alert.type === 'DUPLICATE_INGREDIENT') return; // đã hiện ngay trong màn hình nhập đơn
       const owner = patients.find((p) => p.id === alert.patientId);
       toast({
-        tone: alert.type === 'DOSE_MISSED' ? 'danger' : 'info',
+        tone: ALERT_TYPES[alert.type]?.tone || 'info',
         title: `Cảnh báo mới${owner ? ` · ${owner.alias}` : ''} · ${ALERT_TYPES[alert.type]?.label || alert.type}`,
         message: alert.message,
         timeout: 9000
@@ -241,6 +242,10 @@ function PatientSwitcher({ route }) {
 }
 
 function alertTarget(alert) {
+  if (alert.type === 'DOSE_UNCONFIRMED') {
+    const day = toDateKey(alert.scheduledAt);
+    return href(ROUTES.doses, { from: day, to: day });
+  }
   if (alert.type === 'DOSE_MISSED') {
     // Cảnh báo sinh lúc hết hạn xác nhận: cùng ngày với cữ hoặc sáng hôm sau với cữ tối muộn.
     const day = toDateKey(alert.createdAt);

@@ -1,15 +1,16 @@
 import { z } from 'zod';
+import { reminderTimeOf, slotTimeError } from '../../shared/doseTimes.js';
 import {
   ApiError, parse, dateSchema, idSchema, localDate, shiftDate, newId,
   TIME_SLOTS, DOSE_STATUSES, PRESCRIPTION_STATUSES, DOSE_WINDOW_MINUTES,
 } from './common.js';
 import { getCatalogDrug, searchCatalogDrugs } from './catalog.js';
 
-const DEFAULT_TIMES = { MORNING: '07:00', NOON: '11:30', AFTERNOON: '15:00', EVENING: '19:00' };
 const SYSTEM_ID = '00000000-0000-4000-8000-000000000000';
 const FINISHED = new Set(['TAKEN', 'TAKEN_BY_DELEGATE', 'LATE_CONFIRMED', 'MISSED']);
 const MAX_GENERATED_DOSES = 50_000;
 const WINDOW_MS = DOSE_WINDOW_MINUTES * 60_000;
+const UNCONFIRMED_REMINDER_MS = 30 * 60_000;
 const timeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Giờ uống phải có dạng HH:mm');
 const unitsPerDoseSchema = z.number().finite().refine(
   value => value >= 0.5 && value % 0.5 === 0,
@@ -156,7 +157,7 @@ function createAlert(ctx, data, now) {
   return alert;
 }
 
-/** Advance time-based state and emit each missed-dose alert at most once. */
+/** Advance time-based state and notify caregivers about unconfirmed doses. */
 export function tickMedication(ctx) {
   const aliases = new Map();
   const patientAlias = (id) => {
@@ -175,8 +176,9 @@ export function tickMedication(ctx) {
       }
     }
     for (const dose of ctx.db.list('doses')) {
-      if (!['SCHEDULED', 'PENDING'].includes(dose.status)) continue;
-      if (nowMs < Date.parse(dose.scheduledAt)) continue;
+      if (dose.lastConfirmationId || !['SCHEDULED', 'PENDING'].includes(dose.status)) continue;
+      const scheduledMs = Date.parse(dose.scheduledAt);
+      if (nowMs < scheduledMs) continue;
       if (dose.status === 'SCHEDULED') {
         ctx.db.update('doses', dose.id, { status: 'PENDING' });
         systemAudit(ctx, dose.patientId, 'DOSE_PENDING', 'Dose', dose.id);
@@ -189,6 +191,14 @@ export function tickMedication(ctx) {
           dedupKey: `dose-missed:${dose.id}`,
           message: `${patientAlias(dose.patientId)}: chưa có xác nhận cữ ${SLOT_LABELS[dose.slot] || ''} ${vnTime(dose.scheduledAt)} (${dose.drugDisplayName})`.replace(/\s+/g, ' '),
         }, now);
+        if (alert) pendingAlerts.push(alert);
+      } else if (!dose.unconfirmedReminderAt && nowMs >= scheduledMs + UNCONFIRMED_REMINDER_MS) {
+        const alert = createAlert(ctx, {
+          patientId: dose.patientId, type: 'DOSE_UNCONFIRMED', relatedDoseId: dose.id,
+          dedupKey: `dose-unconfirmed:${dose.id}`, scheduledAt: dose.scheduledAt,
+          message: `Cữ ${SLOT_LABELS[dose.slot]} ${vnTime(dose.scheduledAt)} của ${patientAlias(dose.patientId)} (${dose.drugDisplayName}) vẫn chưa có xác nhận sau 30 phút.`,
+        }, now);
+        ctx.db.update('doses', dose.id, { unconfirmedReminderAt: now.toISOString() });
         if (alert) pendingAlerts.push(alert);
       }
     }
@@ -263,6 +273,21 @@ export function ensurePrescriptionVisit(ctx, prescription, userId) {
   ctx.audit({ patientId, userId, actionType: 'APPOINTMENT_CREATED', targetType: 'Appointment', targetId: visit.id });
 }
 
+// Profiles and prescriptions saved before the slot limits may supply inherited times.
+// Validate the effective schedule before generating any doses, including renewals.
+function prescriptionTimes(items, patient) {
+  return items.map((item, index) => {
+    const times = {};
+    for (const slot of item.slots) {
+      const time = item.times?.[slot] ?? reminderTimeOf(patient, slot);
+      const issue = slotTimeError(slot, time);
+      if (issue) throw new ApiError(400, 'VALIDATION_ERROR', `${item.drugNameRaw}: ${issue}`, [{ field: `items.${index}.times.${slot}`, issue }]);
+      times[slot] = time;
+    }
+    return times;
+  });
+}
+
 export function generateDoses(ctx, prescription, patient, now, notBefore) {
   const firstDateMs = Date.parse(`${prescription.startDate}T00:00:00Z`);
   const lastDateMs = Date.parse(`${prescription.nextVisitDate}T00:00:00Z`);
@@ -271,20 +296,19 @@ export function generateDoses(ctx, prescription, patient, now, notBefore) {
   if (days * perDay > MAX_GENERATED_DOSES) {
     throw new ApiError(422, 'PRESCRIPTION_TOO_LARGE', 'Đơn thuốc vượt giới hạn 50.000 cữ; hãy rút ngắn khoảng ngày');
   }
-  const times = { ...DEFAULT_TIMES };
-  for (const reminder of patient.reminderTimes ?? []) times[reminder.slot] = reminder.time;
+  const times = prescriptionTimes(prescription.items, patient);
   const threshold = DOSE_WINDOW_MINUTES;
   const existing = new Set(ctx.db.list('doses', { prescriptionId: prescription.id })
     .map((dose) => `${dose.prescriptionItemId}:${dose.date}:${dose.slot}`));
   let count = 0;
   for (let offset = 0; offset < days; offset += 1) {
     const date = shiftDate(prescription.startDate, offset);
-    for (const item of prescription.items) {
+    for (const [index, item] of prescription.items.entries()) {
       for (const slot of item.slots) {
         const key = `${item.id}:${date}:${slot}`;
         if (existing.has(key)) continue;
-        const scheduledAt = new Date(`${date}T${item.times?.[slot] || times[slot]}:00+07:00`);
-          if (notBefore && scheduledAt < notBefore) continue;
+        const scheduledAt = new Date(`${date}T${times[index][slot]}:00+07:00`);
+        if (notBefore && scheduledAt < notBefore) continue;
         ctx.db.insert('doses', {
           id: newId(), patientId: patient.id, prescriptionId: prescription.id,
           prescriptionItemId: item.id, drugDisplayName: item.drugNameRaw,
@@ -333,8 +357,9 @@ export function registerMedicationRoutes(router, ctx) {
 
   router.post('/patients/:patientId/prescriptions', ctx.caregiver, (req, res) => {
     const patientId = parse(idSchema, req.params.patientId);
-    ctx.patientAccess(req, patientId);
+    const patient = ctx.patientAccess(req, patientId);
     const input = parse(prescriptionSchema, req.body);
+    prescriptionTimes(input.items, patient);
     const warnings = medicationWarnings(ctx, input.items);
     const prescription = ctx.db.transaction(() => {
       const created = ctx.db.insert('prescriptions', {
@@ -376,6 +401,7 @@ export function registerMedicationRoutes(router, ctx) {
     const prescription = getPrescription(ctx, req, req.params.prescriptionId);
     if (prescription.status !== 'DRAFT') throw new ApiError(409, 'PRESCRIPTION_NOT_DRAFT', 'Chỉ được sửa đơn thuốc nháp');
     const input = parse(prescriptionSchema, req.body);
+    prescriptionTimes(input.items, ctx.db.get('patients', prescription.patientId));
     const warnings = medicationWarnings(ctx, input.items);
     const updated = ctx.db.transaction(() => {
       const record = ctx.db.update('prescriptions', prescription.id, {
@@ -499,18 +525,21 @@ export function registerMedicationRoutes(router, ctx) {
     res.json(doses.map(dose => ({ ...serializeDose(ctx, dose), prescriptionDeleted: deletedIds.has(dose.prescriptionId) })));
   });
 
-  function deviceDoses(patientId, inRange) {
-    return ctx.db.list('doses', { patientId }).filter(inRange)
+  function deviceDoses(actor, inRange) {
+    return ctx.db.list('doses', { patientId: actor.patientId }).filter(inRange)
       .filter(dose => dose.lastConfirmationId || !ctx.db.get('prescriptions', dose.prescriptionId)?.deletedAt)
       .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt) || a.id.localeCompare(b.id))
-      .map(dose => serializeDose(ctx, dose));
+      .map(dose => ({
+        ...serializeDose(ctx, dose),
+        ...(actor.role === 'DELEGATE' ? { unconfirmedReminderAt: dose.unconfirmedReminderAt ?? null } : {}),
+      }));
   }
 
   router.get('/device/doses/today', ctx.device, (req, res) => {
     tickMedication(ctx);
     const now = ctx.now();
     const today = localDate(now);
-    res.json(deviceDoses(req.actor.patientId, dose => dose.date === today || Math.abs(Date.parse(dose.scheduledAt) - now) <= WINDOW_MS));
+    res.json(deviceDoses(req.actor, dose => dose.date === today || Math.abs(Date.parse(dose.scheduledAt) - now) <= WINDOW_MS));
   });
 
   router.get('/device/doses/schedule', ctx.device, (req, res) => {
@@ -520,7 +549,7 @@ export function registerMedicationRoutes(router, ctx) {
     // Include adjacent doses whose confirmation window crosses midnight.
     const start = Date.parse(`${fromDate}T00:00:00+07:00`) - WINDOW_MS;
     const end = Date.parse(`${shiftDate(toDate, 1)}T00:00:00+07:00`) + WINDOW_MS;
-    const doses = deviceDoses(req.actor.patientId, dose => {
+    const doses = deviceDoses(req.actor, dose => {
       const scheduled = Date.parse(dose.scheduledAt);
       return dose.status !== 'CANCELLED' && scheduled >= start && scheduled < end;
     });

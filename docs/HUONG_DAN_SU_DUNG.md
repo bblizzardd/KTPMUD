@@ -41,7 +41,7 @@ Hai lựa chọn **Giao diện web** và **Giao diện app** dùng chung tài kh
 | Lịch sử cữ thuốc | Lọc theo ngày hoặc trạng thái, xem giờ uống và người xác nhận | Lịch cữ thuốc |
 | Xác nhận hộ | Ghi nhận người bệnh vừa uống từng thuốc trong cữ | Chi tiết cữ trong Lịch cữ thuốc |
 | Đính chính | Sửa giờ uống của một xác nhận đã có bằng bản ghi đính chính, giữ bản gốc | Chi tiết cữ trong Lịch cữ thuốc |
-| Cảnh báo | Xem cữ bỏ lỡ, lịch tái khám và cảnh báo trùng hoạt chất; đánh dấu đã đọc | Biểu tượng chuông |
+| Cảnh báo | Xem cữ chưa có xác nhận sau 30 phút, cữ bỏ lỡ, lịch tái khám và cảnh báo trùng hoạt chất | Biểu tượng chuông |
 | Chỉ số xét nghiệm | Ghi HbA1c, đường huyết lúc đói, đường huyết sau ăn và chỉ số khác; xem xu hướng | Chỉ số & tái khám |
 | Lịch tái khám | Thêm ngày hẹn, thời điểm nhắc trước, ghi chú; đánh dấu đã khám | Chỉ số & tái khám |
 | Báo cáo | Tạo, xem và tải báo cáo PDF kỳ 30, 60 hoặc 90 ngày | Báo cáo |
@@ -61,7 +61,7 @@ Thực hiện theo thứ tự: **tạo hồ sơ → liên kết bệnh nhân →
 
 1. Tạo hồ sơ người thân từ màn hình chưa có hồ sơ hoặc bộ chọn hồ sơ.
 2. Nhập **Tên gọi trong gia đình**, chẳng hạn “Bố”, “Mẹ”, và **Năm sinh**.
-3. Kiểm tra giờ nhắc cho các buổi sáng, trưa, chiều, tối; giờ phải tăng dần trong ngày.
+3. Chọn giờ nhắc trong khung của từng buổi. Sáng từ **00:00–09:59**, trưa từ **10:00–14:59**, chiều từ **15:00–17:59** và tối từ **18:00–23:59**. Giờ riêng của từng thuốc trong đơn cũng dùng các khung này.
 4. Lưu hồ sơ và kiểm tra tên người thân đang được chọn.
 5. Khi quản lý nhiều người, chọn đúng hồ sơ trước khi nhập đơn, ghi chỉ số hoặc tạo báo cáo.
 
@@ -128,7 +128,9 @@ Có thể xóa đơn nháp, đang hiệu lực hoặc đơn trong lịch sử. �
 4. Khi người bệnh vừa uống thuốc, chọn **Xác nhận hộ** ở thuốc tương ứng. Hệ thống ghi giờ hiện tại và tên tài khoản người chăm sóc. Có thể xác nhận từ 60 phút trước giờ hẹn. Sau khoảng đúng giờ, hệ thống ghi nhận muộn trong ngày của cữ.
 5. Kiểm tra giờ uống và người xác nhận.
 
-Khi chuông có cảnh báo, mở để xem nội dung và kiểm tra với bệnh nhân/người nhà. **Bỏ lỡ** nghĩa là chưa có xác nhận đúng hạn trên hệ thống, chưa đủ để kết luận bệnh nhân chưa uống. Việc đánh dấu cảnh báo đã đọc không thay thế thao tác xác nhận uống thuốc.
+Ví dụ với cữ **07:00**, nếu đến **07:30** máy chủ vẫn chưa nhận được xác nhận uống thuốc, người chăm sóc nhận cảnh báo ở biểu tượng chuông và người được ủy quyền nhận lời nhắc trên màn hình lịch thuốc. Mở ứng dụng và kết nối mạng để nhận thông báo. Sau **08:00**, cữ còn thiếu xác nhận sẽ chuyển sang **Bỏ lỡ**.
+
+Khi có cảnh báo, kiểm tra với bệnh nhân hoặc người nhà. Đánh dấu **Đã đọc** để lưu việc đã xem cảnh báo. Chỉ bấm **Xác nhận hộ** khi đã biết người bệnh uống thuốc.
 
 Tỷ lệ tuân thủ trên Tổng quan tính các cữ được ghi nhận đúng hạn, gồm bệnh nhân tự xác nhận và người chăm sóc hoặc người nhà được ủy quyền xác nhận hộ. Các cữ xác nhận muộn được thống kê riêng.
 
@@ -149,7 +151,7 @@ Chỉ người chăm sóc quản lý hồ sơ có quyền đính chính; bệnh 
 2. Nhập tên gọi người nhà và quan hệ với bệnh nhân, bấm **Ủy quyền**.
 3. Trở lại mục liên kết, chọn người nhà đó ở **Tạo mã cho** và tạo mã.
 4. Nhập mã trên thiết bị dành cho người nhà.
-5. Người nhà có thể nhận cảnh báo bỏ lỡ và bấm **XÁC NHẬN HỘ: … ĐÃ UỐNG** khi biết bệnh nhân đã uống mà quên bấm.
+5. Người nhà nhận lời nhắc khi cữ còn thiếu xác nhận sau 30 phút. Chọn **Đã nhắc** sau khi liên hệ với bệnh nhân. Khi biết bệnh nhân đã uống, bấm **Xác nhận hộ** để ghi nhận.
 
 Nút **Đã nhắc …** trên cảnh báo của người nhà chỉ ghi nhận đã nhắc, không xác nhận rằng bệnh nhân đã uống.
 
@@ -306,8 +308,8 @@ Khi chạy bản local, mỗi lần khởi động backend, giờ hệ thống b
 1. Đăng nhập vai trò người chăm sóc, chọn hồ sơ có đơn đã xác nhận và còn cữ chưa uống.
 2. Mở **Mô phỏng thời gian** ở góc trái dưới.
 3. Bấm **Tới cữ tiếp theo** để kiểm tra màn hình nhắc thuốc và trạng thái Đang chờ.
-4. Chưa xác nhận uống, bấm **Skip quá giờ** để chuyển tới một phút sau hạn xác nhận của cữ chưa uống gần nhất. Kiểm tra trạng thái Bỏ lỡ và cảnh báo của người chăm sóc/người nhà.
-5. Dùng **+15 phút** hoặc **+1 giờ** khi cần thử các mốc khác. Các nút theo cữ tìm lịch trong 14 ngày tính từ ngày mô phỏng hiện tại.
+4. Để cữ ở trạng thái chờ và bấm **+15 phút** hai lần. Kiểm tra cảnh báo trên máy người chăm sóc và máy của người được ủy quyền đang mở lịch của bệnh nhân đó.
+5. Bấm **Skip quá giờ** để kiểm tra trạng thái **Bỏ lỡ** một phút sau hạn xác nhận. Các nút tua theo cữ tìm lịch trong 14 ngày kể từ ngày mô phỏng hiện tại.
 
 Khởi động lại backend đưa đồng hồ về 06:00 nhưng **không xóa lịch sử hoặc đưa các cữ đã xác nhận/bỏ lỡ về ban đầu**. Nếu cữ cũ đã được xử lý, hãy tạo đơn mới để thử tiếp. Môi trường production dùng giờ thực; bản local có thể tắt mô phỏng bằng `ENABLE_DEV_TOOLS=false`.
 

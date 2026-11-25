@@ -3,7 +3,6 @@
 
 import {
   SLOTS,
-  SLOT_META,
   CONFIRMED_STATUSES,
   DUE_STATUSES,
   DOSE_QUANTITY_STEP,
@@ -18,6 +17,8 @@ import {
   toDateKey
 } from '../lib/time.js';
 import { foldVN } from '../lib/text.js';
+import { reminderTimeOf, slotTimeError } from '../../../shared/doseTimes.js';
+export { reminderTimeOf };
 
 // ---------------------------------------------------------------------------
 // Bảng 6. Bảng quyết định cập nhật trạng thái cữ thuốc
@@ -124,7 +125,7 @@ export function detectDuplicateIngredients(items = [], drugs = []) {
 // Kiểm tra dữ liệu đơn thuốc (PrescriptionInput) — UC-05 5a
 // ---------------------------------------------------------------------------
 
-export function validatePrescriptionInput(input, { forConfirm = false, today = toDateKey() } = {}) {
+export function validatePrescriptionInput(input, { forConfirm = false, today = toDateKey(), patient } = {}) {
   const details = [];
   const add = (field, issue) => details.push({ field, issue });
   const issued = input?.issuedDate;
@@ -158,12 +159,10 @@ export function validatePrescriptionInput(input, { forConfirm = false, today = t
     } else if (units > 50) add(`items[${i}].unitsPerDose`, 'Số lượng mỗi lần quá lớn, hãy kiểm tra lại.');
     const slots = Array.isArray(item?.slots) ? item.slots.filter((s) => SLOTS.includes(s)) : [];
     if (slots.length === 0) add(`items[${i}].slots`, 'Chọn ít nhất một buổi uống.');
-    if (item.times !== undefined) {
-      for (const slot of slots) {
-        if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(item.times?.[slot] || '')) add(`items[${i}].times.${slot}`, 'Chọn giờ uống hợp lệ.');
-      }
-      const times = slots.map(slot => item.times?.[slot]).filter(Boolean);
-      if (new Set(times).size !== times.length) add(`items[${i}].times`, 'Các lần uống của cùng một thuốc phải khác giờ.');
+    for (const slot of slots) {
+      const time = item.times === undefined ? reminderTimeOf(patient, slot) : item.times?.[slot];
+      const issue = slotTimeError(slot, time);
+      if (issue) add(`items[${i}].times.${slot}`, issue);
     }
     if (String(item?.instruction || '').length > 200) add(`items[${i}].instruction`, 'Ghi chú tối đa 200 ký tự.');
   });
@@ -173,10 +172,6 @@ export function validatePrescriptionInput(input, { forConfirm = false, today = t
 // ---------------------------------------------------------------------------
 // FR-09: sinh cữ thuốc từ đơn Hiệu lực tới ngày tái khám (Hình 6)
 // ---------------------------------------------------------------------------
-
-export function reminderTimeOf(patient, slot) {
-  return patient?.reminderTimes?.find((r) => r.slot === slot)?.time || SLOT_META[slot].defaultTime;
-}
 
 export function itemDisplayName(item) {
   return String(item.drugNameRaw || '').trim();
@@ -272,6 +267,15 @@ export function groupDoses(doses) {
     .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt));
 }
 
+// Máy chủ kiểm tra xác nhận từ mọi thiết bị trước khi ghi thời điểm nhắc người nhà.
+export function delegateReminderGroups(doses, nowMs) {
+  const waiting = doses.filter(dose => !dose.lastConfirmation && (
+    dose.status === 'MISSED' ||
+    (dose.status === 'PENDING' && Date.parse(dose.unconfirmedReminderAt) <= nowMs)
+  ));
+  return groupDoses(waiting);
+}
+
 // ---------------------------------------------------------------------------
 // FR-19: tổng hợp tuân thủ. TD-02: cách tính Xác nhận muộn chưa chốt nên trả về cả
 // tỷ lệ đúng hạn (không tính muộn) và tỷ lệ có ghi nhận (tính cả muộn).
@@ -347,14 +351,8 @@ export function validatePatientInput(input, { partial = false, nowYear = new Dat
     const list = Array.isArray(input.reminderTimes) ? input.reminderTimes : [];
     for (const slot of SLOTS) {
       const entry = list.find((r) => r.slot === slot);
-      if (!entry || !/^([01]\d|2[0-3]):[0-5]\d$/.test(entry.time)) add(`reminderTimes.${slot}`, 'Giờ nhắc không hợp lệ.');
-    }
-    const times = SLOTS.map((s) => list.find((r) => r.slot === s)?.time).filter(Boolean);
-    for (let i = 1; i < times.length; i++) {
-      if (times[i] <= times[i - 1]) {
-        add(`reminderTimes.${SLOTS[i]}`, 'Giờ nhắc các buổi phải tăng dần trong ngày.');
-        break;
-      }
+      const issue = slotTimeError(slot, entry?.time);
+      if (issue) add(`reminderTimes.${slot}`, issue);
     }
   }
   if (input.missedThresholdMinutes !== undefined) {

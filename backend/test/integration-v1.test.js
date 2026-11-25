@@ -109,7 +109,7 @@ test('renewal keeps historical doses and times, updates linked visits and resume
   const path = `/prescriptions/${order.id}`;
   await f.ok('POST', path + '/confirm', user.token, { scheduleVisit: true }, 202);
   const before = f.ctx.db.list('doses', { prescriptionId: order.id });
-  await f.ok('PATCH', root, user.token, { reminderTimes: [{ slot: 'MORNING', time: '10:00' }] });
+  await f.ok('PATCH', root, user.token, { reminderTimes: [{ slot: 'MORNING', time: '09:59' }] });
   f.time('2026-10-27T01:00:00Z'); // 08:00 in Vietnam, after the missed visit and today's morning slot.
   const renewedLogin = await f.ok('POST', '/auth/login', undefined, { email: user.email, password: PASSWORD });
   const token = renewedLogin.accessToken;
@@ -395,6 +395,46 @@ test('device profile, labelled confirmations, correction history and last confir
 
   await f.ok('DELETE', `/patients/${patient.id}/devices/${me.deviceId}`, user.token, undefined, 204);
   assert.equal((await f.req('GET', '/device/me', helper.deviceToken)).status, 401);
+});
+
+test('only unconfirmed doses notify the caregiver and authorized delegate devices and accounts', async t => {
+  const f = await fixture(t, { initialTime: '2026-10-21T23:55:00Z', config: { testAccounts: true, accessTokenSeconds: 7200 } });
+  const login = async (email, role) => (await f.ok('POST', '/auth/login', undefined, { email, role, password: '123456' })).accessToken;
+  const owner = await login('nguoithan@antam.test', 'CAREGIVER');
+  const patient = await login('benhnhan@antam.test', 'PATIENT');
+  const delegate = await login('uyquyen@antam.test', 'DELEGATE');
+  const [profile] = await f.ok('GET', '/patients', owner);
+  const root = `/patients/${profile.id}`;
+  const [helper] = await f.ok('GET', root + '/delegates', owner);
+  const paired = await f.pair({ token: owner }, profile.id, 'DELEGATE', helper.id);
+  const items = ['A', 'B'].map(drugNameRaw => ({ drugNameRaw, unitsPerDose: 1, slots: ['MORNING'] }));
+  const rx = await f.ok('POST', root + '/prescriptions', owner, prescription({ items }), 201);
+  await f.ok('POST', `/prescriptions/${rx.id}/confirm`, owner, {}, 202);
+  const schedule = async token => (await f.ok('GET', '/device/doses/schedule', token)).doses
+    .filter(d => d.date === '2026-10-22').sort((a, b) => a.drugDisplayName.localeCompare(b.drugDisplayName));
+  const [first, second] = await schedule(paired.deviceToken);
+  f.time('2026-10-22T00:29:59.999Z');
+  await f.ok('POST', `/doses/${first.id}/confirmations`, patient, {}, 201);
+  f.time('2026-10-22T00:30:00.000Z');
+  tickMedication(f.ctx);
+  const [alert] = await f.ok('GET', root + '/alerts', owner);
+  assert.deepEqual([alert.type, alert.relatedDoseId, alert.scheduledAt], ['DOSE_UNCONFIRMED', second.id, second.scheduledAt]);
+  await f.ok('POST', root + '/alerts/read', owner, { alertIds: [alert.id] });
+  for (const token of [paired.deviceToken, delegate]) {
+    const [confirmed, pending] = await schedule(token);
+    assert.equal(confirmed.unconfirmedReminderAt, null);
+    assert.equal(pending.unconfirmedReminderAt, alert.createdAt);
+    assert.equal(pending.status, 'PENDING');
+  }
+  assert.ok((await schedule(patient)).every(d => !('unconfirmedReminderAt' in d)));
+  await f.ok('POST', `/doses/${second.id}/confirmations`, delegate, {}, 201);
+  f.time('2026-10-22T01:01:00Z');
+  assert.ok((await schedule(paired.deviceToken)).every(d => d.lastConfirmation));
+  assert.equal((await f.ok('GET', root + '/alerts', owner)).length, 1);
+  await f.ok('DELETE', root + '/delegates/' + helper.id, owner, undefined, 204);
+  for (const token of [paired.deviceToken, delegate]) {
+    assert.equal((await f.req('GET', '/device/doses/schedule', token)).status, 401);
+  }
 });
 
 test('bulk alert read, report list with date range, readable missed-dose message', async (t) => {

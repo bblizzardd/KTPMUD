@@ -1,7 +1,8 @@
 import { useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { AlertCircle, AlertTriangle, CheckCircle2, HeartPulse, Info, RefreshCw, WifiOff, X } from 'lucide-react';
-import { DOSE_STATUS, RX_STATUS } from '../domain/constants.js';
+import { DOSE_STATUS, RX_STATUS, SLOT_META } from '../domain/constants.js';
+import { slotTimeError } from '../../../shared/doseTimes.js';
 import { useApp } from '../app/AppContext.jsx';
 
 export function Badge({ tone = 'neutral', dot = false, size, className = '', title, children }) {
@@ -93,6 +94,20 @@ export function Field({ label, required, hint, error, children, className = '', 
         hint && <span className="field-hint">{hint}</span>
       )}
     </div>
+  );
+}
+
+export function SlotTimeField({ id, label, slot, value, onChange, error }) {
+  const { min, max } = SLOT_META[slot];
+  const range = `${min} – ${max}`;
+  const timeError = slotTimeError(slot, value);
+  const issue = error || (value?.length === 5 && timeError);
+  return (
+    <Field label={label} required htmlFor={id} hint={range} error={issue}>
+      <input id={id} className="input" type="text" placeholder="HH:mm" maxLength={5} ref={input => input?.setCustomValidity(timeError)}
+        title={`HH:mm (${range})`} value={value} onChange={e => onChange(e.target.value)}
+        aria-invalid={Boolean(issue)} required />
+    </Field>
   );
 }
 

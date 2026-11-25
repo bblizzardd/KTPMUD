@@ -45,7 +45,9 @@ export async function createApp(options = {}) {
     next();
   });
   app.use(express.json({ limit: '128kb' }));
-  app.get('/health', (req, res) => res.json({ status: 'ok', service: 'antam-backend', time: ctx.now().toISOString(), devTools: Boolean(devClock), testAccounts: config.testAccounts }));
+  const healthPayload = () => ({ status: 'ok', service: 'antam-backend', time: ctx.now().toISOString(), devTools: Boolean(devClock), testAccounts: config.testAccounts });
+  app.get('/health', (req, res) => res.json(healthPayload()));
+  app.get('/api/v1/runtime', (req, res) => res.json(healthPayload()));
   app.get('/openapi.yaml', (req, res) => res.type('application/yaml').sendFile(fileURLToPath(new URL('../../docs/api/openapi.yaml', import.meta.url))));
   const router = express.Router();
   for (const key of ['patientId', 'delegateId', 'deviceId', 'prescriptionId', 'doseId', 'reportId', 'appointmentId', 'alertId', 'confirmationId']) {

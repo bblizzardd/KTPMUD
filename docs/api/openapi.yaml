@@ -842,6 +842,7 @@ components:
     TimeSlot:
       type: string
       enum: [MORNING, NOON, AFTERNOON, EVENING]
+      description: Giờ địa phương theo từng buổi. MORNING 00:00–09:59, NOON 10:00–14:59, AFTERNOON 15:00–17:59, EVENING 18:00–23:59.
     DeviceRole:
       type: string
       enum: [PATIENT, DELEGATE]
@@ -922,10 +923,10 @@ components:
           additionalProperties: false
           description: Giờ HH:mm tự chọn cho từng buổi trong slots. Khi có times, phải có đúng các buổi đã chọn, không trùng giờ. Khi không có times, dùng giờ mặc định của hồ sơ.
           properties:
-            MORNING: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$', example: '08:25' }
-            NOON: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$', example: '12:15' }
-            AFTERNOON: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$', example: '16:00' }
-            EVENING: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$', example: '20:30' }
+            MORNING: { type: string, pattern: '^0\d:[0-5]\d$', example: '08:25' }
+            NOON: { type: string, pattern: '^1[0-4]:[0-5]\d$', example: '12:15' }
+            AFTERNOON: { type: string, pattern: '^1[5-7]:[0-5]\d$', example: '16:00' }
+            EVENING: { type: string, pattern: '^(1[89]|2[0-3]):[0-5]\d$', example: '20:30' }
         instruction: { type: string, maxLength: 200, example: Uống sau ăn }
     PrescriptionInput:
       type: object
@@ -967,6 +968,11 @@ components:
         unitsPerDose: { type: number }
         scheduledAt: { type: string, format: date-time }
         deadlineAt: { type: string, format: date-time }
+        unconfirmedReminderAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Trong lịch của người được ủy quyền, thời điểm máy chủ phát lời nhắc cữ chưa có xác nhận sau 30 phút.
         status: { $ref: '#/components/schemas/DoseStatus' }
         prescriptionDeleted: { type: boolean, description: Đơn thuốc đã bị xóa (lịch của người chăm sóc). }
         lastConfirmation:
@@ -1023,9 +1029,10 @@ components:
       type: object
       properties:
         id: { type: string, format: uuid }
-        type: { type: string, enum: [DOSE_MISSED, VISIT_UPCOMING, DUPLICATE_INGREDIENT] }
+        type: { type: string, enum: [DOSE_UNCONFIRMED, DOSE_MISSED, VISIT_UPCOMING, DUPLICATE_INGREDIENT] }
         message: { type: string }
         relatedDoseId: { type: string, format: uuid, nullable: true }
+        scheduledAt: { type: string, format: date-time, description: Giờ hẹn của cữ thuốc trong cảnh báo nhắc xác nhận. }
         createdAt: { type: string, format: date-time }
         read: { type: boolean }
     LabTestType:

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import * as api from '../api/caregiver.js';
 import { useApp } from '../app/AppContext.jsx';
-import { Callout, Field, Modal, Spinner } from '../components/ui.jsx';
+import { Callout, Field, Modal, SlotTimeField, Spinner } from '../components/ui.jsx';
 import { fieldError } from '../api/errors.js';
 import { DEFAULT_MISSED_THRESHOLD, DEFAULT_REMINDER_TIMES, SLOTS, SLOT_META } from '../domain/constants.js';
 import { validatePatientInput } from '../domain/rules.js';
@@ -68,7 +68,7 @@ export default function PatientFormModal({ open, mode = 'create', patient, onClo
     onClose();
   }
 
-  const timeError = [...SLOTS.map((s) => fieldError(error, `reminderTimes.${s}`)), fieldError(error, 'reminderTimes')].find(Boolean);
+  const timeError = fieldError(error, 'reminderTimes');
 
   return (
     <Modal
@@ -119,13 +119,13 @@ export default function PatientFormModal({ open, mode = 'create', patient, onClo
         <fieldset className="fieldset">
           <legend className="field-label">Giờ nhắc theo buổi</legend>
           <div className="grid-4">
-            {SLOTS.map((slot) => (
-              <Field key={slot} label={SLOT_META[slot].long} htmlFor={`pf-${slot}`}>
-                <input id={`pf-${slot}`} className="input" type="text" placeholder="HH:mm" maxLength={5} pattern="([01][0-9]|2[0-3]):[0-5][0-9]" title="24h: 00:00 - 23:59" value={times[slot]} onChange={(e) => setTimes((t) => ({ ...t, [slot]: e.target.value }))} required />
-              </Field>
+            {SLOTS.map((slot, i) => (
+              <SlotTimeField key={slot} id={`pf-${slot}`} label={SLOT_META[slot].long} slot={slot} value={times[slot]}
+                onChange={time => { setError(null); setTimes(t => ({ ...t, [slot]: time })); }}
+                error={fieldError(error, `reminderTimes.${slot}`) || fieldError(error, `reminderTimes[${i}].time`)} />
             ))}
           </div>
-          {timeError ? <span className="field-error">{timeError}</span> : <span className="field-hint">Nhập giờ theo thứ tự từ sáng đến tối.</span>}
+          {timeError && <span className="field-error">{timeError}</span>}
         </fieldset>
 
       </form>

@@ -25,10 +25,11 @@ function useConfirmPreview(rx, patient, list, nowMs) {
   const apptQ = useQuery(isDraft ? patientKey(patient.id, 'appointments') : null, () => api.listAppointments(patient.id));
   if (!isDraft || !list || !apptQ.data || (activeRx && !futureQ.data)) return null;
   const toCancel = activeRx ? dosesToCancelOnSupersede(futureQ.data, activeRx.id, nowMs) : [];
-  const planned = rx.nextVisitDate >= rx.startDate ? planDoses({ prescription: rx, patient }) : [];
+  const missing = validatePrescriptionInput(rx, { forConfirm: true, today, patient });
+  const planned = missing.length ? [] : planDoses({ prescription: rx, patient });
   const upcoming = planned.filter((d) => Date.parse(d.scheduledAt) >= nowMs);
   return {
-    missing: validatePrescriptionInput(rx, { forConfirm: true, today }),
+    missing,
     activePrescription: activeRx,
     cancelCount: toCancel.length,
     cancelFrom: toCancel[0]?.scheduledAt || null,

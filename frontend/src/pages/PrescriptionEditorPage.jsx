@@ -9,7 +9,7 @@ import { href, navigate, ROUTES } from '../app/router.js';
 import { DOSE_QUANTITY_STEP, SLOTS, SLOT_META } from '../domain/constants.js';
 import { detectDuplicateIngredients, reminderTimeOf, validatePrescriptionInput } from '../domain/rules.js';
 import { addDays, fmtDateTime, toDateKey } from '../lib/time.js';
-import { Callout, Card, Field, PageHeader, PageStatus, Spinner } from '../components/ui.jsx';
+import { Callout, Card, Field, PageHeader, PageStatus, SlotTimeField, Spinner } from '../components/ui.jsx';
 import DrugAutocomplete from '../components/DrugAutocomplete.jsx';
 
 let tmpSeq = 0;
@@ -273,9 +273,9 @@ function Editor({ prescriptionId, existing = null, loadError = null }) {
                   </div>
                   <div className="grid-2" style={{ marginTop: 12 }}>
                     {item.slots.map(slot => (
-                      <Field key={slot} label={`Giờ uống ${SLOT_META[slot].label.toLowerCase()}`} htmlFor={`rx-time-${i}-${slot}`} error={err(`items[${i}].times.${slot}`)}>
-                        <input id={`rx-time-${i}-${slot}`} className="input" type="text" placeholder="HH:mm" maxLength={5} pattern="([01][0-9]|2[0-3]):[0-5][0-9]" title="24h: 00:00 - 23:59" required value={item.times?.[slot] ?? reminderTimeOf(patient, slot)} onChange={e => setItem(i, { times: { ...item.times, [slot]: e.target.value } })} aria-invalid={Boolean(err(`items[${i}].times.${slot}`))} />
-                      </Field>
+                      <SlotTimeField key={slot} id={`rx-time-${i}-${slot}`} label={`Giờ uống ${SLOT_META[slot].label.toLowerCase()}`} slot={slot}
+                        value={item.times?.[slot] ?? reminderTimeOf(patient, slot)} error={err(`items[${i}].times.${slot}`)}
+                        onChange={time => setItem(i, { times: { ...item.times, [slot]: time } })} />
                     ))}
                   </div>
                   {err(`items[${i}].times`) && <span className="field-error">{err(`items[${i}].times`)}</span>}

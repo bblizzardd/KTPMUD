@@ -133,11 +133,11 @@ export async function request(path, { method = 'GET', body, auth = 'caregiver', 
   return parse(response, { blob });
 }
 
-/** Giờ máy chủ (có thể đang được tua nhanh khi bật công cụ kiểm thử). */
+/** Giờ máy chủ và cờ tính năng kiểm thử (dùng /api/v1/runtime để tránh bị trình chặn quảng cáo chặn /health). */
 export async function fetchHealth() {
   let response;
   try {
-    response = await fetch('/health', { cache: 'no-store' });
+    response = await fetch(`${API_BASE}/runtime`, { cache: 'no-store' });
   } catch {
     throw new ApiError(0, NETWORK_ERROR, 'Không kết nối được máy chủ An Tâm.');
   }

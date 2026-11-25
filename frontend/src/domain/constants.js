@@ -1,13 +1,7 @@
 // Hằng số nghiệp vụ bám theo báo cáo Tuần 6 (Bảng 6, Hình 4, Hình 5) và openapi.yaml.
 
-export const SLOTS = ['MORNING', 'NOON', 'AFTERNOON', 'EVENING'];
-
-export const SLOT_META = {
-  MORNING: { label: 'Sáng', long: 'Cữ sáng', defaultTime: '07:00' },
-  NOON: { label: 'Trưa', long: 'Cữ trưa', defaultTime: '11:30' },
-  AFTERNOON: { label: 'Chiều', long: 'Cữ chiều', defaultTime: '15:00' },
-  EVENING: { label: 'Tối', long: 'Cữ tối', defaultTime: '19:00' }
-};
+import { SLOTS, SLOT_META } from '../../../shared/doseTimes.js';
+export { SLOTS, SLOT_META };
 
 // DoseStatus — Hình 4: Biểu đồ chuyển trạng thái của cữ thuốc
 export const DOSE_STATUS = {
@@ -91,6 +85,7 @@ export const ERROR_CODES = {
 };
 
 export const ALERT_TYPES = {
+  DOSE_UNCONFIRMED: { label: 'Chưa xác nhận sau 30 phút', tone: 'warning' },
   DOSE_MISSED: { label: 'Cữ bỏ lỡ', tone: 'danger' },
   VISIT_UPCOMING: { label: 'Sắp tái khám', tone: 'info' },
   DUPLICATE_INGREDIENT: { label: 'Trùng hoạt chất', tone: 'warning' }

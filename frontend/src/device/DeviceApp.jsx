@@ -18,7 +18,7 @@ import { isNetworkError } from '../api/errors.js';
 import { href, ROUTES } from '../app/router.js';
 import { useNow } from '../app/hooks.js';
 import { CONFIRMED_STATUSES, SLOT_META } from '../domain/constants.js';
-import { checkConfirmable, decideUnconfirmedStatus, groupDoses } from '../domain/rules.js';
+import { checkConfirmable, decideUnconfirmedStatus, delegateReminderGroups, groupDoses } from '../domain/rules.js';
 import { addDays, dayLabel, diffDays, fmtDate, fmtTime, toDateKey, weekdayOf, fmtDateShort, MINUTE } from '../lib/time.js';
 import { fmtNumber } from '../lib/text.js';
 import { confirmDoses, forgetPairing, pairPhone, playChime, usePhoneData } from './deviceClient.js';
@@ -239,15 +239,17 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
 
   const pending = groups.filter((g) => g.status === 'PENDING');
   const missed = groups.filter((g) => g.status === 'MISSED');
-  // Máy người nhà: cữ quá hạn chưa xác nhận là cảnh báo cần nhắc bệnh nhân (US-12).
-  const unresolved = isPatient
-    ? []
-    : missed
-        .filter((g) => !(phone.acked || []).includes(g.key))
-        .map((g) => ({ id: g.key, message: `${alias} chưa xác nhận ${SLOT_META[g.slot].long.toLowerCase()} ${fmtTime(g.scheduledAt)} (${medsLine(g)}).` }));
+  const unresolved = isPatient ? [] : delegateReminderGroups(doses, nowMs).map(g => {
+    const overdue = g.status === 'MISSED';
+    const reason = overdue ? 'đã quá hạn xác nhận' : 'vẫn chưa có xác nhận sau 30 phút';
+    return {
+      id: overdue ? g.key : `30m:${g.key}`,
+      message: `${SLOT_META[g.slot].long} ${fmtTime(g.scheduledAt)} của ${alias} (${medsLine(g)}) ${reason}.`
+    };
+  }).filter(note => !phone.acked?.includes(note.id));
   const ack = (key) => updatePhone(phone.id, (p) => ({ acked: [...(p.acked || []).slice(-50), key] }));
 
-  // Nhắc nhở (FR-10, US-08) trên máy bệnh nhân; cảnh báo bỏ lỡ (US-12) trên máy người nhà
+  // Mỗi máy người nhà ghi nhận riêng lần nhắc sau 30 phút và lần báo quá hạn.
   const ringKeys = isPatient ? pending.map((g) => `p:${g.key}`) : unresolved.map((n) => `n:${n.id}`);
   const ringing = ringKeys.find(key => !dismissed.has(key));
   function dismissReminder() {
@@ -498,9 +500,9 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
       )}
 
       {ringingNote && (
-        <div className="dev-ring dev-ring-alert" role="alertdialog" aria-label="Cảnh báo bỏ lỡ cữ thuốc">
+        <div className="dev-ring dev-ring-alert" role="alertdialog" aria-label="Cữ thuốc chưa có xác nhận">
           <AlertTriangle size={64} aria-hidden="true" />
-          <div className="dev-ring-title">{alias.toUpperCase()} CHƯA UỐNG THUỐC</div>
+          <div className="dev-ring-title">CỮ THUỐC CHƯA CÓ XÁC NHẬN</div>
           <p className="dev-text">{ringingNote.message}</p>
           <button
             type="button"

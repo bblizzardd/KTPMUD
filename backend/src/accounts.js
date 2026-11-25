@@ -1,12 +1,17 @@
 import { randomInt } from 'node:crypto';
 import { z } from 'zod';
+import { slotTimeError } from '../../shared/doseTimes.js';
 import { ApiError, DEFAULT_REMINDERS, TIME_SLOTS, DOSE_WINDOW_MINUTES, idSchema, newId, parse } from './common.js';
 import { accountEnabled, accountTable, createTokenPair, encryptToken, hashPassword, hashToken, opaqueToken, verifyPassword } from './security.js';
 
 const text = max => z.string().trim().min(1).max(max);
 const email = z.string().trim().email().max(254).transform(value => value.toLowerCase());
 const password = z.string().min(8).max(128);
-const reminders = z.array(z.object({ slot: z.enum(TIME_SLOTS), time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/) }).strict())
+const reminder = z.object({ slot: z.enum(TIME_SLOTS), time: z.string() }).strict().superRefine(({ slot, time }, ctx) => {
+  const message = slotTimeError(slot, time);
+  if (message) ctx.addIssue({ code: 'custom', path: ['time'], message });
+});
+const reminders = z.array(reminder)
   .min(1).max(4).refine(items => new Set(items.map(item => item.slot)).size === items.length, 'Mỗi buổi chỉ được khai báo một lần');
 const patientCreate = z.object({ alias: text(50), birthYear: z.number().int().min(1920).max(2010), reminderTimes: reminders.optional() }).strict();
 const patientUpdate = z.object({ alias: text(50).optional(), birthYear: z.number().int().min(1920).max(2010).optional(), reminderTimes: reminders.optional(), missedThresholdMinutes: z.literal(DOSE_WINDOW_MINUTES).optional() }).strict()

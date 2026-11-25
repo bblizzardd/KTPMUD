@@ -5,6 +5,7 @@ import {
   checkConfirmable,
   decideConfirmedStatus,
   decideUnconfirmedStatus,
+  delegateReminderGroups,
   detectDuplicateIngredients,
   dosesToCancelOnSupersede,
   groupDoses,
@@ -189,6 +190,23 @@ test('Giờ tự chọn được dùng khi xem trước, sắp xếp và gom cá
   assert.equal(validatePrescriptionInput(prescription, { today: '2026-10-22' })[0].field, 'items[0].times.MORNING');
 });
 
+test('Hồ sơ, đơn nháp và giờ kế thừa dùng cùng mốc chuyển buổi', () => {
+  const rx = { issuedDate: '2026-10-22', startDate: '2026-10-22', nextVisitDate: '2026-10-22' };
+  const times = { MORNING: '09:59', NOON: '10:00', AFTERNOON: '15:00', EVENING: '18:00' };
+  const item = { drugNameRaw: 'A', unitsPerDose: 1, slots: Object.keys(times) };
+  const forProfile = t => ({ reminderTimes: Object.entries(t).map(([slot, time]) => ({ slot, time })) });
+  for (const [slot, invalid] of [['MORNING', '10:00'], ['NOON', '15:00'], ['AFTERNOON', '18:00'], ['EVENING', '24:00']]) {
+    const changed = { ...times, [slot]: invalid };
+    const patient = forProfile(changed);
+    const path = `items[0].times.${slot}`;
+    assert.deepEqual(validatePatientInput(patient, { partial: true }).map(e => e.field), [`reminderTimes.${slot}`]);
+    assert.deepEqual(validatePrescriptionInput({ ...rx, items: [{ ...item, times: changed }] }, { today: rx.startDate }).map(e => e.field), [path]);
+    assert.deepEqual(validatePrescriptionInput({ ...rx, items: [item] }, { today: rx.startDate, forConfirm: true, patient }).map(e => e.field), [path]);
+  }
+  assert.deepEqual(validatePatientInput(forProfile(times), { partial: true }), []);
+  assert.deepEqual(validatePrescriptionInput({ ...rx, items: [{ ...item, times }] }, { today: rx.startDate }), []);
+});
+
 test('Khoảng đúng giờ ±60 phút gồm hai mốc và có thể qua nửa đêm', () => {
   const dose = { date: '2026-10-22', scheduledAt: atTime('2026-10-22', '00:30'), status: 'SCHEDULED' };
   const scheduled = Date.parse(dose.scheduledAt);
@@ -229,6 +247,23 @@ test('Gom cữ theo buổi: một thao tác cho mỗi cữ, trạng thái ưu ti
   assert.equal(groups.length, 1);
   assert.equal(groups[0].status, 'PENDING');
   assert.equal(groups[0].doses.length, 2);
+});
+
+test('Máy người nhà gộp thuốc chưa xác nhận trong cùng cữ sau khi nhận nhắc 30 phút', () => {
+  const scheduledAt = atTime('2026-10-22', '23:45');
+  const reminderAt = addMinutes(scheduledAt, 30);
+  const now = Date.parse(reminderAt);
+  const dose = { date: '2026-10-22', patientId: 'p', slot: 'EVENING', scheduledAt, status: 'PENDING', unconfirmedReminderAt: reminderAt };
+  const doses = [
+    { ...dose, id: 'a' }, { ...dose, id: 'b' }, { ...dose, unconfirmedReminderAt: null },
+    { ...dose, lastConfirmation: { recordedAt: reminderAt } }, { ...dose, status: 'QUEUED' }, { ...dose, status: 'CANCELLED' }
+  ];
+  assert.deepEqual(delegateReminderGroups(doses, now - 1), []);
+  const groups = delegateReminderGroups(doses, now);
+  assert.equal(groups.length, 1);
+  assert.deepEqual(groups[0].doses.map(d => d.id), ['a', 'b']);
+  const [missed] = delegateReminderGroups([{ ...dose, status: 'MISSED', unconfirmedReminderAt: null }], now + 60 * 60_000);
+  assert.equal(missed.status, 'MISSED');
 });
 
 test('FR-19: tỷ lệ đúng hạn và tỷ lệ có ghi nhận (TD-02)', () => {

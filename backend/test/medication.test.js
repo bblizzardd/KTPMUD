@@ -156,11 +156,58 @@ test('confirmation includes both 60-minute boundaries, supports offline and corr
   assert.deepEqual(f.db.get('confirmations', confirmed.body.id), confirmed.body, 'Original confirmation is immutable');
 });
 
+test('prescription and profile writes enforce the time range of each slot', async t => {
+  const f = await fullFixture(t);
+  const patientInput = { alias: 'Bố', birthYear: 1955 };
+  const invalidMorning = [{ slot: 'MORNING', time: '10:00' }];
+  assert.equal((await f.request('POST', '/patients', { ...patientInput, reminderTimes: invalidMorning })).status, 400);
+  const patient = (await f.request('POST', '/patients', patientInput)).body;
+  const path = `/patients/${patient.id}`;
+  const rx = (await f.request('POST', path + '/prescriptions', input())).body;
+  const rxPath = `/prescriptions/${rx.id}`;
+  const scheduled = (slot, time) => input({ items: [{ ...input().items[0], slots: [slot], times: { [slot]: time } }] });
+  assert.equal((await f.request('POST', path + '/prescriptions', scheduled('MORNING', '10:00'))).status, 400);
+  const boundaries = [
+    ['MORNING', '00:00', '09:59', '10:00'],
+    ['NOON', '10:00', '14:59', '09:59', '15:00'],
+    ['AFTERNOON', '15:00', '17:59', '14:59', '18:00'],
+    ['EVENING', '18:00', '23:59', '17:59', '24:00', '00:00'],
+  ];
+  for (const [slot, min, max, ...outside] of boundaries) {
+    for (const time of [min, max, ...outside]) {
+      const status = outside.includes(time) ? 400 : 200;
+      assert.equal((await f.request('PATCH', path, { reminderTimes: [{ slot, time }] })).status, status, slot + ' ' + time);
+      assert.equal((await f.request('PUT', rxPath, scheduled(slot, time))).status, status, slot + ' ' + time);
+    }
+  }
+});
+
+test('legacy out-of-slot times require correction before scheduling new doses', async t => {
+  const f = await fixture(t);
+  const endpoint = `/patients/${f.patient.id}/prescriptions`;
+  const rx = (await f.request('POST', endpoint, input())).body;
+  const path = `/prescriptions/${rx.id}`;
+  f.db.update('patients', f.patient.id, { reminderTimes: [{ slot: 'EVENING', time: '17:30' }] });
+  assert.equal((await f.request('POST', endpoint, input())).status, 400);
+  assert.equal((await f.request('POST', path + '/confirm')).status, 400);
+  assert.equal(f.db.get('prescriptions', rx.id).status, 'DRAFT');
+  assert.equal(f.db.list('doses').length, 0);
+  f.db.update('patients', f.patient.id, { reminderTimes: [{ slot: 'EVENING', time: '18:30' }] });
+  assert.equal((await f.request('POST', path + '/confirm')).status, 202);
+  // Renewal also considers times recorded on older doses that predate per-item times.
+  const dose = f.db.list('doses')[0];
+  f.db.update('doses', dose.id, { scheduledAt: '2026-10-22T17:30:00+07:00' });
+  const extend = { previousVisitDate: rx.nextVisitDate, nextVisitDate: '2026-10-25' };
+  assert.equal((await f.request('POST', path + '/extend', extend)).status, 400);
+  assert.equal(f.db.list('doses').length, 1);
+  assert.equal(f.db.get('prescriptions', rx.id).nextVisitDate, rx.nextVisitDate);
+});
+
 test('near-midnight doses remain visible and confirmable across both calendar boundaries', async t => {
-  for (const [time, now] of [['00:30', '2026-10-21T16:30:00.000Z'], ['23:30', '2026-10-22T17:30:00.000Z']]) {
+  for (const [slot, time, now] of [['MORNING', '00:30', '2026-10-21T16:30:00.000Z'], ['EVENING', '23:30', '2026-10-22T17:30:00.000Z']]) {
     await t.test(time, async t => {
       const f = await fixture(t, '2026-10-21T16:00:00.000Z');
-      const draft = await f.request('POST', `/patients/${f.patient.id}/prescriptions`, input({ items: [{ drugNameRaw: 'A', unitsPerDose: 1, slots: ['MORNING'], times: { MORNING: time } }] }));
+      const draft = await f.request('POST', `/patients/${f.patient.id}/prescriptions`, input({ items: [{ drugNameRaw: 'A', unitsPerDose: 1, slots: [slot], times: { [slot]: time } }] }));
       await f.request('POST', `/prescriptions/${draft.body.id}/confirm`);
       f.time(now);
       const today = await f.request('GET', '/device/doses/today');
@@ -209,7 +256,7 @@ test('failed replacement rolls back prescription, future doses and audit mutatio
   assert.deepEqual(f.db.list('auditLogs'), auditBefore);
 });
 
-test('deadline is inclusive; crossing it emits one alert, and expiry follows Vietnam date', async (t) => {
+test('unconfirmed reminder at 30 minutes and missed alert after 60 fire once, with expiry on the Vietnam date', async (t) => {
   const f = await fixture(t, '2026-10-22T11:59:59.999Z');
   const draft = await f.request('POST', `/patients/${f.patient.id}/prescriptions`, input());
   await f.request('POST', `/prescriptions/${draft.body.id}/confirm`);
@@ -219,6 +266,15 @@ test('deadline is inclusive; crossing it emits one alert, and expiry follows Vie
   f.time('2026-10-22T12:00:00.000Z');
   tickMedication(f.ctx);
   assert.equal(f.db.get('doses', dose.id).status, 'PENDING');
+  f.time('2026-10-22T12:29:59.999Z');
+  tickMedication(f.ctx);
+  assert.deepEqual(alerts, []);
+  f.time('2026-10-22T12:30:00.000Z');
+  tickMedication(f.ctx);
+  tickMedication(f.ctx);
+  assert.deepEqual(alerts.map(a => a.type), ['DOSE_UNCONFIRMED']);
+  assert.equal(alerts[0].relatedDoseId, dose.id);
+  assert.equal(alerts[0].scheduledAt, dose.scheduledAt);
   f.time('2026-10-22T13:00:00.000Z');
   tickMedication(f.ctx);
   assert.equal(f.db.get('doses', dose.id).status, 'PENDING');
@@ -226,8 +282,8 @@ test('deadline is inclusive; crossing it emits one alert, and expiry follows Vie
   tickMedication(f.ctx);
   tickMedication(f.ctx);
   assert.equal(f.db.get('doses', dose.id).status, 'MISSED');
-  assert.equal(alerts.length, 1);
-  assert.equal(f.db.list('alerts').length, 1);
+  assert.deepEqual(alerts.map(a => a.type), ['DOSE_UNCONFIRMED', 'DOSE_MISSED']);
+  assert.equal(f.db.list('alerts').length, 2);
   f.time('2026-10-22T16:59:59.999Z');
   tickMedication(f.ctx);
   assert.equal(f.db.get('prescriptions', draft.body.id).status, 'ACTIVE');
