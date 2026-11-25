@@ -11,10 +11,15 @@ const FINISHED = new Set(['TAKEN', 'TAKEN_BY_DELEGATE', 'LATE_CONFIRMED', 'MISSE
 const MAX_GENERATED_DOSES = 50_000;
 const WINDOW_MS = DOSE_WINDOW_MINUTES * 60_000;
 const timeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Giờ uống phải có dạng HH:mm');
+const unitsPerDoseSchema = z.number().finite().refine(
+  value => value >= 0.5 && value % 0.5 === 0,
+  'Nhập số lượng từ 0,5 trở lên theo bước 0,5.',
+);
+const draftQuantitiesSchema = z.object({ items: z.array(z.object({ unitsPerDose: unitsPerDoseSchema })) });
 const itemSchema = z.object({
   drugId: idSchema.nullable().optional(),
   drugNameRaw: z.string().trim().min(1).max(200),
-  unitsPerDose: z.number().finite().min(0.25),
+  unitsPerDose: unitsPerDoseSchema,
   unit: z.string().trim().min(1).max(50).optional(),
   slots: z.array(z.enum(TIME_SLOTS)).min(1).max(4)
     .refine((slots) => new Set(slots).size === slots.length, 'Không được lặp buổi uống'),
@@ -398,6 +403,8 @@ export function registerMedicationRoutes(router, ctx) {
     const prescription = getPrescription(ctx, req, req.params.prescriptionId);
     const { scheduleVisit } = parse(z.object({ scheduleVisit: z.boolean().default(false) }).strict(), req.body ?? {});
     if (prescription.status !== 'DRAFT') throw new ApiError(409, 'PRESCRIPTION_NOT_DRAFT', 'Chỉ được xác nhận đơn thuốc nháp');
+    // A draft saved before half-unit increments may still need an explicit dose edit.
+    parse(draftQuantitiesSchema, prescription);
     const now = ctx.now();
     if (prescription.nextVisitDate < localDate(now)) {
       throw new ApiError(422, 'PRESCRIPTION_ALREADY_EXPIRED', 'Ngày tái khám đã qua; không thể kích hoạt đơn thuốc');
@@ -537,7 +544,11 @@ export function registerMedicationRoutes(router, ctx) {
     }
     tickMedication(ctx);
     const now = ctx.now();
-    const takenAt = input.takenAt ? new Date(input.takenAt) : now;
+    let takenAt = input.takenAt ? new Date(input.takenAt) : now;
+    // Cho phép dung sai lệch đồng hồ nhỏ (<= 5 giây) khi thiết bị gửi lại xác nhận ngoại tuyến.
+    if (!correction && input.takenAt && takenAt.getTime() > now.getTime() && takenAt.getTime() - now.getTime() <= 5_000) {
+      takenAt = now;
+    }
     const dose = ctx.db.get('doses', doseId);
     if (dose.status === 'CANCELLED') throw new ApiError(409, 'DOSE_CANCELLED', 'Cữ thuốc đã bị hủy');
     const scheduledMs = Date.parse(dose.scheduledAt);

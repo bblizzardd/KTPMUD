@@ -155,13 +155,15 @@ export async function confirmDoses(phone, doses) {
   }
   const results = await Promise.all(
     doses.map((d) =>
-      deviceApi.confirmDose(phone.token, d.id, { takenAt }).then(
+      // Khi đang có mạng, để máy chủ tự ghi giờ hiện tại (tránh lệch đồng hồ giữa điện thoại và server).
+      deviceApi.confirmDose(phone.token, d.id).then(
         (confirmation) => ({ ok: true, dose: d, confirmation }),
         (error) => ({ ok: false, dose: d, error })
       )
     )
   );
-  return { queued: false, takenAt, results };
+  const confirmedAt = results.find((r) => r.ok)?.confirmation?.takenAt || takenAt;
+  return { queued: false, takenAt: confirmedAt, results };
 }
 
 let audioCtx = null;
