@@ -1,5 +1,6 @@
 import { createServer } from 'node:http';
 import { existsSync } from 'node:fs';
+import { networkInterfaces } from 'node:os';
 import path from 'node:path';
 import { createApp } from './app.js';
 import { attachRealtime } from './realtime.js';
@@ -24,6 +25,13 @@ timer.unref();
 ctx.events.on('report-requested', () => setTimeout(runWorker, 200).unref());
 server.listen(ctx.config.port, ctx.config.host, () => {
   if (existsSync(path.join(ctx.config.frontendDir, 'index.html'))) console.log(`An Tâm v1.0: ${ctx.config.baseUrl}/`);
+  if (ctx.config.host === '0.0.0.0') {
+    for (const [name, addresses] of Object.entries(networkInterfaces())) {
+      for (const address of addresses || []) {
+        if (address.family === 'IPv4' && !address.internal) console.log(`LAN (${name}): http://${address.address}:${server.address().port}/`);
+      }
+    }
+  }
   console.log(`An Tâm API: ${ctx.config.baseUrl}/api/v1`);
   if (ctx.config.devTools) console.log('Dev tools: bật (đồng hồ tua nhanh cho kiểm thử)');
   console.log(`Health: ${ctx.config.baseUrl}/health`);

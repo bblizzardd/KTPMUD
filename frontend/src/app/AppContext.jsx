@@ -39,7 +39,7 @@ export function AppProvider({ children }) {
 
   const signedIn = Boolean(session);
   const meQ = useQuery('me', api.getMe, { enabled: signedIn });
-  const patientsQ = useQuery('patients', api.listPatients, { enabled: signedIn && session.role !== 'PATIENT' });
+  const patientsQ = useQuery('patients', api.listPatients, { enabled: session?.role === 'CAREGIVER' });
   const caregiver = signedIn ? meQ.data || null : null;
   const patients = useMemo(() => [...(patientsQ.data || [])].sort((a, b) => a.createdAt.localeCompare(b.createdAt)), [patientsQ.data]);
   const patient = patients.find((p) => p.id === selectedPatientId) || patients[0] || null;

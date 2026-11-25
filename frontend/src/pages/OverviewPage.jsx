@@ -216,7 +216,7 @@ export default function OverviewPage() {
       <div className="overview-stats">
         <div className="overview-stat"><span>Tỷ lệ tuân thủ uống thuốc</span><strong>{summary.adherenceRate === null ? 'Chưa có dữ liệu' : percent(summary.adherenceRate)}</strong><small>{summary.taken + summary.takenByDelegate} / {summary.totalDoses} cữ đúng hạn trong {days} ngày</small></div>
         <div className="overview-stat stat-amber"><span>Lịch uống thuốc hôm nay</span><strong>{doneToday} / {todayGroups.length} buổi</strong><small>Đã có xác nhận uống thuốc</small></div>
-        <div className="overview-stat"><span>Lịch tái khám sắp tới</span><strong>{nextVisit ? fmtDate(nextVisit.visitDate) : 'Chưa có lịch'}</strong><small>{nextVisit ? `Nhắc trước ${nextVisit.remindDaysBefore} ngày` : 'Thêm lịch tại Chỉ số & tái khám'}</small></div>
+        <a className="overview-stat" href={href(ROUTES.clinical)}><span>Lịch tái khám sắp tới</span><strong>{nextVisit ? fmtDate(nextVisit.visitDate) : 'Chưa có lịch'}</strong><small>{nextVisit ? `Nhắc trước ${nextVisit.remindDaysBefore} ngày · Xem lịch` : 'Thêm lịch tái khám'}</small></a>
       </div>
 
       {unreadMissed.length > 0 && (

@@ -81,7 +81,7 @@ function Root() {
   if (route.path === ROUTES.device && (route.query.pairing === '1' || route.query.phone)) return <DeviceStandalone route={route} />;
   if (!session) return <AuthPage mode={route.path === ROUTES.register ? 'register' : 'login'} surface={isApp ? 'app' : 'web'} initialRole={route.query.role || (route.path === ROUTES.patient ? 'PATIENT' : undefined)} />;
   if (caregiverError) return <FullPageStatus error={caregiverError} onRetry={reloadCaregiver} onLogout={logout} />;
-  if (session.role === 'PATIENT') {
+  if (session.role === 'PATIENT' || session.role === 'DELEGATE') {
     if (!caregiver) return <FullPageStatus />;
     return <PatientPage account={caregiver} surface={isApp ? 'app' : 'web'} />;
   }

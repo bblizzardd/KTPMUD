@@ -5,6 +5,7 @@ import { fieldError } from '../api/errors.js';
 import { patientKey, useApp } from '../app/AppContext.jsx';
 import { useNow, usePref } from '../app/hooks.js';
 import { combine, useQuery } from '../app/query.js';
+import { href, ROUTES } from '../app/router.js';
 import { APPOINTMENT_STATUS, LAB_TYPES } from '../domain/constants.js';
 import { addDays, diffDays, fmtDate, fmtDateTime, isValidDateKey, toDateKey, weekdayOf } from '../lib/time.js';
 import { fmtNumber } from '../lib/text.js';
@@ -271,6 +272,7 @@ export default function ClinicalPage() {
                     <div>
                       <div className="strong">{left === 0 ? 'Hôm nay' : `Còn ${left} ngày`}</div>
                       {a.note && <div className="text-sm">{a.note}</div>}
+                      {a.prescriptionId && <a className="text-sm" href={href(`${ROUTES.prescriptions}/${a.prescriptionId}`)}>Xem đơn thuốc</a>}
                       <div className="muted text-xs row-tight" style={{ marginTop: 4 }}>
                         <BellRing size={13} aria-hidden="true" />
                         {alert ? `Đã nhắc lúc ${fmtDateTime(alert.createdAt)}` : `Sẽ nhắc từ ngày ${fmtDate(addDays(a.visitDate, -a.remindDaysBefore))} (trước ${a.remindDaysBefore} ngày)`}
@@ -295,6 +297,7 @@ export default function ClinicalPage() {
                     <span className="num">{fmtDate(a.visitDate)}</span>
                     <Badge tone={a.status === 'DONE' ? 'success' : 'neutral'}>{a.status === 'UPCOMING' ? 'Đã qua ngày hẹn' : APPOINTMENT_STATUS[a.status]}</Badge>
                     <span className="muted text-sm">{a.note}</span>
+                    {a.prescriptionId && <a className="text-sm" href={href(`${ROUTES.prescriptions}/${a.prescriptionId}`)}>Xem đơn thuốc</a>}
                     {a.status !== 'DONE' && (
                       <button type="button" className="link-btn text-sm" onClick={() => markDone(a)}>
                         Đánh dấu đã khám

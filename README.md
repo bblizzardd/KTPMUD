@@ -34,7 +34,8 @@ Khi có mạng, điện thoại tải lịch hôm nay và 6 ngày tiếp theo. K
 |---|---|
 | Lịch cữ thuốc | Khoảng đúng giờ tính từ 60 phút trước đến 60 phút sau giờ hẹn. Sau hạn, cữ chưa có xác nhận sẽ hiện **Bỏ lỡ**. Nếu xác nhận sau hạn trong ngày của cữ, hệ thống ghi **Xác nhận muộn**. |
 | Tổng quan | Tỷ lệ đúng hạn bằng số cữ tự xác nhận hoặc xác nhận hộ đúng giờ chia cho số cữ đã có kết quả, gồm cả cữ muộn và bỏ lỡ. Mỗi thuốc trong một buổi được tính riêng. |
-| Chỉ số & tái khám | Ghi ngày đo, kết quả và đơn vị theo phiếu xét nghiệm. Thêm ngày tái khám, chọn số ngày nhắc trước và đánh dấu khi đã đi khám. |
+| Chỉ số & tái khám | Ghi kết quả xét nghiệm, xem ngày hẹn và ngày bắt đầu nhắc. Bệnh nhân và người được ủy quyền xem lịch hẹn trên màn hình lịch thuốc. |
+| Tiếp tục đơn sau tái khám | Khi bác sĩ giữ nguyên thuốc, liều và giờ uống, người chăm sóc mở chi tiết đơn, chọn **Tiếp tục đơn sau tái khám**, nhập ngày hẹn mới rồi lưu. Các cữ mới nối tiếp lịch cũ. Nếu đơn đã hết hạn, lịch tiếp tục từ cữ sắp tới. |
 | Báo cáo | Chọn kỳ 30, 60 hoặc 90 ngày, bấm **Tạo báo cáo**. Khi báo cáo sẵn sàng, chọn **Xem** hoặc **Tải PDF** để mang đi khám. |
 | Nhật ký thao tác | Tìm theo người thực hiện hoặc lọc theo thao tác, vai trò. Bấm một dòng khi cần xem chi tiết. |
 
@@ -42,9 +43,28 @@ Các tình huống như quên xác nhận, mất mạng hoặc đổi điện th
 
 ## Chạy để kiểm thử
 
+### Test cùng lúc trên nhiều máy
+
+1. Kết nối các máy vào cùng mạng Wi-Fi hoặc LAN. Trên máy chủ Windows, mở PowerShell ở thư mục `dev` rồi chạy `.\AnTam.cmd lan`. Nếu đã cài thư viện, cũng có thể chạy `npm run start:lan`. Phiên LAN dùng cổng 8081 và cơ sở dữ liệu riêng trong `backend/data/lan-test` theo cấu hình mặc định, nên có thể chạy cùng bản local ở cổng 8080.
+2. Giữ cửa sổ máy chủ mở. Gửi cho mọi người địa chỉ được in ở dòng **LAN** của Wi-Fi hoặc Ethernet đang dùng, ví dụ `http://192.168.1.20:8081/`. Cả máy chủ và máy khác đều mở địa chỉ đó bằng trình duyệt. Nếu Windows hỏi quyền cho Node.js qua tường lửa, chọn mạng riêng đang dùng.
+3. Khi bản test đang chạy, chạy lại `.\AnTam.cmd lan` để xem địa chỉ chia sẻ. Sau khi sửa mã nguồn, dừng phiên máy chủ bằng Ctrl+C rồi chạy lại lệnh để áp dụng bản mới.
+4. Mỗi người chọn vai trò tương ứng và đăng nhập với mật khẩu **`123456`**. Nếu đã deploy bản test lên máy chủ chung, cả nhóm mở cùng URL của bản deploy.
+
+| Vai trò khi đăng nhập | Email | Thao tác kiểm thử |
+|---|---|---|
+| Người chăm sóc (người thân) | `nguoithan@antam.test` | Quản lý hồ sơ **Bố (mẫu)** và xem lịch cữ thuốc |
+| Bệnh nhân | `benhnhan@antam.test` | Xem lịch và tự xác nhận đã uống |
+| Người được ủy quyền | `uyquyen@antam.test` | Xem cùng lịch và xác nhận hộ |
+
+Hồ sơ có sẵn đơn giả lập với hai cữ mỗi ngày trong tháng đầu. Thử cho bệnh nhân xác nhận một cữ tới giờ, rồi mở **Lịch cữ thuốc** trên máy người chăm sóc để xem ai đã xác nhận. Dùng cữ khác để thử xác nhận hộ. Khi bật mô phỏng, người chăm sóc có thể chọn **Tới cữ tiếp theo**.
+
+Backend tự tạo nhóm tài khoản khi khởi động ở chế độ local. Với bản deploy kiểm thử dùng `NODE_ENV=production`, đặt `ENABLE_TEST_ACCOUNTS=true` trong môi trường backend và dùng database riêng cho bản test. Nếu chạy sau reverse proxy HTTPS, thêm origin đầy đủ của bản test vào `CORS_ORIGINS`. Các lần khởi động sau dùng lại dữ liệu trong SQLite. Đặt `ENABLE_TEST_ACCOUNTS=false` để khóa cả ba tài khoản mẫu.
+
+### Chạy trên một máy
+
 Cần **Node.js 22 trở lên**. Trên Windows chỉ cần nhấp đúp **`AnTam.cmd`**: tệp này cài thư viện nếu thiếu, tạo cấu hình chạy thử, dựng giao diện, tạo dữ liệu mẫu lần đầu, rồi mở http://127.0.0.1:8080.
 
-Tài khoản demo: `demo@antam.vn` / `AnTam@2026` (trang đăng nhập có nút "Điền sẵn").
+Trong mục **Đăng nhập nhanh bằng tài khoản demo**, bấm vai trò muốn thử để vào thẳng ứng dụng. Bản demo cũ tạo bằng `AnTam.cmd` cũng có thể đăng nhập thủ công bằng `demo@antam.vn` / `AnTam@2026`.
 
 Chạy thủ công:
 

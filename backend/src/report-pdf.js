@@ -19,8 +19,8 @@ const time = (iso) => timeFormat.format(new Date(iso));
 const timestamp = (iso) => iso ? `${time(iso)}  ${date(localDate(iso))}` : dash;
 const doseName = (name, quantity, unit) => quantity == null ? name : `${name} · ${quantity} ${unit || 'viên'}/cữ`;
 
-const titleStyle = { size: 14, fill: '#1F4E78', color: '#FFFFFF', align: 'center', pad: 6 };
-const sectionStyle = { size: 10, fill: '#2F5496', color: '#FFFFFF', pad: 4 };
+const titleStyle = { size: 13, fill: '#1F4E78', color: '#FFFFFF', align: 'center', pad: 5 };
+const sectionStyle = { size: 9.5, fill: '#2F5496', color: '#FFFFFF', pad: 3 };
 const headerStyle = { fill: '#D9E1F2', color: '#17365D' };
 
 // Measure each row using the same font and widths used to print it. Repeat the section
@@ -32,7 +32,7 @@ function reportLayout(doc) {
   let y = top;
 
   function row(values, widths, style = {}, draw = true) {
-    const { size = 9, pad = 3, fill = '#FFFFFF', color = '#172536', align = 'left' } = style;
+    const { size = 8.5, pad = 2, fill = '#FFFFFF', color = '#172536', align = 'left' } = style;
     const cells = values.map((value) => String(value ?? dash).replace(/\s+/gu, ' ').trim());
     doc.fontSize(size);
     const options = widths.map((fraction) => ({ width: width * fraction - 10, align }));
@@ -55,29 +55,29 @@ function reportLayout(doc) {
     y = top;
   }
 
-  function section(title, widths, rows, { headers, note, style = sectionStyle, keepTogether = false, signature = false } = {}) {
+  function section(title, widths, rows, { headers, note, style = sectionStyle, rowStyle = {}, noteStyle = { size: 8, fill: '#FFF2CC' }, keepTogether = false, signature = false } = {}) {
     function heading(draw) {
       let height = row([title], [1], style, draw);
-      if (note) height += row([note], [1], { size: 8, fill: '#FFF2CC' }, draw);
+      if (note) height += row([note], [1], noteStyle, draw);
       if (headers) height += row(headers, widths, headerStyle, draw);
       return height;
     }
-    const bodyHeight = keepTogether ? rows.reduce((h, cells) => h + row(cells, widths, {}, false), 0) : row(rows[0], widths, {}, false);
-    if (y + heading(false) + bodyHeight + (signature ? 50 : 0) > limit) newPage();
+    const bodyHeight = keepTogether ? rows.reduce((h, cells) => h + row(cells, widths, rowStyle, false), 0) : row(rows[0], widths, rowStyle, false);
+    if (y + heading(false) + bodyHeight + (signature ? 42 : 0) > limit) newPage();
     heading(true);
     for (const cells of rows) {
-      if (y + row(cells, widths, {}, false) > limit) {
+      if (y + row(cells, widths, rowStyle, false) > limit) {
         newPage();
         heading(true);
       }
-      row(cells, widths);
+      row(cells, widths, rowStyle);
     }
     if (signature) {
-      doc.fontSize(9).fillColor('#17365D').text('Chữ ký & Họ tên Bác sĩ điều trị', left + width / 2, y + 5, { width: width / 2, align: 'center' });
-      doc.text('........................................................', left + width / 2, y + 34, { width: width / 2, align: 'center' });
-      y += 50;
+      doc.fontSize(9).fillColor('#17365D').text('Chữ ký & Họ tên Bác sĩ điều trị', left + width / 2, y + 4, { width: width / 2, align: 'center' });
+      doc.text('........................................................', left + width / 2, y + 28, { width: width / 2, align: 'center' });
+      y += 42;
     }
-    y += 6;
+    y += 4;
   }
 
   function numberPages(alias) {
@@ -115,11 +115,21 @@ export function drawClinicalReport(doc, data) {
   const rate = summary.adherenceRate;
   const grade = rate >= .8 ? 'Tốt' : rate >= .5 ? 'Trung bình' : 'Kém';
   const result = summary.totalDoses ? `${(rate * 100).toLocaleString('vi-VN', { maximumFractionDigits: 1 })}% · ${grade}` : 'Chưa đủ dữ liệu';
-  page.section('II. TỔNG HỢP KẾT QUẢ TUÂN THỦ DÙNG THUỐC', [.31, .14, .32, .23], [
+  const prescriptionDays = prescription?.startDate && prescription?.nextVisitDate
+    ? Math.max(0, Math.round((Date.parse(`${prescription.nextVisitDate}T00:00:00Z`) - Date.parse(`${prescription.startDate}T00:00:00Z`)) / 86_400_000) + 1)
+    : 0;
+  const dosesPerDay = items.reduce((total, item) => total + (item.slots?.length || 0), 0);
+  page.section('II. TỔNG HỢP KẾT QUẢ TUÂN THỦ DÙNG THUỐC', [.32, .14, .32, .22], [
+    ['Tổng số ngày uống thuốc theo đơn', prescriptionDays ? `${prescriptionDays} ngày` : dash, 'Số cữ thuốc trong một ngày', dosesPerDay ? `${dosesPerDay} cữ/ngày` : dash],
     ['Tổng số cữ có kết quả', summary.totalDoses, 'Số cữ đã uống đúng giờ', summary.taken],
     ['Số cữ xác nhận muộn', summary.lateConfirmed, 'Số cữ xác nhận hộ (người nhà)', summary.takenByDelegate],
     ['Số cữ bỏ lỡ', summary.missed, 'Tỷ lệ tuân thủ tổng thể', result],
-  ], { note: `Tỷ lệ = (đã uống đúng giờ + xác nhận hộ${includeLate ? ' + xác nhận muộn' : ''}) / số cữ có kết quả. Loại trừ cữ đã hủy, đang chờ và chưa đến giờ.` });
+  ], {
+    style: { ...sectionStyle, size: 12, pad: 4 },
+    rowStyle: { size: 11, pad: 3.5, fill: '#F4F8FD', color: '#0F253E' },
+    noteStyle: { size: 8.5, fill: '#FFF2CC', pad: 2.5 },
+    note: `Tỷ lệ = (đã uống đúng giờ + xác nhận hộ${includeLate ? ' + xác nhận muộn' : ''}) / số cữ có kết quả. Loại trừ cữ đã hủy, đang chờ và chưa đến giờ.`,
+  });
 
   const clinicalRows = [];
   const history = [];

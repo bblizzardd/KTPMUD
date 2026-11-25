@@ -7,8 +7,8 @@ import { useNow } from '../app/hooks.js';
 import { combine, useQuery } from '../app/query.js';
 import { href, navigate, ROUTES } from '../app/router.js';
 import { detectDuplicateIngredients, dosesToCancelOnSupersede, planDoses, validatePrescriptionInput } from '../domain/rules.js';
-import { fmtDate, fmtDateTime, toDateKey } from '../lib/time.js';
-import { Callout, Card, ConfirmDialog, PageHeader, PageStatus, RxStatusBadge, Spinner } from '../components/ui.jsx';
+import { addDays, fmtDate, fmtDateTime, toDateKey } from '../lib/time.js';
+import { Callout, Card, ConfirmDialog, Field, Modal, PageHeader, PageStatus, RxStatusBadge, Spinner } from '../components/ui.jsx';
 import { RxItemsTable, RxLifecycle } from './prescriptionParts.jsx';
 import { usePrescriptionDoses } from './PrescriptionsPage.jsx';
 import DeletePrescriptionButton from '../components/DeletePrescriptionButton.jsx';
@@ -36,7 +36,7 @@ function useConfirmPreview(rx, patient, list, nowMs) {
     pastCount: planned.length - upcoming.length,
     firstDoseAt: upcoming[0]?.scheduledAt || null,
     lastDate: rx.nextVisitDate,
-    hasAppointmentOnVisit: apptQ.data.some((a) => a.visitDate === rx.nextVisitDate)
+    hasAppointmentOnVisit: apptQ.data.some((a) => a.visitDate === rx.nextVisitDate && a.status === 'UPCOMING')
   };
 }
 
@@ -49,6 +49,8 @@ export default function PrescriptionDetailPage({ prescriptionId }) {
   const [askConfirm, setAskConfirm] = useState(false);
   const [askCancel, setAskCancel] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [extendOpen, setExtendOpen] = useState(false);
+  const [nextVisit, setNextVisit] = useState('');
 
   const rxQ = useQuery(patientKey(patient.id, `rx:${prescriptionId}`), () => api.getPrescription(prescriptionId));
   const listQ = useQuery(patientKey(patient.id, 'rx'), () => api.listPrescriptions(patient.id));
@@ -83,14 +85,25 @@ export default function PrescriptionDetailPage({ prescriptionId }) {
   const hasWarnings = warnings.length > 0 || serverWarnings.length > 0;
   const canConfirm = preview && preview.missing.length === 0 && (!hasWarnings || ack) && !busy;
   const refresh = patientKey(patient.id);
+  const canExtend = rx.status === 'ACTIVE' || (rx.status === 'EXPIRED' &&
+    !list.some(other => other.status === 'ACTIVE' || (other.status === 'EXPIRED' && other.nextVisitDate > rx.nextVisitDate)));
+  const minVisit = addDays(rx.nextVisitDate > today ? rx.nextVisitDate : today, 1);
+
+  async function extend(e) {
+    e.preventDefault();
+    if (busy || nextVisit < minVisit) return;
+    setBusy(true);
+    const res = await call(() => api.extendPrescription(rx.id, rx.nextVisitDate, nextVisit), {
+      refresh, success: `Đã cập nhật lịch thuốc và lịch tái khám đến ${fmtDate(nextVisit)}`
+    });
+    setBusy(false);
+    if (res.ok) setExtendOpen(false);
+  }
 
   async function confirmNow() {
     setAskConfirm(false);
     setBusy(true);
-    const res = await call(() => api.confirmPrescription(rx.id), { errorTitle: 'Chưa xác nhận được đơn', refresh });
-    if (res.ok && addVisit && preview && !preview.hasAppointmentOnVisit && rx.nextVisitDate >= today) {
-      await call(() => api.createAppointment(patient.id, { visitDate: rx.nextVisitDate, remindDaysBefore: 2, note: 'Tái khám theo đơn thuốc' }), { silent: true, refresh });
-    }
+    const res = await call(() => api.confirmPrescription(rx.id, addVisit || preview?.hasAppointmentOnVisit), { errorTitle: 'Chưa xác nhận được đơn', refresh });
     setBusy(false);
     if (!res.ok) return;
     toast({
@@ -121,6 +134,9 @@ export default function PrescriptionDetailPage({ prescriptionId }) {
         badge={<RxStatusBadge status={rx.status} size="lg" />}
         actions={
           <>
+          {canExtend && <button type="button" className="btn btn-primary" disabled={busy} onClick={() => { setNextVisit(''); setExtendOpen(true); }}>
+            <CalendarClock size={16} aria-hidden="true" /> Tiếp tục đơn sau tái khám
+          </button>}
           {rx.status === 'DRAFT' && (
             <>
               <button type="button" className="btn btn-danger-ghost" onClick={() => setAskCancel(true)}>
@@ -137,6 +153,16 @@ export default function PrescriptionDetailPage({ prescriptionId }) {
       />
 
       <RxLifecycle status={rx.status} />
+      <Modal open={extendOpen} busy={busy} onClose={() => setExtendOpen(false)} title="Tiếp tục đơn sau tái khám">
+        <form className="stack" onSubmit={extend}>
+          <p>Dùng khi bác sĩ giữ nguyên thuốc, liều và giờ uống sau lần khám. Lịch thuốc hiện tại đến hết ngày {fmtDate(rx.nextVisitDate)}.</p>
+          <Field label="Ngày tái khám tiếp theo" required htmlFor="extend-visit">
+            <input id="extend-visit" className="input" type="date" min={minVisit} required value={nextVisit} onChange={e => setNextVisit(e.target.value)} />
+          </Field>
+          <p className="muted text-sm">Các cữ mới bắt đầu {rx.nextVisitDate < today ? 'từ cữ sắp tới' : `từ ngày ${fmtDate(addDays(rx.nextVisitDate, 1))}`}. Hệ thống sẽ lưu lịch hẹn mới.</p>
+          <button type="submit" className="btn btn-primary" disabled={busy || !nextVisit}>{busy && <Spinner />} Lưu và tiếp tục đơn</button>
+        </form>
+      </Modal>
 
       {rx.status === 'SUPERSEDED' && (
         <Callout

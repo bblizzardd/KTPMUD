@@ -55,6 +55,18 @@ export function openDatabase(filename) {
       sql.exec('COMMIT');
     } catch (error) { sql.exec('ROLLBACK'); throw error; }
   }
+  if (!sql.prepare('SELECT version FROM schemaMigrations WHERE version = 3').get()) {
+    sql.exec('BEGIN IMMEDIATE');
+    try {
+      sql.exec(`DROP INDEX IF EXISTS patient_account_profile;
+        CREATE UNIQUE INDEX IF NOT EXISTS patient_account_profile ON patientAccounts(patientId)
+          WHERE json_extract(data, '$.delegateId') IS NULL;
+        CREATE UNIQUE INDEX IF NOT EXISTS delegate_account_profile ON patientAccounts(json_extract(data, '$.delegateId'))
+          WHERE json_extract(data, '$.delegateId') IS NOT NULL;`);
+      sql.prepare('INSERT OR IGNORE INTO schemaMigrations VALUES (3, ?)').run(new Date().toISOString());
+      sql.exec('COMMIT');
+    } catch (error) { sql.exec('ROLLBACK'); throw error; }
+  }
   function tableName(name) {
     if (!TABLES.includes(name)) throw new Error('Unknown collection');
     return name;

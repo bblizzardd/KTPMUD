@@ -125,6 +125,7 @@ export const AUDIT_ACTIONS = {
   DELEGATE_REVOKED: 'Thu hồi ủy quyền',
   PRESCRIPTION_CREATED: 'Tạo đơn nháp',
   PRESCRIPTION_UPDATED: 'Sửa đơn nháp',
+  PRESCRIPTION_EXTENDED: 'Tiếp tục đơn sau tái khám',
   PRESCRIPTION_CONFIRMED: 'Xác nhận đơn',
   PRESCRIPTION_SUPERSEDED: 'Đơn bị thay thế',
   PRESCRIPTION_CANCELLED: 'Hủy đơn nháp',

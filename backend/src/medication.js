@@ -246,7 +246,19 @@ export function adherenceSummary(periodDoses, includeLate) {
   };
 }
 
-function generateDoses(ctx, prescription, patient, now) {
+export function ensurePrescriptionVisit(ctx, prescription, userId) {
+  const { patientId, nextVisitDate: visitDate } = prescription;
+  const existing = ctx.db.list('appointments', { patientId, visitDate, status: 'UPCOMING' })[0];
+  if (existing) {
+    if (!existing.prescriptionId) ctx.db.update('appointments', existing.id, { prescriptionId: prescription.id });
+    return;
+  }
+  const visit = ctx.db.insert('appointments', { id: newId(), patientId, visitDate, prescriptionId: prescription.id,
+    remindDaysBefore: 2, note: 'Tái khám theo đơn thuốc', status: 'UPCOMING', createdAt: ctx.now().toISOString() });
+  ctx.audit({ patientId, userId, actionType: 'APPOINTMENT_CREATED', targetType: 'Appointment', targetId: visit.id });
+}
+
+export function generateDoses(ctx, prescription, patient, now, notBefore) {
   const firstDateMs = Date.parse(`${prescription.startDate}T00:00:00Z`);
   const lastDateMs = Date.parse(`${prescription.nextVisitDate}T00:00:00Z`);
   const days = Math.round((lastDateMs - firstDateMs) / 86_400_000) + 1;
@@ -267,6 +279,7 @@ function generateDoses(ctx, prescription, patient, now) {
         const key = `${item.id}:${date}:${slot}`;
         if (existing.has(key)) continue;
         const scheduledAt = new Date(`${date}T${item.times?.[slot] || times[slot]}:00+07:00`);
+          if (notBefore && scheduledAt < notBefore) continue;
         ctx.db.insert('doses', {
           id: newId(), patientId: patient.id, prescriptionId: prescription.id,
           prescriptionItemId: item.id, drugDisplayName: item.drugNameRaw,
@@ -383,7 +396,7 @@ export function registerMedicationRoutes(router, ctx) {
 
   router.post('/prescriptions/:prescriptionId/confirm', ctx.caregiver, (req, res) => {
     const prescription = getPrescription(ctx, req, req.params.prescriptionId);
-    parse(z.object({}).strict(), req.body ?? {});
+    const { scheduleVisit } = parse(z.object({ scheduleVisit: z.boolean().default(false) }).strict(), req.body ?? {});
     if (prescription.status !== 'DRAFT') throw new ApiError(409, 'PRESCRIPTION_NOT_DRAFT', 'Chỉ được xác nhận đơn thuốc nháp');
     const now = ctx.now();
     if (prescription.nextVisitDate < localDate(now)) {
@@ -407,6 +420,7 @@ export function registerMedicationRoutes(router, ctx) {
         status: 'ACTIVE', confirmedAt: now.toISOString(), warnings, updatedAt: now.toISOString(),
       });
       const count = generateDoses(ctx, record, patient, now);
+      if (scheduleVisit) ensurePrescriptionVisit(ctx, record, req.actor.id);
       audit(ctx, req, patient.id, 'PRESCRIPTION_CONFIRMED', 'Prescription', prescription.id);
       audit(ctx, req, patient.id, 'DOSES_GENERATED', 'Prescription', prescription.id, { count });
       if (warnings.length) {
@@ -421,6 +435,47 @@ export function registerMedicationRoutes(router, ctx) {
     alerts.forEach((alert) => emitAlert(ctx, alert));
     tickMedication(ctx);
     res.status(202).json(serializePrescription(confirmed));
+  });
+
+  router.post('/prescriptions/:prescriptionId/extend', ctx.caregiver, (req, res) => {
+    const { previousVisitDate, nextVisitDate } = parse(z.object({ previousVisitDate: dateSchema, nextVisitDate: dateSchema }).strict(), req.body);
+    const now = ctx.now();
+    const today = localDate(now);
+    if (nextVisitDate <= today || nextVisitDate <= previousVisitDate) {
+      throw new ApiError(422, 'INVALID_VISIT_DATE', 'Ngày hẹn mới phải sau hôm nay và sau ngày tái khám cũ');
+    }
+    const updated = ctx.db.transaction(() => {
+      const rx = getPrescription(ctx, req, req.params.prescriptionId);
+      const otherOrders = ctx.db.list('prescriptions', { patientId: rx.patientId }).filter(other => other.id !== rx.id && !other.deletedAt);
+      if (!['ACTIVE', 'EXPIRED'].includes(rx.status) || otherOrders.some(other => other.status === 'ACTIVE' ||
+          (rx.status === 'EXPIRED' && other.status === 'EXPIRED' && other.nextVisitDate > rx.nextVisitDate))) {
+        throw new ApiError(409, 'PRESCRIPTION_NOT_CURRENT', 'Chỉ được tiếp tục đơn đang dùng hoặc đơn vừa hết hạn gần nhất');
+      }
+      if (rx.nextVisitDate === nextVisitDate) return rx;
+      if (rx.nextVisitDate !== previousVisitDate) throw new ApiError(409, 'PRESCRIPTION_CHANGED', 'Ngày hẹn đã thay đổi. Vui lòng tải lại đơn.');
+      const patient = ctx.db.get('patients', rx.patientId);
+      const startDate = previousVisitDate < today ? today : shiftDate(previousVisitDate, 1);
+      // Older items inherit the profile's reminder times. Use their actual scheduled times
+      // so a subsequent change to the profile does not alter the renewed regimen.
+      const timesByItem = new Map();
+      for (const dose of ctx.db.list('doses', { prescriptionId: rx.id, date: previousVisitDate })) {
+        const times = timesByItem.get(dose.prescriptionItemId) || {};
+        times[dose.slot] = new Date(Date.parse(dose.scheduledAt) + 7 * 3600_000).toISOString().slice(11, 16);
+        timesByItem.set(dose.prescriptionItemId, times);
+      }
+      const items = rx.items.map(item => ({ ...item, times: { ...timesByItem.get(item.id), ...item.times } }));
+      const count = generateDoses(ctx, { ...rx, startDate, nextVisitDate, items }, patient, now, now);
+      const record = ctx.db.update('prescriptions', rx.id, { nextVisitDate, status: 'ACTIVE', updatedAt: now.toISOString() });
+      for (const visit of ctx.db.list('appointments', { patientId: rx.patientId, prescriptionId: rx.id, visitDate: previousVisitDate })) {
+        if (visit.status === 'DONE') continue;
+        ctx.db.update('appointments', visit.id, { status: 'DONE', updatedAt: now.toISOString() });
+        audit(ctx, req, rx.patientId, 'APPOINTMENT_UPDATED', 'Appointment', visit.id);
+      }
+      ensurePrescriptionVisit(ctx, record, req.actor.id);
+      audit(ctx, req, rx.patientId, 'PRESCRIPTION_EXTENDED', 'Prescription', rx.id, { previousVisitDate, nextVisitDate, count });
+      return record;
+    });
+    res.json(serializePrescription(updated));
   });
 
   router.get('/patients/:patientId/doses', ctx.caregiver, (req, res) => {
@@ -462,7 +517,10 @@ export function registerMedicationRoutes(router, ctx) {
       const scheduled = Date.parse(dose.scheduledAt);
       return dose.status !== 'CANCELLED' && scheduled >= start && scheduled < end;
     });
-    res.json({ fromDate, toDate, doses });
+    const appointments = ctx.db.list('appointments', { patientId: req.actor.patientId, status: 'UPCOMING' })
+      .filter(visit => visit.visitDate >= fromDate).sort((a, b) => a.visitDate.localeCompare(b.visitDate))
+      .map(({ id, visitDate, remindDaysBefore, note }) => ({ id, visitDate, remindDaysBefore, note }));
+    res.json({ fromDate, toDate, doses, appointments });
   });
 
   function recordConfirmation(req, res, correction = false) {

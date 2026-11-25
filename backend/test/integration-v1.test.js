@@ -4,6 +4,7 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createApp } from '../src/app.js';
+import { ensureTestAccounts } from '../src/demo-accounts.js';
 import { tickMedication } from '../src/medication.js';
 import { tickClinical } from '../src/clinical.js';
 
@@ -62,6 +63,78 @@ const prescription = (overrides = {}) => ({
   issuedDate: '2026-10-22', startDate: '2026-10-22', nextVisitDate: '2026-10-24',
   items: [{ drugId: '10000000-0000-4000-8000-000000000001', drugNameRaw: 'Glucophage 500mg', unitsPerDose: 1, unit: 'viên', slots: ['MORNING', 'EVENING'] }],
   ...overrides,
+});
+
+test('three seeded logins share one schedule, retain history and respect delegate revocation', async t => {
+  const f = await fixture(t, { config: { testAccounts: true } });
+  const login = (email, role) => f.ok('POST', '/auth/login', undefined, { email, role, password: '123456' });
+  const [owner, patient, delegate] = await Promise.all([
+    login('nguoithan@antam.test', 'CAREGIVER'), login('benhnhan@antam.test', 'PATIENT'), login('uyquyen@antam.test', 'DELEGATE'),
+  ]);
+  const [profile] = await f.ok('GET', '/patients', owner.accessToken);
+  assert.equal((await f.ok('GET', '/device/me', patient.accessToken)).patientId, profile.id);
+  assert.equal((await f.ok('GET', '/auth/me', delegate.accessToken)).role, 'DELEGATE');
+  const refreshed = await f.ok('POST', '/auth/refresh', undefined, { refreshToken: delegate.refreshToken });
+  assert.equal((await f.ok('GET', '/device/me', refreshed.accessToken)).role, 'DELEGATE');
+  assert.equal((await f.req('GET', '/patients', refreshed.accessToken)).status, 401);
+  assert.equal((await f.req('POST', '/auth/login', undefined, { email: 'uyquyen@antam.test', role: 'PATIENT', password: '123456' })).status, 401);
+
+  const [morning] = await f.ok('GET', '/device/doses/today', patient.accessToken);
+  const action = `/doses/${morning.id}/confirmations`;
+  await f.ok('POST', action, refreshed.accessToken, {}, 201);
+  await ensureTestAccounts(f.ctx);
+  assert.equal((await f.req('POST', action, patient.accessToken, {})).status, 409);
+  const [confirmation] = await f.ok('GET', action, owner.accessToken);
+  assert.equal(confirmation.actorRole, 'DELEGATE');
+  assert.equal(confirmation.actorLabel, 'Mẹ (mẫu)');
+  const [helper] = await f.ok('GET', `/patients/${profile.id}/delegates`, owner.accessToken);
+  await f.ok('DELETE', `/patients/${profile.id}/delegates/${helper.id}`, owner.accessToken, undefined, 204);
+  await ensureTestAccounts(f.ctx);
+  assert.equal((await f.req('GET', '/device/me', refreshed.accessToken)).status, 401);
+  assert.equal((await f.req('POST', '/auth/refresh', undefined, { refreshToken: refreshed.refreshToken })).status, 401);
+  f.ctx.config.testAccounts = false;
+  assert.equal((await f.req('GET', '/patients', owner.accessToken)).status, 401);
+  assert.equal((await f.req('GET', '/auth/me', patient.accessToken)).status, 401);
+});
+
+test('renewal keeps historical doses and times, updates linked visits and resumes an expired schedule', async t => {
+  const f = await fixture(t);
+  const user = await f.owner();
+  const patient = await f.ok('POST', '/patients', user.token, { alias: 'Bố', birthYear: 1954 }, 201);
+  const device = await f.pair(user, patient.id);
+  const root = `/patients/${patient.id}`;
+  const order = await f.ok('POST', root + '/prescriptions', user.token, prescription(), 201);
+  const path = `/prescriptions/${order.id}`;
+  await f.ok('POST', path + '/confirm', user.token, { scheduleVisit: true }, 202);
+  const before = f.ctx.db.list('doses', { prescriptionId: order.id });
+  await f.ok('PATCH', root, user.token, { reminderTimes: [{ slot: 'MORNING', time: '10:00' }] });
+  f.time('2026-10-27T01:00:00Z'); // 08:00 in Vietnam, after the missed visit and today's morning slot.
+  const renewedLogin = await f.ok('POST', '/auth/login', undefined, { email: user.email, password: PASSWORD });
+  const token = renewedLogin.accessToken;
+  assert.equal((await f.ok('GET', path, token)).status, 'EXPIRED');
+  const priorRows = f.ctx.db.list('doses', { prescriptionId: order.id });
+  const input = { previousVisitDate: '2026-10-24', nextVisitDate: '2026-10-29' };
+  assert.equal((await f.req('POST', path + '/extend', device.deviceToken, input)).status, 401);
+  const other = await f.owner();
+  assert.equal((await f.req('POST', path + '/extend', other.token, input)).status, 403);
+  for (let i = 0; i < 2; i++) assert.equal((await f.ok('POST', path + '/extend', token, input)).status, 'ACTIVE');
+  const all = f.ctx.db.list('doses', { prescriptionId: order.id });
+  assert.deepEqual(all.slice(0, before.length), priorRows);
+  const added = all.slice(before.length);
+  assert.equal(added.length, 5);
+  assert.equal(added[0].date, '2026-10-27');
+  assert.equal(added[0].slot, 'EVENING');
+  assert.equal(added.find(row => row.slot === 'MORNING').scheduledAt, '2026-10-28T00:00:00.000Z');
+  const visits = await f.ok('GET', root + '/appointments', token);
+  assert.deepEqual(visits.map(v => [v.visitDate, v.status]), [['2026-10-29', 'UPCOMING'], ['2026-10-24', 'DONE']]);
+  const schedule = await f.ok('GET', '/device/doses/schedule', device.deviceToken);
+  assert.deepEqual(schedule.appointments.map(v => v.id), [visits[0].id]);
+  await tickClinical(f.ctx);
+  assert.equal(f.ctx.db.list('alerts', { relatedAppointmentId: visits[0].id }).length, 1);
+  assert.equal((await f.req('POST', path + '/extend', token, { ...input, nextVisitDate: '2026-11-01' })).status, 409);
+  const next = await f.ok('POST', root + '/prescriptions', token, prescription({ nextVisitDate: '2026-10-31' }), 201);
+  await f.ok('POST', `/prescriptions/${next.id}/confirm`, token, {}, 202);
+  assert.equal((await f.req('POST', path + '/extend', token, { previousVisitDate: '2026-10-29', nextVisitDate: '2026-11-01' })).status, 409);
 });
 
 test('pairing codes can be regenerated after login and only replace unused codes for the same target', async t => {

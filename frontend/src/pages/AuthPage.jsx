@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
-import { ArrowRight, Eye, EyeOff, HeartPulse, Pill, ShieldCheck, Smartphone } from 'lucide-react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
+import { clock, subscribeClock } from '../app/clock.js';
+import { ArrowRight, Eye, EyeOff, HeartPulse, Pill, ShieldCheck, Smartphone, Users } from 'lucide-react';
 import * as api from '../api/caregiver.js';
 import { fieldError } from '../api/errors.js';
 import { isEmail } from '../domain/rules.js';
@@ -13,6 +14,12 @@ const DEMO_ACCOUNT = (() => {
   const at = raw.indexOf(':');
   return at > 0 ? { email: raw.slice(0, at), password: raw.slice(at + 1) } : null;
 })();
+
+const TEST_LOGINS = [
+  { role: 'CAREGIVER', label: 'Người chăm sóc', email: 'nguoithan@antam.test' },
+  { role: 'PATIENT', label: 'Bệnh nhân', email: 'benhnhan@antam.test' },
+  { role: 'DELEGATE', label: 'Người được ủy quyền', email: 'uyquyen@antam.test' }
+];
 
 function PasswordInput({ id, value, onChange, autoComplete, invalid }) {
   const [show, setShow] = useState(false);
@@ -28,15 +35,17 @@ function PasswordInput({ id, value, onChange, autoComplete, invalid }) {
 
 export default function AuthPage({ mode = 'login', surface = 'web', initialRole }) {
   const { toast } = useApp();
-  const [tab, setTab] = useState(mode);
+  const [selectedTab, setTab] = useState(mode);
   const [login, setLogin] = useState({ email: '', password: '' });
   const [reg, setReg] = useState({ displayName: '', email: '', password: '', confirm: '', pairingCode: '' });
-  const [role, setRole] = useState(initialRole === 'PATIENT' ? 'PATIENT' : 'CAREGIVER');
+  const [role, setRole] = useState(['PATIENT', 'DELEGATE'].includes(initialRole) ? initialRole : 'CAREGIVER');
+  const tab = role === 'DELEGATE' ? 'login' : selectedTab;
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
   const [showForm, setShowForm] = useState(() => mode === 'register' || Boolean(initialRole) || surface === 'app'
     || window.matchMedia('(max-width: 640px), (max-width: 940px) and (max-height: 480px)').matches);
-  const roleLabel = role === 'PATIENT' ? 'bệnh nhân' : 'người chăm sóc';
+  const roleLabel = { PATIENT: 'bệnh nhân', CAREGIVER: 'người chăm sóc', DELEGATE: 'người được ủy quyền' }[role];
+  const testAccounts = useSyncExternalStore(subscribeClock, clock.testAccounts);
 
   function chooseRole(next) {
     setRole(next);
@@ -50,7 +59,7 @@ export default function AuthPage({ mode = 'login', surface = 'web', initialRole 
     if (mode === 'register') setShowForm(true);
   }, [mode]);
   useEffect(() => {
-    if (['PATIENT', 'CAREGIVER'].includes(initialRole)) chooseRole(initialRole);
+    if (['PATIENT', 'CAREGIVER', 'DELEGATE'].includes(initialRole)) chooseRole(initialRole);
   }, [initialRole]);
 
   async function run(task) {
@@ -66,13 +75,18 @@ export default function AuthPage({ mode = 'login', surface = 'web', initialRole 
     }
   }
 
-  function submitLogin(e) {
-    e.preventDefault();
+  function signIn(credentials, loginRole) {
     run(async () => {
-      await api.login({ email: login.email.trim(), password: login.password, role });
+      await api.login({ ...credentials, role: loginRole });
       toast({ title: 'Đăng nhập thành công' });
-      navigate(role === 'PATIENT' ? ROUTES.patient : ROUTES.overview, { surface });
+      navigate(loginRole === 'CAREGIVER' ? ROUTES.overview : ROUTES.patient, { surface });
     });
+  }
+
+  function demoLogin(loginRole, credentials) {
+    chooseRole(loginRole);
+    setTab('login');
+    signIn(credentials, loginRole);
   }
 
   function submitRegister(e) {
@@ -122,10 +136,25 @@ export default function AuthPage({ mode = 'login', surface = 'web', initialRole 
               <strong><span className="role-prefix">Tôi là </span>Người chăm sóc</strong>
               <span className="role-action">Đăng nhập người chăm sóc <ArrowRight size={16} aria-hidden="true" /></span>
             </button>
+            <button type="button" className="role-option role-patient" aria-pressed={showForm && role === 'DELEGATE'} aria-controls="account-auth" onClick={() => chooseRole('DELEGATE')} disabled={busy}>
+              <span className="role-icon"><Users size={26} aria-hidden="true" /></span>
+              <strong>Người được ủy quyền</strong>
+              <span className="role-action">Đăng nhập để xác nhận hộ <ArrowRight size={16} aria-hidden="true" /></span>
+            </button>
           </div>
+          {(testAccounts || DEMO_ACCOUNT) && <section className="demo-logins" aria-label="Tài khoản demo">
+            <h2>Đăng nhập nhanh bằng tài khoản demo</h2>
+            <div className="row">
+              {testAccounts ? TEST_LOGINS.map(account => (
+                <button key={account.role} type="button" className="btn btn-secondary" disabled={busy}
+                  onClick={() => demoLogin(account.role, { email: account.email, password: '123456' })}>{account.label}</button>
+              )) : <button type="button" className="btn btn-secondary" disabled={busy}
+                onClick={() => demoLogin('CAREGIVER', DEMO_ACCOUNT)}>Người chăm sóc</button>}
+            </div>
+          </section>}
           {showForm && <section id="account-auth" className="caregiver-auth" aria-label={`Tài khoản ${roleLabel}`}>
           <h2>{tab === 'login' ? `Đăng nhập ${roleLabel}` : `Tạo tài khoản ${roleLabel}`}</h2>
-          <Segmented
+          {role !== 'DELEGATE' && <Segmented
             ariaLabel="Đăng nhập hoặc đăng ký"
             value={tab}
             onChange={(v) => { if (!busy) { setTab(v); setError(null); } }}
@@ -133,7 +162,7 @@ export default function AuthPage({ mode = 'login', surface = 'web', initialRole 
               { value: 'login', label: 'Đăng nhập' },
               { value: 'register', label: 'Đăng ký' }
             ]}
-          />
+          />}
 
           {error && (!error.details?.length || tab === 'login') && (
             <Callout tone="danger" className="mb-12">
@@ -142,7 +171,7 @@ export default function AuthPage({ mode = 'login', surface = 'web', initialRole 
           )}
 
           {tab === 'login' ? (
-            <form className="stack" onSubmit={submitLogin} noValidate>
+            <form className="stack" onSubmit={e => { e.preventDefault(); signIn({ ...login, email: login.email.trim() }, role); }} noValidate>
               <Field label="Email" htmlFor="login-email">
                 <input id="login-email" className="input" type="email" autoComplete="username" value={login.email} onChange={(e) => setLogin((f) => ({ ...f, email: e.target.value }))} />
               </Field>
@@ -152,16 +181,6 @@ export default function AuthPage({ mode = 'login', surface = 'web', initialRole 
               <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={busy}>
                 {busy && <Spinner />} Đăng nhập
               </button>
-              {DEMO_ACCOUNT && role === 'CAREGIVER' && (
-                <div className="demo-hint">
-                  <span>
-                    Tài khoản demo
-                  </span>
-                  <button type="button" className="btn btn-sm btn-secondary" onClick={() => setLogin({ ...DEMO_ACCOUNT })}>
-                    Điền sẵn
-                  </button>
-                </div>
-              )}
             </form>
           ) : (
             <form className="stack" onSubmit={submitRegister} noValidate>

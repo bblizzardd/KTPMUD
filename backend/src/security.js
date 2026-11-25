@@ -31,6 +31,19 @@ export function decryptToken(value, keyHex) {
   return Buffer.concat([cipher.update(data), cipher.final()]).toString('utf8');
 }
 
+export function accountTable(role) {
+  return role === 'CAREGIVER' ? 'caregivers' : 'patientAccounts';
+}
+
+export function accountEnabled(ctx, account, role) {
+  if (!account || (account.testAccount && !ctx.config.testAccounts)) return false;
+  if (role === 'CAREGIVER') return true;
+  if (!account.active || !ctx.db.get('patients', account.patientId)) return false;
+  if (role === 'PATIENT') return !account.delegateId;
+  const delegate = account.delegateId && ctx.db.get('delegates', account.delegateId);
+  return role === 'DELEGATE' && delegate?.active && delegate.patientId === account.patientId;
+}
+
 export async function createTokenPair(ctx, accountId, role = 'CAREGIVER') {
   const now = Math.floor(+ctx.now() / 1000);
   const accessToken = await new SignJWT({ role }).setProtectedHeader({ alg: 'HS256' })
@@ -40,7 +53,7 @@ export async function createTokenPair(ctx, accountId, role = 'CAREGIVER') {
   const refreshToken = opaqueToken();
   return {
     response: { accessToken, refreshToken, expiresIn: ctx.config.accessTokenSeconds, role, accountId },
-    record: { id: newId(), ...(role === 'PATIENT' ? { patientAccountId: accountId } : { caregiverId: accountId }), role, tokenHash: hashToken(refreshToken), used: false,
+    record: { id: newId(), ...(role === 'CAREGIVER' ? { caregiverId: accountId } : { patientAccountId: accountId }), role, tokenHash: hashToken(refreshToken), used: false,
       expiresAt: new Date(+ctx.now() + ctx.config.refreshTokenDays * 86400_000).toISOString(), createdAt: ctx.now().toISOString() },
   };
 }
@@ -56,19 +69,21 @@ export function buildSecurity(ctx) {
       const { payload } = await jwtVerify(token, new TextEncoder().encode(ctx.config.jwtSecret), {
         algorithms: ['HS256'], issuer: 'antam', audience: 'antam-web', currentDate: ctx.now(),
       });
-      if (!['CAREGIVER', 'PATIENT'].includes(payload.role) || (requiredRole && payload.role !== requiredRole)) throw new Error('Invalid role');
-      const account = ctx.db.get(payload.role === 'PATIENT' ? 'patientAccounts' : 'caregivers', payload.sub);
-      if (!account || (payload.role === 'PATIENT' && (!account.active || !ctx.db.get('patients', account.patientId)))) throw new Error('Invalid user');
-      return { id: payload.sub, role: payload.role, ...(payload.role === 'PATIENT' ? { patientId: account.patientId, accountAuth: true } : {}), expiresAt: payload.exp * 1000 };
+      if (!['CAREGIVER', 'PATIENT', 'DELEGATE'].includes(payload.role) || (requiredRole && payload.role !== requiredRole)) throw new Error('Invalid role');
+      const account = ctx.db.get(accountTable(payload.role), payload.sub);
+      if (!accountEnabled(ctx, account, payload.role)) throw new Error('Invalid user');
+      return { id: payload.sub, role: payload.role, ...(payload.role !== 'CAREGIVER' ? { patientId: account.patientId, accountAuth: true } : {}), expiresAt: payload.exp * 1000 };
     } catch { throw new ApiError(401, 'UNAUTHORIZED', 'Phiên đăng nhập không hợp lệ hoặc đã hết hạn'); }
   }
   ctx.authenticateCaregiver = token => authenticateAccount(token, 'CAREGIVER');
   ctx.account = async (req, res, next) => { req.actor = await authenticateAccount(bearer(req)); next(); };
   ctx.caregiver = async (req, res, next) => { req.actor = await ctx.authenticateCaregiver(bearer(req)); next(); };
-  async function authenticateDeviceOrAccount(req, next, requiredAccountRole) {
+  async function authenticateDeviceOrAccount(req, next, allowCaregiver = false) {
     const raw = bearer(req);
     if (raw.split('.').length === 3) {
-      req.actor = await authenticateAccount(raw, requiredAccountRole);
+      const actor = await authenticateAccount(raw);
+      if (!allowCaregiver && actor.role === 'CAREGIVER') throw new ApiError(401, 'UNAUTHORIZED', 'Cần tài khoản liên kết với hồ sơ');
+      req.actor = actor;
       if (req.actor.patientId) req.auditContext = { patientId: req.actor.patientId, targetType: 'Patient', targetId: req.actor.patientId };
       next();
       return;
@@ -82,8 +97,8 @@ export function buildSecurity(ctx) {
     req.auditContext = { patientId: token.patientId, targetType: 'Device', targetId: token.id };
     next();
   }
-  ctx.device = (req, res, next) => authenticateDeviceOrAccount(req, next, 'PATIENT');
-  ctx.confirmationActor = (req, res, next) => authenticateDeviceOrAccount(req, next);
+  ctx.device = (req, res, next) => authenticateDeviceOrAccount(req, next);
+  ctx.confirmationActor = (req, res, next) => authenticateDeviceOrAccount(req, next, true);
   ctx.patientAccess = (req, patientId) => {
     const patient = ctx.db.get('patients', patientId);
     if (!patient) throw new ApiError(404, 'PATIENT_NOT_FOUND', 'Không tìm thấy hồ sơ');

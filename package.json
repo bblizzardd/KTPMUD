@@ -8,6 +8,7 @@
   },
   "scripts": {
     "start": "node scripts/run.mjs start",
+    "start:lan": "node scripts/run.mjs lan",
     "dev": "node scripts/run.mjs dev",
     "build": "node scripts/run.mjs build",
     "setup": "npm --prefix backend install && npm --prefix frontend install",

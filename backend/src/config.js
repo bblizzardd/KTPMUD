@@ -37,6 +37,7 @@ export function getConfig(overrides = {}, ephemeral = false) {
     includeLateInRate: process.env.INCLUDE_LATE_IN_RATE === 'true', offlineMaxAgeHours: 72,
     // Built web app served on the same origin as the API (An Tâm v1.0 single-port mode).
     frontendDir: resolve(process.env.FRONTEND_DIST || fileURLToPath(new URL('../../frontend/dist', import.meta.url))),
+    testAccounts: process.env.ENABLE_TEST_ACCOUNTS === 'true' || (process.env.ENABLE_TEST_ACCOUNTS !== 'false' && !ephemeral && process.env.NODE_ENV !== 'production'),
     // Demo clock controls for local testing only; never available in production.
     devTools: (process.env.ENABLE_DEV_TOOLS === 'true' || (!ephemeral && process.env.ENABLE_DEV_TOOLS !== 'false')) && process.env.NODE_ENV !== 'production',
     dataDir,

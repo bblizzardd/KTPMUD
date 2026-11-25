@@ -12,6 +12,34 @@ servers:
   - url: http://127.0.0.1:8080/api/v1
 
 paths:
+  /prescriptions/{prescriptionId}/extend:
+    post:
+      tags: [Prescriptions]
+      operationId: extendPrescription
+      summary: Tiếp tục đơn giữ nguyên thuốc sau tái khám và lưu lịch hẹn mới
+      security:
+        - caregiverAuth: []
+      parameters:
+        - name: prescriptionId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [previousVisitDate, nextVisitDate]
+              properties:
+                previousVisitDate: { type: string, format: date }
+                nextVisitDate: { type: string, format: date }
+      responses:
+        '200': { description: Đơn đã cập nhật ngày tái khám }
+        '403': { description: Hồ sơ không thuộc người chăm sóc }
+        '409': { description: Đơn hoặc ngày tái khám đã thay đổi }
+        '422': { description: Ngày hẹn mới không hợp lệ hoặc số cữ vượt giới hạn }
+
   /patients/{patientId}/pairing-codes/{codeId}:
     parameters:
       - $ref: '../../docs/api/openapi.yaml#/components/parameters/PatientId'

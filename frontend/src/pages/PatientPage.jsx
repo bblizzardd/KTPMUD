@@ -12,6 +12,7 @@ export default function PatientPage({ account, surface = 'web' }) {
   const { logout } = useApp();
   const [confirmLogout, setConfirmLogout] = useState(false);
   const phone = usePhones().find(p => p.accountId === account.id);
+  const roleLabel = account.role === 'DELEGATE' ? 'Người được ủy quyền' : 'Bệnh nhân';
   useEffect(() => {
     const current = ensureAccountPhone(account);
     const online = () => { void setOnline(current, true); };
@@ -28,7 +29,7 @@ export default function PatientPage({ account, surface = 'web' }) {
     <div className={`patient-account-page ${surface === 'app' ? 'patient-app-mode' : ''}`}>
       <header className="topbar">
         <a className="topbar-brand" href={href(ROUTES.patient)}><span className="logo-mark"><Pill size={26} /></span><strong>AN TÂM</strong></a>
-        <span className="role-badge">Bệnh nhân</span>
+        <span className="role-badge">{roleLabel}</span>
         <div className="topbar-right">
           <a className="topbar-phone-btn" href={href(ROUTES.patient, { surface: surface === 'app' ? 'web' : 'app' })}>
             {surface === 'app' ? <Monitor size={18} /> : <Smartphone size={18} />} <span className="label">{surface === 'app' ? 'Giao diện web' : 'Giao diện app'}</span>
@@ -37,7 +38,7 @@ export default function PatientPage({ account, surface = 'web' }) {
         </div>
       </header>
       <main className="patient-account-content">
-        <p className="patient-account-identity">{account.displayName} · Tài khoản bệnh nhân</p>
+        <p className="patient-account-identity">{account.displayName} · {roleLabel}</p>
         {phone && <DeviceApp key={phone.id} phone={phone} />}
       </main>
       <ConfirmDialog open={confirmLogout} onCancel={() => setConfirmLogout(false)} onConfirm={logout} title="Còn xác nhận chưa gửi" confirmLabel="Đăng xuất">

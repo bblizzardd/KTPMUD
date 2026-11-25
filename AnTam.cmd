@@ -23,6 +23,12 @@ if not exist frontend\node_modules\vite (
   pushd frontend & call npm install & popd
 )
 
+if /i "%~1"=="lan" (
+  node scripts\run.mjs lan
+  if errorlevel 1 exit /b 1
+  exit /b 0
+)
+
 if not exist backend\.env (
   echo [2/4] Tao cau hinh chay thu backend\.env
   > backend\.env (

@@ -19,7 +19,7 @@ import { href, ROUTES } from '../app/router.js';
 import { useNow } from '../app/hooks.js';
 import { CONFIRMED_STATUSES, SLOT_META } from '../domain/constants.js';
 import { checkConfirmable, decideUnconfirmedStatus, groupDoses } from '../domain/rules.js';
-import { dayLabel, fmtTime, toDateKey, weekdayOf, fmtDateShort, MINUTE } from '../lib/time.js';
+import { addDays, dayLabel, diffDays, fmtDate, fmtTime, toDateKey, weekdayOf, fmtDateShort, MINUTE } from '../lib/time.js';
 import { fmtNumber } from '../lib/text.js';
 import { confirmDoses, forgetPairing, pairPhone, playChime, usePhoneData } from './deviceClient.js';
 import { updatePhone } from './phones.js';
@@ -302,6 +302,7 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
   else focus = { kind: groups.length ? 'ALL_DONE' : 'NONE' };
 
   const today = toDateKey(new Date(nowMs));
+  const upcomingVisits = (data.appointments || []).filter(visit => visit.visitDate >= today);
   const queuedLast = [...(phone.queue || [])].filter((q) => !q.correctsConfirmationId).sort((a, b) => b.takenAt.localeCompare(a.takenAt))[0];
   const last = queuedLast && (!data.last || queuedLast.takenAt > data.last.takenAt)
     ? { takenAt: queuedLast.takenAt, slot: data.doses.find(d => d.id === queuedLast.doseId)?.slot, date: toDateKey(queuedLast.takenAt), pendingSync: true }
@@ -424,6 +425,19 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
           <div className="dev-done-title">{focus.kind === 'NONE' ? 'Hôm nay không có cữ thuốc' : 'Không còn cữ chờ xác nhận'}</div>
         </section>
       )}
+
+      <section className="dev-card" aria-label="Lịch tái khám">
+        <h2 className="dev-section-title">Lịch tái khám</h2>
+        {upcomingVisits.length ? upcomingVisits.map(visit => {
+          const days = diffDays(today, visit.visitDate);
+          return <div key={visit.id}>
+            <strong>{fmtDate(visit.visitDate)}</strong>
+            <p className="dev-text-sm">{days === 0 ? 'Hôm nay đến lịch tái khám' : days <= visit.remindDaysBefore
+              ? `Còn ${days} ngày đến lịch tái khám` : `Nhắc từ ngày ${fmtDate(addDays(visit.visitDate, -visit.remindDaysBefore))}`}</p>
+            {visit.note && <p className="dev-text-sm">{visit.note}</p>}
+          </div>;
+        }) : <p className="dev-text-sm">{data.appointments ? 'Chưa có lịch hẹn sắp tới.' : 'Kết nối mạng để cập nhật lịch tái khám.'}</p>}
+      </section>
 
       <div className="dev-last" aria-label="Lần uống gần nhất">
         <span className="dev-label">Lần uống gần nhất</span>

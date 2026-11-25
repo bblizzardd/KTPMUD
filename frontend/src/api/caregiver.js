@@ -73,7 +73,9 @@ export const listPrescriptions = (patientId, { status } = {}) => request(`/patie
 export const getPrescription = (prescriptionId) => request(`/prescriptions/${prescriptionId}`);
 export const createPrescription = (patientId, form) => request(`/patients/${patientId}/prescriptions`, { method: 'POST', body: toPrescriptionInput(form) });
 export const updatePrescription = (prescriptionId, form) => request(`/prescriptions/${prescriptionId}`, { method: 'PUT', body: toPrescriptionInput(form) });
-export const confirmPrescription = (prescriptionId) => request(`/prescriptions/${prescriptionId}/confirm`, { method: 'POST', body: {} });
+export const confirmPrescription = (prescriptionId, scheduleVisit = false) => request(`/prescriptions/${prescriptionId}/confirm`, { method: 'POST', body: { scheduleVisit } });
+export const extendPrescription = (prescriptionId, previousVisitDate, nextVisitDate) =>
+  request(`/prescriptions/${prescriptionId}/extend`, { method: 'POST', body: { previousVisitDate, nextVisitDate } });
 export const cancelPrescription = (prescriptionId) => request(`/prescriptions/${prescriptionId}/cancel`, { method: 'POST', body: {} });
 export const deletePrescription = (prescriptionId) => request(`/prescriptions/${prescriptionId}`, { method: 'DELETE' });
 

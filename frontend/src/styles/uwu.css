@@ -36,6 +36,9 @@ h1, h2, h3, h4 { font-weight: 800; }
 .role-option > span:not(.role-icon) { font-size: 12px; font-weight: 700; }
 .role-option .role-action { margin-top: auto; padding-top: 8px; display: flex; align-items: center; gap: 8px; }
 .caregiver-auth { padding-top: 24px; margin-top: 24px; border-top: 1px solid var(--border); }
+.demo-logins { margin-top: 16px; }
+.demo-logins h2 { font-size: 16px; margin-bottom: 8px; }
+.demo-logins .row { flex-wrap: wrap; }
 .auth-device-link { justify-content: center; text-align: center; font-size: 13px; }
 .auth-device-link a { display: inline-flex; align-items: center; gap: 4px; font-weight: 800; }
 .auth-device-link > svg { flex-shrink: 0; }
@@ -158,9 +161,10 @@ h1, h2, h3, h4 { font-weight: 800; }
 }
 
 /* Both account roles share authentication on web and the app layout. */
-.auth-surfaces { display: flex; justify-content: center; gap: 8px; margin: -8px 0 24px; }
-.auth-surfaces a { padding: 8px 14px; border-radius: 12px; font-size: 13px; font-weight: 700; }
-.auth-surfaces a[aria-current='page'] { background: #d1fae5; color: #064e3b; }
+.auth-surfaces { display: inline-flex; justify-content: center; gap: 6px; margin: 16px auto 24px; padding: 4px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 14px; }
+.auth-surfaces a { padding: 8px 16px; border-radius: 10px; font-size: 13px; font-weight: 700; color: #475569; text-decoration: none; transition: background .15s, color .15s; }
+.auth-surfaces a:hover { color: #064e3b; background: #e2e8f070; text-decoration: none; }
+.auth-surfaces a[aria-current='page'] { background: #d1fae5; color: #064e3b; box-shadow: 0 1px 3px #064e3b14; }
 .role-patient[aria-pressed='true'] { background: #d1fae5; border-color: #059669; }
 .role-caregiver[aria-pressed='true'] { background: #fef3c7; border-color: #f59e0b; }
 .auth-app-mode .auth-main { max-width: 460px; }
@@ -193,13 +197,14 @@ h1, h2, h3, h4 { font-weight: 800; }
     display: grid;
     grid-template-columns: minmax(0, 4fr) minmax(0, 5fr);
     grid-template-rows: auto auto auto 1fr;
-    grid-template-areas: 'heading form' 'prompt form' 'roles form' 'pair form';
+    grid-template-areas: 'heading form' 'prompt form' 'roles form' 'demo form' 'pair form';
     column-gap: 20px;
     padding: 14px;
   }
   .welcome-heading { grid-area: heading; }
   .role-prompt { grid-area: prompt; }
   .role-options { grid-area: roles; align-self: start; }
+  .demo-logins { grid-area: demo; }
   .caregiver-auth { grid-area: form; margin: 0; }
   .auth-device-link { grid-area: pair; align-self: start; }
 }

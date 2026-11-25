@@ -11,6 +11,7 @@ import { registerAccountRoutes } from './accounts.js';
 import { registerMedicationRoutes, applyMedicationTimingPolicy } from './medication.js';
 import { registerClinicalRoutes } from './clinical.js';
 import { seedCatalog } from './catalog.js';
+import { ensureTestAccounts } from './demo-accounts.js';
 import { createDevClock, registerDevRoutes } from './devtools.js';
 
 export async function createApp(options = {}) {
@@ -25,6 +26,7 @@ export async function createApp(options = {}) {
   applyMedicationTimingPolicy(ctx);
   buildSecurity(ctx);
   seedCatalog(ctx, options.databasePath === ':memory:');
+  if (config.testAccounts) await ensureTestAccounts(ctx);
   const app = express();
   app.disable('x-powered-by');
   app.use((req, res, next) => {
@@ -42,7 +44,7 @@ export async function createApp(options = {}) {
     next();
   });
   app.use(express.json({ limit: '128kb' }));
-  app.get('/health', (req, res) => res.json({ status: 'ok', service: 'antam-backend', time: ctx.now().toISOString(), devTools: Boolean(devClock) }));
+  app.get('/health', (req, res) => res.json({ status: 'ok', service: 'antam-backend', time: ctx.now().toISOString(), devTools: Boolean(devClock), testAccounts: config.testAccounts }));
   app.get('/openapi.yaml', (req, res) => res.type('application/yaml').sendFile(fileURLToPath(new URL('../../docs/api/openapi.yaml', import.meta.url))));
   const router = express.Router();
   for (const key of ['patientId', 'delegateId', 'deviceId', 'prescriptionId', 'doseId', 'reportId', 'appointmentId', 'alertId', 'confirmationId']) {

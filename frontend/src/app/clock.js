@@ -6,6 +6,7 @@ import { invalidateAll } from './query.js';
 
 let offsetMs = 0;
 let devTools = false;
+let testAccounts = false;
 let reachable = true;
 const listeners = new Set();
 const CLOCK_SIGNAL = 'antam.v1.clockChanged';
@@ -19,6 +20,7 @@ export const clock = {
   now: () => Date.now() + offsetMs,
   offsetMs: () => offsetMs,
   devTools: () => devTools,
+  testAccounts: () => testAccounts,
   reachable: () => reachable
 };
 
@@ -36,9 +38,10 @@ export async function syncClock() {
     const receivedAt = Date.now();
     const next = Date.parse(health.time) - (sentAt + receivedAt) / 2;
     // Bỏ qua dao động mạng nhỏ để giao diện không nhảy giờ liên tục.
-    if (Math.abs(next - offsetMs) > 1500 || devTools !== Boolean(health.devTools) || !reachable) {
+    if (Math.abs(next - offsetMs) > 1500 || devTools !== Boolean(health.devTools) || testAccounts !== Boolean(health.testAccounts) || !reachable) {
       offsetMs = Math.abs(next) < 1500 ? 0 : next;
       devTools = Boolean(health.devTools);
+      testAccounts = Boolean(health.testAccounts);
       reachable = true;
       listeners.forEach((fn) => fn());
     }
