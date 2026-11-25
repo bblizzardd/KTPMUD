@@ -35,7 +35,7 @@ Hai lựa chọn **Giao diện web** và **Giao diện app** dùng chung tài kh
 | Liên kết bệnh nhân | Tạo mã để bệnh nhân đăng ký tài khoản gắn với đúng hồ sơ hoặc ghép thiết bị | Hồ sơ & thiết bị |
 | Quản lý thiết bị | Xem thiết bị đã ghép, thu hồi thiết bị khi đổi hoặc mất máy | Hồ sơ & thiết bị |
 | Ủy quyền người nhà | Thêm người nhà, ghép thiết bị cho họ, thu hồi quyền xác nhận hộ | Hồ sơ & thiết bị |
-| Đơn thuốc | Nhập đơn, chọn thuốc, số lượng, đơn vị, buổi và giờ uống; sửa/hủy đơn nháp; xác nhận đơn | Đơn thuốc |
+| Đơn thuốc | Nhập tên thuốc, số viên mỗi lần, buổi và giờ uống. Có thể sửa, hủy hoặc xác nhận đơn nháp. | Đơn thuốc |
 | Kiểm tra trùng hoạt chất | Xem cảnh báo khi các thuốc trong đơn trùng hoạt chất | Màn hình nhập và chi tiết đơn |
 | Theo dõi hằng ngày | Xem lịch hôm nay, lần uống gần nhất, tỷ lệ tuân thủ và diễn biến theo ngày | Tổng quan |
 | Lịch sử cữ thuốc | Lọc theo ngày hoặc trạng thái, xem giờ uống và người xác nhận | Lịch cữ thuốc |
@@ -93,7 +93,7 @@ Sau mỗi lần đăng nhập, vào mục liên kết để **Tạo mã 6 số**
 1. Vào **Đơn thuốc**, chọn thêm đơn mới.
 2. Nhập ngày kê đơn, ngày bắt đầu uống, ngày tái khám và nguồn tra cứu nếu có.
 3. Với mỗi thuốc, nhập tên thuốc hoặc gõ từ 2 ký tự để chọn trong danh mục.
-4. Nhập số lượng mỗi lần uống, đơn vị, các buổi uống, giờ uống của từng buổi và ghi chú cách dùng theo đơn.
+4. Nhập số viên mỗi lần uống theo đơn. Ô này cho phép nhập từ 0,5 viên và tăng theo từng nửa viên (0,5 → 1 → 1,5 → 2 → 2,5…). Chọn buổi và giờ uống, rồi thêm ghi chú cách dùng nếu cần.
 5. Bấm **Thêm thuốc** nếu đơn có nhiều thuốc, sau đó lưu đơn nháp.
 6. Mở chi tiết đơn, đối chiếu lại với đơn gốc và xem mục **Kiểm tra trước khi xác nhận**.
 7. Nếu có cảnh báo trùng hoạt chất, chỉ đánh dấu đã kiểm tra với bác sĩ/dược sĩ sau khi thực sự kiểm tra.

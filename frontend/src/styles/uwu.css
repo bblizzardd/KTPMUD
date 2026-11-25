@@ -17,14 +17,14 @@ h1, h2, h3, h4 { font-weight: 800; }
   background: linear-gradient(135deg, #022c22, #064e3b 55%, #065f46);
 }
 .auth-main { width: 100%; padding: 0; background: transparent; container: auth / inline-size; }
-.auth-card { max-width: 600px; padding: 38px; border: 4px solid #10b98130; box-shadow: 0 25px 50px #0003; }
+.auth-card { max-width: 720px; padding: 38px; border: 4px solid #10b98130; box-shadow: 0 25px 50px #0003; }
 .welcome-heading { text-align: center; }
 .welcome-logo { display: grid; place-items: center; width: 80px; height: 80px; margin: 0 auto 20px; color: #047857; background: #d1fae5; border-radius: 24px; box-shadow: 0 6px 12px #064e3b12; }
 .welcome-heading h1 { color: #022c22; font-size: clamp(26px, 3vw, 36px); letter-spacing: -1px; }
 .welcome-heading p { margin: 12px auto 28px; color: #475569; font-weight: 600; font-size: 16px; }
 .role-prompt { color: #065f46; text-transform: uppercase; letter-spacing: .06em; font-size: 12px; font-weight: 800; margin-bottom: 12px; }
-.role-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.role-option { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 20px; border: 2px solid #a7f3d0; border-radius: 24px; text-align: left; line-height: 1.55; transition: background .15s, box-shadow .15s; }
+.role-options, .demo-login-options { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 12px; }
+.role-option { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px 12px; border: 2px solid #a7f3d0; border-radius: 24px; text-align: center; text-wrap: balance; line-height: 1.55; transition: background .15s, box-shadow .15s; }
 .role-option:hover { text-decoration: none; box-shadow: 0 6px 18px #064e3b12; }
 .role-patient { background: #ecfdf5; color: #064e3b; }
 .role-patient:hover { background: #d1fae5; border-color: #059669; }
@@ -35,10 +35,11 @@ h1, h2, h3, h4 { font-weight: 800; }
 .role-option strong { font-size: 20px; font-weight: 800; line-height: 1.35; }
 .role-option > span:not(.role-icon) { font-size: 12px; font-weight: 700; }
 .role-option .role-action { margin-top: auto; padding-top: 8px; display: flex; align-items: center; gap: 8px; }
+.role-action svg { flex-shrink: 0; }
 .caregiver-auth { padding-top: 24px; margin-top: 24px; border-top: 1px solid var(--border); }
 .demo-logins { margin-top: 16px; }
 .demo-logins h2 { font-size: 16px; margin-bottom: 8px; }
-.demo-logins .row { flex-wrap: wrap; }
+.demo-login-options .btn { min-height: 44px; padding: 6px 10px; white-space: normal; line-height: 1.3; text-wrap: balance; }
 .auth-device-link { justify-content: center; text-align: center; font-size: 13px; }
 .auth-device-link a { display: inline-flex; align-items: center; gap: 4px; font-weight: 800; }
 .auth-device-link > svg { flex-shrink: 0; }
@@ -135,8 +136,6 @@ h1, h2, h3, h4 { font-weight: 800; }
 @media (max-width: 640px) {
   .auth-page { padding: 20px 12px; }
   .auth-card { padding: 26px 20px; }
-  .role-options { grid-template-columns: minmax(0, 1fr); gap: 12px; }
-  .role-option { gap: 8px; padding: 18px; }
   .welcome-heading h1 { font-size: 28px; }
   .welcome-heading p { font-size: 14px; }
   .topbar { gap: 8px; padding: 0 12px; }
@@ -161,7 +160,7 @@ h1, h2, h3, h4 { font-weight: 800; }
 }
 
 /* Both account roles share authentication on web and the app layout. */
-.auth-surfaces { display: inline-flex; justify-content: center; gap: 6px; margin: 16px auto 24px; padding: 4px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 14px; }
+.auth-surfaces { display: inline-grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin: 16px auto 24px; padding: 4px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 14px; }
 .auth-surfaces a { padding: 8px 16px; border-radius: 10px; font-size: 13px; font-weight: 700; color: #475569; text-decoration: none; transition: background .15s, color .15s; }
 .auth-surfaces a:hover { color: #064e3b; background: #e2e8f070; text-decoration: none; }
 .auth-surfaces a[aria-current='page'] { background: #d1fae5; color: #064e3b; box-shadow: 0 1px 3px #064e3b14; }
@@ -178,7 +177,7 @@ h1, h2, h3, h4 { font-weight: 800; }
   .auth-surfaces { margin: 0 0 0 auto; gap: 2px; }
   .auth-surfaces a { padding: 8px 10px; text-transform: capitalize; }
   .role-prompt { margin: 14px 0 6px; }
-  .role-options { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .role-options, .demo-login-options { gap: 6px; }
   .role-option { min-height: 44px; padding: 6px; align-items: center; justify-content: center; border-radius: 12px; text-align: center; }
   .role-icon { display: none; }
   .role-option strong { font-size: 15px; font-weight: 700; }
@@ -189,6 +188,9 @@ h1, h2, h3, h4 { font-weight: 800; }
   .auth-card .input { font-size: 16px; }
   .auth-card .demo-hint { margin: 0; padding: 6px 10px; }
   .auth-device-link { margin-top: 12px; padding-top: 10px; }
+}
+@container auth (max-width: 380px) {
+  .role-options, .demo-login-options { grid-auto-flow: row; grid-auto-rows: 1fr; }
 }
 @media (min-width: 540px) and (max-width: 940px) and (max-height: 480px) {
   .auth-page { padding: 8px 12px; }
@@ -204,6 +206,7 @@ h1, h2, h3, h4 { font-weight: 800; }
   .welcome-heading { grid-area: heading; }
   .role-prompt { grid-area: prompt; }
   .role-options { grid-area: roles; align-self: start; }
+  .role-options, .demo-login-options { grid-auto-flow: row; grid-auto-rows: 1fr; }
   .demo-logins { grid-area: demo; }
   .caregiver-auth { grid-area: form; margin: 0; }
   .auth-device-link { grid-area: pair; align-self: start; }

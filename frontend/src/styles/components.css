@@ -373,25 +373,6 @@
   color: var(--text-3);
 }
 
-.input-group {
-  display: flex;
-  align-items: stretch;
-}
-
-.input-group .input {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-  min-width: 0;
-}
-
-.input-group .select {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-  border-left: 0;
-  width: auto;
-  min-width: 92px;
-}
-
 .input-with-icon {
   position: relative;
 }

@@ -18,7 +18,8 @@ export async function createApp(options = {}) {
   const config = getConfig(options.config, options.databasePath === ':memory:');
   const db = openDatabase(options.databasePath || config.databasePath);
   const devClock = !options.now && config.devTools ? createDevClock(config) : null;
-  const ctx = { db, config, now: options.now || devClock?.now || (() => new Date()), events: new EventEmitter() };
+  const sessionNow = options.now || (() => new Date());
+  const ctx = { db, config, now: devClock?.now || sessionNow, sessionNow, events: new EventEmitter() };
   ctx.audit = ({ patientId = null, userId = null, actionType, targetType, targetId = null, status = 'SUCCESS', detail = '' }) => db.insert('auditLogs', {
     id: newId(), patientId, userId, actionType, targetType, targetId, status, detail, timestamp: ctx.now().toISOString(),
   });

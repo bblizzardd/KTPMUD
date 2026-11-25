@@ -6,6 +6,7 @@ import {
   SLOT_META,
   CONFIRMED_STATUSES,
   DUE_STATUSES,
+  DOSE_QUANTITY_STEP,
   DEFAULT_MISSED_THRESHOLD
 } from './constants.js';
 import {
@@ -152,8 +153,9 @@ export function validatePrescriptionInput(input, { forConfirm = false, today = t
     if (!name) add(`items[${i}].drugNameRaw`, 'Chưa nhập tên thuốc.');
     else if (name.length > 200) add(`items[${i}].drugNameRaw`, 'Tên thuốc tối đa 200 ký tự.');
     const units = Number(item?.unitsPerDose);
-    if (!Number.isFinite(units) || units < 0.25) add(`items[${i}].unitsPerDose`, 'Số đơn vị mỗi lần tối thiểu là 0,25.');
-    else if (units > 50) add(`items[${i}].unitsPerDose`, 'Số đơn vị mỗi lần quá lớn, hãy kiểm tra lại.');
+    if (units < DOSE_QUANTITY_STEP || !Number.isInteger(units / DOSE_QUANTITY_STEP)) {
+      add(`items[${i}].unitsPerDose`, 'Nhập số lượng từ 0,5 trở lên theo bước 0,5.');
+    } else if (units > 50) add(`items[${i}].unitsPerDose`, 'Số lượng mỗi lần quá lớn, hãy kiểm tra lại.');
     const slots = Array.isArray(item?.slots) ? item.slots.filter((s) => SLOTS.includes(s)) : [];
     if (slots.length === 0) add(`items[${i}].slots`, 'Chọn ít nhất một buổi uống.');
     if (item.times !== undefined) {

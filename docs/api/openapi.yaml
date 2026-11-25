@@ -911,7 +911,7 @@ components:
           type: string
           maxLength: 200
           description: Tên thuốc đúng như ghi trên đơn
-        unitsPerDose: { type: number, minimum: 0.25, example: 1 }
+        unitsPerDose: { type: number, minimum: 0.5, multipleOf: 0.5, example: 1.5 }
         unit: { type: string, example: viên }
         slots:
           type: array

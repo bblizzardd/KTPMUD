@@ -99,7 +99,7 @@ export function registerAccountRoutes(router, ctx) {
   router.post('/auth/refresh', limit, async (req, res) => {
     const { refreshToken } = parse(z.object({ refreshToken: text(512) }).strict(), req.body);
     const previous = db.list('refreshTokens', { tokenHash: hashToken(refreshToken) })[0];
-    if (!previous || previous.used || Date.parse(previous.expiresAt) <= +ctx.now()) throw new ApiError(401, 'INVALID_REFRESH_TOKEN', 'Refresh token đã hết hạn hoặc đã dùng');
+    if (!previous || previous.used || Date.parse(previous.expiresAt) <= +ctx.sessionNow()) throw new ApiError(401, 'INVALID_REFRESH_TOKEN', 'Refresh token đã hết hạn hoặc đã dùng');
     const role = previous.role || 'CAREGIVER';
     const accountId = role === 'CAREGIVER' ? previous.caregiverId : previous.patientAccountId;
     const account = db.get(accountTable(role), accountId);

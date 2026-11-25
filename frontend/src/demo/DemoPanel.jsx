@@ -1,4 +1,4 @@
-﻿import { useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import { BellRing, Clock, FastForward, X } from 'lucide-react';
 import * as api from '../api/caregiver.js';
 import { clock, notifyClockAdvance, syncClock } from '../app/clock.js';
@@ -13,33 +13,51 @@ export default function DemoPanel() {
   const [open, setOpen] = usePref('antam.v1.demoOpen', true);
   const [busy, setBusy] = useState(false);
   const locked = useRef(false);
+  const pending = useRef([]);
   const now = useNow(1_000);
 
+  useEffect(() => () => { pending.current.length = 0; }, []);
+
+  async function advance(target) {
+    let body;
+    if (typeof target === 'number') body = { advanceMinutes: target };
+    else {
+      if (!patient) return;
+      const today = toDateKey(clock.now());
+      const doses = await call(() => api.listDoses(patient.id, { from: today, to: addDays(today, 13) }));
+      if (!doses.ok) return;
+      const upcoming = doses.result.filter(d => ['SCHEDULED', 'PENDING'].includes(d.status));
+      const field = target === 'NEXT' ? 'scheduledAt' : 'deadlineAt';
+      const candidates = upcoming.filter(d => target !== 'NEXT' || Date.parse(d.scheduledAt) > clock.now());
+      candidates.sort((a, b) => Date.parse(a[field]) - Date.parse(b[field]));
+      const dose = candidates[0];
+      if (!dose) {
+        toast({ tone: 'info', title: 'Không có cữ phù hợp trong 14 ngày tới' });
+        return;
+      }
+      body = { to: new Date(Math.max(clock.now() + 1000, Date.parse(dose[field]) + (target === 'NEXT' ? 1000 : 60_000))).toISOString() };
+    }
+    const result = await call(() => api.advanceDevClock(body), { errorTitle: 'Không tua được thời gian' });
+    return result.ok ? result.result : null;
+  }
+
   async function skip(target) {
+    pending.current.push(target);
     if (locked.current) return;
     locked.current = true;
     setBusy(true);
     try {
-      let body;
-      if (typeof target === 'number') body = { advanceMinutes: target };
-      else {
-        if (!patient) return;
-        const today = toDateKey(clock.now());
-        const doses = await call(() => api.listDoses(patient.id, { from: today, to: addDays(today, 13) }));
-        if (!doses.ok) return;
-        const upcoming = doses.result.filter(d => ['SCHEDULED', 'PENDING'].includes(d.status));
-        const field = target === 'NEXT' ? 'scheduledAt' : 'deadlineAt';
-        const candidates = upcoming.filter(d => target !== 'NEXT' || Date.parse(d.scheduledAt) > clock.now());
-        candidates.sort((a, b) => Date.parse(a[field]) - Date.parse(b[field]));
-        const dose = candidates[0];
-        if (!dose) return toast({ tone: 'info', title: 'Không có cữ phù hợp trong 14 ngày tới' });
-        body = { to: new Date(Math.max(clock.now() + 1000, Date.parse(dose[field]) + (target === 'NEXT' ? 1000 : 60_000))).toISOString() };
+      let last;
+      while (pending.current.length) {
+        const result = await advance(pending.current.shift());
+        if (result) last = result;
+        if (!pending.current.length && last) {
+          notifyClockAdvance();
+          await syncClock();
+          invalidateAll();
+        }
       }
-      const result = await call(() => api.advanceDevClock(body), { errorTitle: 'Không tua được thời gian' });
-      if (result.ok) notifyClockAdvance();
-      await syncClock();
-      invalidateAll();
-      if (result.ok) toast({ title: `Đã tua tới ${fmtTime(result.result.now)}` });
+      if (last) toast({ title: `Đã tua tới ${fmtTime(last.now)}` });
     } finally {
       locked.current = false;
       setBusy(false);
@@ -61,8 +79,8 @@ export default function DemoPanel() {
         <div className="demo-buttons">
           <button type="button" className="btn btn-primary" onClick={() => skip('OVERDUE')} disabled={busy || !patient}><FastForward size={16} /> Skip quá giờ</button>
           <button type="button" className="btn btn-secondary" onClick={() => skip('NEXT')} disabled={busy || !patient}><BellRing size={16} /> Tới cữ tiếp theo</button>
-          <button type="button" className="btn btn-secondary" onClick={() => skip(15)} disabled={busy}>+15 phút</button>
-          <button type="button" className="btn btn-secondary" onClick={() => skip(60)} disabled={busy}>+1 giờ</button>
+          <button type="button" className="btn btn-secondary" onClick={() => skip(15)}>+15 phút</button>
+          <button type="button" className="btn btn-secondary" onClick={() => skip(60)}>+1 giờ</button>
         </div>
       </div>
     </div>}

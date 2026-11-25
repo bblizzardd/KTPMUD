@@ -109,7 +109,7 @@ export const REPORT_STATUS = {
   FAILED: { label: 'Lỗi', tone: 'danger' }
 };
 
-export const DOSE_UNITS = ['viên', 'gói', 'ml', 'đơn vị'];
+export const DOSE_QUANTITY_STEP = 0.5;
 
 // Nhãn tiếng Việt cho Action Type mà Backend ghi vào nhật ký
 export const AUDIT_ACTIONS = {

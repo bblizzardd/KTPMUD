@@ -100,7 +100,7 @@ test('lỗi theo schema Error: giữ mã, đổi tên trường và thông đi�
       code: 'VALIDATION_ERROR',
       message: 'Dữ liệu đầu vào không hợp lệ',
       details: [
-        { field: 'items.0.unitsPerDose', issue: 'Too small: expected number to be >=0.25' },
+        { field: 'items.0.unitsPerDose', issue: 'Too small: expected number to be >=0.5' },
         { field: 'nextVisitDate', issue: 'Ngày tái khám phải từ ngày bắt đầu trở đi' }
       ]
     })
@@ -138,13 +138,13 @@ test('đơn thuốc gửi lên chỉ gồm đúng các trường của Prescript
     startDate: '2026-10-20',
     nextVisitDate: '2026-11-20',
     sourceNote: '  ',
-    items: [{ id: 'tmp-1', drugId: null, drugNameRaw: ' Panfor SR 500mg ', unitsPerDose: '1', unit: 'viên', slots: ['MORNING'], instruction: '', status: 'x' }]
+    items: [{ id: 'tmp-1', drugId: null, drugNameRaw: ' Panfor SR 500mg ', unitsPerDose: '1.5', slots: ['MORNING'], instruction: '', status: 'x' }]
   });
   assert.deepEqual(payload, {
     issuedDate: '2026-10-20',
     startDate: '2026-10-20',
     nextVisitDate: '2026-11-20',
-    items: [{ drugId: null, drugNameRaw: 'Panfor SR 500mg', unitsPerDose: 1, unit: 'viên', slots: ['MORNING'] }]
+    items: [{ drugId: null, drugNameRaw: 'Panfor SR 500mg', unitsPerDose: 1.5, unit: 'viên', slots: ['MORNING'] }]
   });
 });
 

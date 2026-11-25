@@ -34,7 +34,7 @@ export function attachRealtime(server, ctx) {
     const owner = ctx.db.get('patients', alert.patientId)?.caregiverId;
     for (const ws of wss.clients) {
       if (!ws.actor || ws.readyState !== WebSocket.OPEN) continue;
-      if (ws.actor.expiresAt <= +ctx.now()) { ws.close(4401, 'Token expired'); continue; }
+      if (ws.actor.expiresAt <= +ctx.sessionNow()) { ws.close(4401, 'Token expired'); continue; }
       if (ws.actor.id !== owner) continue;
       if (ws.bufferedAmount > 1024 * 1024) { ws.close(4408, 'Slow connection'); continue; }
       ws.send(JSON.stringify({ type: 'alert', alert }));
@@ -44,7 +44,7 @@ export function attachRealtime(server, ctx) {
   const heartbeat = setInterval(() => {
     for (const ws of wss.clients) {
       if (!ws.alive) { ws.terminate(); continue; }
-      if (ws.actor && ws.actor.expiresAt <= +ctx.now()) { ws.close(4401, 'Token expired'); continue; }
+      if (ws.actor && ws.actor.expiresAt <= +ctx.sessionNow()) { ws.close(4401, 'Token expired'); continue; }
       ws.alive = false;
       ws.ping();
     }

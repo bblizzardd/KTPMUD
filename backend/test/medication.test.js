@@ -76,6 +76,29 @@ function input(overrides = {}) {
   };
 }
 
+test('prescription quantities use half-unit increments, including when confirming older drafts', async t => {
+  const f = await fixture(t);
+  const path = `/patients/${f.patient.id}/prescriptions`;
+  const item = input().items[0];
+  const withAmount = unitsPerDose => input({ items: [{ ...item, unitsPerDose }] });
+  for (const amount of [0.25, 1.25, 1.75, 2.1]) {
+    assert.equal((await f.request('POST', path, withAmount(amount))).status, 400);
+  }
+  const draft = await f.request('POST', path, withAmount(0.5));
+  assert.equal(draft.status, 201);
+  const draftPath = `/prescriptions/${draft.body.id}`;
+  const legacyItem = { ...draft.body.items[0], unitsPerDose: 1.25 };
+  f.db.update('prescriptions', draft.body.id, { items: [legacyItem] });
+  assert.equal((await f.request('POST', `${draftPath}/confirm`)).status, 400);
+  assert.equal((await f.request('PUT', draftPath, withAmount(1.75))).status, 400);
+  assert.deepEqual((await f.request('GET', draftPath)).body.items, [legacyItem]);
+  assert.equal((await f.request('PUT', draftPath, withAmount(1.5))).status, 200);
+  assert.equal((await f.request('POST', `${draftPath}/confirm`)).status, 202);
+  const [dose] = f.db.list('doses');
+  assert.equal(dose.unitsPerDose, 1.5);
+  assert.equal(dose.unit, 'viên');
+});
+
 test('custom medication times round-trip through edits and generate independent 60-minute windows', async t => {
   const f = await fixture(t);
   const items = [

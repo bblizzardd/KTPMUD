@@ -116,6 +116,11 @@ test('UC-05 5a: kiểm tra trường bắt buộc và thứ tự ngày', () => {
   };
   assert.deepEqual(validatePrescriptionInput(ok, { today: '2026-10-22' }), []);
   const fields = (input, opts) => validatePrescriptionInput(input, { today: '2026-10-22', ...opts }).map((d) => d.field);
+  const withAmount = unitsPerDose => ({ ...ok, items: [{ ...ok.items[0], unitsPerDose }] });
+  for (const amount of [0.5, 1, '1.5', 2, 2.5, 50]) assert.deepEqual(fields(withAmount(amount)), []);
+  for (const amount of ['', 0, 0.25, 1.25, 1.75, 2.1, 50.5]) {
+    assert.deepEqual(fields(withAmount(amount)), ['items[0].unitsPerDose']);
+  }
   assert.deepEqual(fields({ ...ok, issuedDate: '' }), ['issuedDate']);
   assert.ok(fields({ ...ok, nextVisitDate: '2026-10-01' }).includes('nextVisitDate'));
   assert.ok(fields({ ...ok, startDate: '2026-10-19' }).includes('startDate'));

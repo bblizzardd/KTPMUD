@@ -6,7 +6,7 @@ import { patientKey, useApp } from '../app/AppContext.jsx';
 import { useNow } from '../app/hooks.js';
 import { useQuery } from '../app/query.js';
 import { href, navigate, ROUTES } from '../app/router.js';
-import { DOSE_UNITS, SLOTS, SLOT_META } from '../domain/constants.js';
+import { DOSE_QUANTITY_STEP, SLOTS, SLOT_META } from '../domain/constants.js';
 import { detectDuplicateIngredients, reminderTimeOf, validatePrescriptionInput } from '../domain/rules.js';
 import { addDays, fmtDateTime, toDateKey } from '../lib/time.js';
 import { Callout, Card, Field, PageHeader, PageStatus, Spinner } from '../components/ui.jsx';
@@ -249,25 +249,19 @@ function Editor({ prescriptionId, existing = null, loadError = null }) {
                 <Field label="Tên thuốc" required htmlFor={`rx-drug-${i}`} className="span-2">
                   <DrugAutocomplete inputId={`rx-drug-${i}`} value={item} onChange={(patch) => setItem(i, patch)} error={err(`items[${i}].drugNameRaw`)} />
                 </Field>
-                <Field label="Mỗi lần uống" required htmlFor={`rx-units-${i}`} error={err(`items[${i}].unitsPerDose`)}>
-                  <div className="input-group">
-                    <input
-                      id={`rx-units-${i}`}
-                      className="input"
-                      type="number"
-                      inputMode="decimal"
-                      min={0.25}
-                      step={0.25}
-                      value={item.unitsPerDose}
-                      onChange={(e) => setItem(i, { unitsPerDose: e.target.value === '' ? '' : Number(e.target.value) })}
-                      aria-invalid={Boolean(err(`items[${i}].unitsPerDose`))}
-                    />
-                    <select className="select" aria-label="Đơn vị" value={item.unit} onChange={(e) => setItem(i, { unit: e.target.value })}>
-                      {DOSE_UNITS.map((u) => (
-                        <option key={u}>{u}</option>
-                      ))}
-                    </select>
-                  </div>
+                <Field label={`Mỗi lần uống (${item.unit})`} required htmlFor={`rx-units-${i}`} error={err(`items[${i}].unitsPerDose`)}>
+                  <input
+                    id={`rx-units-${i}`}
+                    className="input"
+                    type="number"
+                    inputMode="decimal"
+                    min={DOSE_QUANTITY_STEP}
+                    max={50}
+                    step={DOSE_QUANTITY_STEP}
+                    value={item.unitsPerDose}
+                    onChange={(e) => setItem(i, { unitsPerDose: e.target.value })}
+                    aria-invalid={Boolean(err(`items[${i}].unitsPerDose`))}
+                  />
                 </Field>
                 <Field label="Buổi uống" required error={err(`items[${i}].slots`)} className="span-2">
                   <div className="chips" role="group" aria-label={`Buổi uống của thuốc ${i + 1}`}>

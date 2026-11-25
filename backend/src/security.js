@@ -45,7 +45,8 @@ export function accountEnabled(ctx, account, role) {
 }
 
 export async function createTokenPair(ctx, accountId, role = 'CAREGIVER') {
-  const now = Math.floor(+ctx.now() / 1000);
+  const issuedAt = ctx.sessionNow();
+  const now = Math.floor(+issuedAt / 1000);
   const accessToken = await new SignJWT({ role }).setProtectedHeader({ alg: 'HS256' })
     .setIssuer('antam').setAudience('antam-web').setSubject(accountId).setJti(newId())
     .setIssuedAt(now).setExpirationTime(now + ctx.config.accessTokenSeconds)
@@ -54,7 +55,7 @@ export async function createTokenPair(ctx, accountId, role = 'CAREGIVER') {
   return {
     response: { accessToken, refreshToken, expiresIn: ctx.config.accessTokenSeconds, role, accountId },
     record: { id: newId(), ...(role === 'CAREGIVER' ? { caregiverId: accountId } : { patientAccountId: accountId }), role, tokenHash: hashToken(refreshToken), used: false,
-      expiresAt: new Date(+ctx.now() + ctx.config.refreshTokenDays * 86400_000).toISOString(), createdAt: ctx.now().toISOString() },
+      expiresAt: new Date(+issuedAt + ctx.config.refreshTokenDays * 86400_000).toISOString(), createdAt: issuedAt.toISOString() },
   };
 }
 
@@ -67,7 +68,7 @@ export function buildSecurity(ctx) {
   async function authenticateAccount(token, requiredRole) {
     try {
       const { payload } = await jwtVerify(token, new TextEncoder().encode(ctx.config.jwtSecret), {
-        algorithms: ['HS256'], issuer: 'antam', audience: 'antam-web', currentDate: ctx.now(),
+        algorithms: ['HS256'], issuer: 'antam', audience: 'antam-web', currentDate: ctx.sessionNow(),
       });
       if (!['CAREGIVER', 'PATIENT', 'DELEGATE'].includes(payload.role) || (requiredRole && payload.role !== requiredRole)) throw new Error('Invalid role');
       const account = ctx.db.get(accountTable(payload.role), payload.sub);

@@ -16,8 +16,8 @@ const DEMO_ACCOUNT = (() => {
 })();
 
 const TEST_LOGINS = [
-  { role: 'CAREGIVER', label: 'Người chăm sóc', email: 'nguoithan@antam.test' },
   { role: 'PATIENT', label: 'Bệnh nhân', email: 'benhnhan@antam.test' },
+  { role: 'CAREGIVER', label: 'Người chăm sóc', email: 'nguoithan@antam.test' },
   { role: 'DELEGATE', label: 'Người được ủy quyền', email: 'uyquyen@antam.test' }
 ];
 
@@ -144,7 +144,7 @@ export default function AuthPage({ mode = 'login', surface = 'web', initialRole 
           </div>
           {(testAccounts || DEMO_ACCOUNT) && <section className="demo-logins" aria-label="Tài khoản demo">
             <h2>Đăng nhập nhanh bằng tài khoản demo</h2>
-            <div className="row">
+            <div className="demo-login-options">
               {testAccounts ? TEST_LOGINS.map(account => (
                 <button key={account.role} type="button" className="btn btn-secondary" disabled={busy}
                   onClick={() => demoLogin(account.role, { email: account.email, password: '123456' })}>{account.label}</button>

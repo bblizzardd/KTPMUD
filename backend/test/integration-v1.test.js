@@ -48,7 +48,9 @@ async function fixture(t, { initialTime = '2026-10-22T00:10:00.000Z', config = {
   const owner = async (displayName = 'owner') => {
     const account = { email: `user${Math.random().toString(36).slice(2, 8)}@example.test`, password: PASSWORD, displayName };
     account.id = (await ok('POST', '/auth/register', undefined, account, 201)).id;
-    account.token = (await ok('POST', '/auth/login', undefined, { email: account.email, password: PASSWORD })).accessToken;
+    const tokens = await ok('POST', '/auth/login', undefined, { email: account.email, password: PASSWORD });
+    account.token = tokens.accessToken;
+    account.refreshToken = tokens.refreshToken;
     return account;
   };
   const pair = async (user, patientId, role = 'PATIENT', delegateId) => {
@@ -481,14 +483,24 @@ test('skip past a dose deadline marks it missed and sends one alert', async t =>
   const morning = (await f.ok('GET', endpoint, user.token)).find(d => d.slot === 'MORNING');
   assert.equal(morning.status, 'SCHEDULED');
   await f.ok('POST', '/dev/clock', user.token, { to: morning.scheduledAt });
-  // A large skip expires access tokens; log in again as the browser refresh flow does.
-  const login = async () => (await f.ok('POST', '/auth/login', undefined, { email: user.email, password: PASSWORD })).accessToken;
-  user.token = await login();
   assert.equal((await f.ok('GET', endpoint, user.token)).find(d => d.id === morning.id).status, 'PENDING');
   await f.ok('POST', '/dev/clock', user.token, { to: new Date(Date.parse(morning.deadlineAt) + 60_000).toISOString() });
-  user.token = await login();
   assert.equal((await f.ok('GET', endpoint, user.token)).find(d => d.id === morning.id).status, 'MISSED');
   tickMedication(f.ctx);
   const alerts = await f.ok('GET', `/patients/${patient.id}/alerts`, user.token);
   assert.equal(alerts.filter(a => a.type === 'DOSE_MISSED').length, 1);
+});
+
+test('rapid time skips accumulate and preserve the account session', async t => {
+  const f = await fixture(t, { realClock: true, config: { devTools: true, refreshTokenDays: 1 } });
+  const user = await f.owner();
+  const before = await f.ok('GET', '/dev/clock', user.token);
+  const advance = advanceMinutes => f.ok('POST', '/dev/clock', user.token, { advanceMinutes });
+  await Promise.all([15, 60, 15, 60].map(advance));
+  const after = await f.ok('GET', '/dev/clock', user.token);
+  assert.equal(after.offsetMs - before.offsetMs, 150 * 60_000);
+  await advance(24 * 60);
+  assert.equal((await f.ok('GET', '/auth/me', user.token)).id, user.id);
+  const rotated = await f.ok('POST', '/auth/refresh', undefined, { refreshToken: user.refreshToken });
+  assert.equal((await f.ok('GET', '/auth/me', rotated.accessToken)).id, user.id);
 });
