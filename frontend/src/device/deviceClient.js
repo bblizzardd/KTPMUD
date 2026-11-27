@@ -165,31 +165,3 @@ export async function confirmDoses(phone, doses) {
   const confirmedAt = results.find((r) => r.ok)?.confirmation?.takenAt || takenAt;
   return { queued: false, takenAt: confirmedAt, results };
 }
-
-let audioCtx = null;
-
-/** Âm báo nhắc thuốc (FR-10). Trình duyệt có thể chặn âm thanh cho tới khi người dùng chạm. */
-export function playChime() {
-  try {
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) return;
-    audioCtx = audioCtx || new Ctx();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const t0 = audioCtx.currentTime;
-    [659.25, 783.99, 1046.5, 783.99, 1046.5].forEach((freq, i) => {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-      const start = t0 + i * 0.18;
-      gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.exponentialRampToValueAtTime(0.25, start + 0.03);
-      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.4);
-      osc.connect(gain).connect(audioCtx.destination);
-      osc.start(start);
-      osc.stop(start + 0.42);
-    });
-  } catch {
-    // bỏ qua: không có âm thanh vẫn hiển thị nhắc nhở
-  }
-}

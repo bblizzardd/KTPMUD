@@ -24,7 +24,7 @@ import {
 import * as api from '../api/caregiver.js';
 import { clock } from '../app/clock.js';
 import { patientKey, useApp } from '../app/AppContext.jsx';
-import { useNow, useOnClickOutside } from '../app/hooks.js';
+import { useNotificationSound, useNow, useOnClickOutside } from '../app/hooks.js';
 import { invalidate, invalidateAll, useQuery } from '../app/query.js';
 import { useAlertSocket } from '../app/realtime.js';
 import { href, navigate, ROUTES } from '../app/router.js';
@@ -72,8 +72,10 @@ const ALERT_ICON = {
 
 /** Cảnh báo mới đẩy qua WSS /ws/alerts hiện ngay thành thông báo và làm mới dữ liệu hồ sơ đó. */
 function useAlertStream() {
-  const { patients, toast } = useApp();
+  const { patients, toast, toasts } = useApp();
   const seen = useRef(new Set());
+  const [latestAlertToast, setLatestAlertToast] = useState(null);
+  useNotificationSound(toasts.some(t => t.id === latestAlertToast) ? latestAlertToast : null);
   return useAlertSocket({
     enabled: true,
     onAlert: (alert) => {
@@ -82,12 +84,13 @@ function useAlertStream() {
       seen.current.add(alert.id);
       if (alert.type === 'DUPLICATE_INGREDIENT') return; // đã hiện ngay trong màn hình nhập đơn
       const owner = patients.find((p) => p.id === alert.patientId);
-      toast({
+      const toastId = toast({
         tone: ALERT_TYPES[alert.type]?.tone || 'info',
         title: `Cảnh báo mới${owner ? ` · ${owner.alias}` : ''} · ${ALERT_TYPES[alert.type]?.label || alert.type}`,
         message: alert.message,
         timeout: 9000
       });
+      setLatestAlertToast(toastId);
     },
     // Mất kết nối một lúc: tải lại qua REST để bù các cảnh báo đã lỡ.
     onReconnect: () => invalidateAll()

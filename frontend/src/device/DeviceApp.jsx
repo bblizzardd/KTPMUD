@@ -16,12 +16,12 @@ import {
 } from 'lucide-react';
 import { isNetworkError } from '../api/errors.js';
 import { href, ROUTES } from '../app/router.js';
-import { useNow } from '../app/hooks.js';
+import { useNotificationSound, useNow } from '../app/hooks.js';
 import { CONFIRMED_STATUSES, SLOT_META } from '../domain/constants.js';
 import { checkConfirmable, decideUnconfirmedStatus, delegateReminderGroups, groupDoses } from '../domain/rules.js';
 import { addDays, dayLabel, diffDays, fmtDate, fmtTime, toDateKey, weekdayOf, fmtDateShort, MINUTE } from '../lib/time.js';
 import { fmtNumber } from '../lib/text.js';
-import { confirmDoses, forgetPairing, pairPhone, playChime, usePhoneData } from './deviceClient.js';
+import { confirmDoses, forgetPairing, pairPhone, usePhoneData } from './deviceClient.js';
 import { updatePhone } from './phones.js';
 
 const DONE = [...CONFIRMED_STATUSES, 'QUEUED'];
@@ -250,18 +250,17 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
   const ack = (key) => updatePhone(phone.id, (p) => ({ acked: [...(p.acked || []).slice(-50), key] }));
 
   // Mỗi máy người nhà ghi nhận riêng lần nhắc sau 30 phút và lần báo quá hạn.
-  const ringKeys = isPatient ? pending.map((g) => `p:${g.key}`) : unresolved.map((n) => `n:${n.id}`);
-  const ringing = ringKeys.find(key => !dismissed.has(key));
-  function dismissReminder() {
-    if (ringing) setDismissed(previous => new Set(previous).add(ringing));
+  const ringingGroup = isPatient ? pending[0] : null;
+  const ringingNote = unresolved.find(note => !dismissed.has(note.id));
+  useNotificationSound(ringingGroup?.key ?? ringingNote?.id);
+
+  function dismissDelegateReminder() {
+    if (ringingNote) setDismissed(previous => new Set(previous).add(ringingNote.id));
   }
-  useEffect(() => {
-    if (ringing) playChime();
-  }, [ringing]);
 
   async function doConfirm(group) {
     if (sending) return;
-    dismissReminder();
+    dismissDelegateReminder();
     setSending(true);
     const targets = group.doses.filter(d => ['SCHEDULED', 'PENDING', 'MISSED'].includes(d.status));
     const invalid = targets.map(d => checkConfirmable(d, { takenAt: new Date(nowMs).toISOString(), nowMs })).find(result => !result.ok);
@@ -271,13 +270,14 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
       return;
     }
     const res = await confirmDoses(phone, targets);
-    setSending(false);
     if (res.queued) {
+      setSending(false);
       setJustDone(group.key);
       flash({ tone: 'warning', text: `Đã ghi nhận lúc ${fmtTime(res.takenAt)}. Sẽ tự gửi khi có mạng.` });
       return;
     }
     await reload();
+    setSending(false);
     const failed = res.results.filter((r) => !r.ok);
     if (failed.length === 0) {
       setJustDone(group.key);
@@ -310,9 +310,25 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
     ? { takenAt: queuedLast.takenAt, slot: data.doses.find(d => d.id === queuedLast.doseId)?.slot, date: toDateKey(queuedLast.takenAt), pendingSync: true }
     : data.last;
 
-  const ringingGroup = ringing?.startsWith('p:') ? groups.find((g) => `p:${g.key}` === ringing && g.status === 'PENDING') : null;
-  const ringingNote = ringing?.startsWith('n:') ? unresolved.find((n) => `n:${n.id}` === ringing) : null;
   const confirmLabel = isPatient ? 'XÁC NHẬN ĐÃ UỐNG' : `XÁC NHẬN HỘ: ${alias.toUpperCase()} ĐÃ UỐNG`;
+
+  if (ringingGroup) {
+    return (
+      <div className="dev-screen dev-ring" role="alertdialog" aria-label="Đến giờ uống thuốc">
+        <BellRing size={64} className="dev-ring-bell" aria-hidden="true" />
+        <div className="dev-ring-title">ĐẾN GIỜ UỐNG THUỐC</div>
+        <div className="dev-when dev-when-center">
+          <span className="dev-time num">{fmtTime(ringingGroup.scheduledAt)}</span>
+          <span className="dev-slot">{SLOT_META[ringingGroup.slot].long}</span>
+        </div>
+        <MedList group={ringingGroup} />
+        <p className="dev-hint">Chỉ xác nhận sau khi đã uống.</p>
+        <button type="button" className="dev-btn dev-btn-confirm" onClick={() => doConfirm(ringingGroup)} disabled={sending}>
+          <Check size={30} strokeWidth={3} aria-hidden="true" /> {confirmLabel}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="dev-screen">
@@ -481,24 +497,6 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
       )}
 
 
-      {ringingGroup && (
-        <div className="dev-ring" role="alertdialog" aria-label="Đến giờ uống thuốc">
-          <BellRing size={64} className="dev-ring-bell" aria-hidden="true" />
-          <div className="dev-ring-title">ĐẾN GIỜ UỐNG THUỐC</div>
-          <div className="dev-when dev-when-center">
-            <span className="dev-time num">{fmtTime(ringingGroup.scheduledAt)}</span>
-            <span className="dev-slot">{SLOT_META[ringingGroup.slot].long}</span>
-          </div>
-          <MedList group={ringingGroup} />
-          <button type="button" className="dev-btn dev-btn-confirm" onClick={() => doConfirm(ringingGroup)}>
-            <Check size={30} strokeWidth={3} aria-hidden="true" /> {confirmLabel}
-          </button>
-          <button type="button" className="dev-btn dev-btn-ghost" onClick={dismissReminder}>
-            Để sau
-          </button>
-        </div>
-      )}
-
       {ringingNote && (
         <div className="dev-ring dev-ring-alert" role="alertdialog" aria-label="Cữ thuốc chưa có xác nhận">
           <AlertTriangle size={64} aria-hidden="true" />
@@ -509,12 +507,12 @@ function HomeScreen({ phone, data, nowMs, flash, reload }) {
             className="dev-btn dev-btn-delegate"
             onClick={() => {
               ack(ringingNote.id);
-              dismissReminder();
+              dismissDelegateReminder();
             }}
           >
             ĐÃ NHẮC {alias.toUpperCase()}
           </button>
-          <button type="button" className="dev-btn dev-btn-ghost" onClick={dismissReminder}>
+          <button type="button" className="dev-btn dev-btn-ghost" onClick={dismissDelegateReminder}>
             Để sau
           </button>
         </div>

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { AppProvider, useApp } from './app/AppContext.jsx';
 import { navigate, ROUTES, useRoute } from './app/router.js';
 import { startClockSync } from './app/clock.js';
+import { prepareNotificationSound } from './app/notificationSound.js';
 import AppShell from './shell/AppShell.jsx';
 import AuthPage from './pages/AuthPage.jsx';
 import PatientPage from './pages/PatientPage.jsx';
@@ -70,6 +71,7 @@ function Root() {
   const { session, caregiver, caregiverError, reloadCaregiver, patientsReady, logout } = useApp();
 
   useEffect(() => startClockSync(), []);
+  useEffect(prepareNotificationSound, []);
 
   useEffect(() => {
     const base = `/${route.segments[0] || ''}`;

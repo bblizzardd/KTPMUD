@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { clock, subscribeClock } from './clock.js';
+import { playNotificationSound } from './notificationSound.js';
+
+export function useNotificationSound(notificationId) {
+  useEffect(() => {
+    if (notificationId) return playNotificationSound();
+  }, [notificationId]);
+}
 
 /** Thời điểm hiện tại theo giờ máy chủ (có tính độ lệch khi tua đồng hồ kiểm thử). */
 export function useNow(intervalMs = 15_000) {

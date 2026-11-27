@@ -612,8 +612,6 @@
 
 /* Chuông nhắc / cảnh báo toàn màn hình */
 .dev-ring {
-  position: absolute;
-  inset: 0;
   z-index: 30;
   background: #f0fdf4;
   display: flex;
@@ -643,6 +641,8 @@
 }
 
 .dev-ring-alert {
+  position: absolute;
+  inset: 0;
   background: #fff1f0;
   color: #7f1d1d;
 }
